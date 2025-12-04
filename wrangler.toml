@@ -1,0 +1,11 @@
+name = "agile-productions-website"
+compatibility_date = "2024-12-04"
+
+# Pages configuration
+pages_build_output_dir = "frontend/dist"
+
+[build]
+command = "cd frontend && npm install && npm run build"
+
+[build.upload]
+format = "service-worker"
