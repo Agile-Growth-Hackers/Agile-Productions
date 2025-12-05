@@ -22,7 +22,7 @@ const Clients = () => {
   }));
 
   return (
-    <section id="clients" className="-mt-26 pt-12 pb-16 md:mt-0 md:pt-16 md:pb-24 bg-gray-50">
+    <section id="clients" className="-mt-26 pt-12 pb-16 md:mt-0 md:pt-16 md:pb-24 bg-[#ECEDF0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-5xl md:text-6xl font-bold text-center mb-12">
           CLIENTS

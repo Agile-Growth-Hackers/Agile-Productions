@@ -4,10 +4,10 @@ const Services = () => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <section id="services" className="pt-8 pb-8 md:pt-12 md:pb-24 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* We Are Known For */}
-        <div className="mb-16">
+    <section id="services" className="">
+      {/* We Are Known For */}
+      <div className="bg-white pt-8 pb-8 md:pt-12 md:pb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             {/* Left - Text Content */}
             <div>
@@ -16,7 +16,7 @@ const Services = () => {
                 <br />
                 KNOW FOR
               </h2>
-              <ul className="space-y-4 text-lg md:text-xl font-medium mx-auto lg:mx-0 max-w-2xl lg:max-w-none" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
+              <ul className="space-y-4 text-base md:text-lg lg:text-xl font-medium mx-auto lg:mx-0 max-w-2xl lg:max-w-none" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
                 <li className="flex items-start">
                   <span className="text-2xl mr-3">•</span>
                   <span className="text-black">
@@ -54,9 +54,11 @@ const Services = () => {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Event Coverage */}
-        <div className="mb-8 md:mb-0 lg:mb-8 mt-16">
+      {/* Event Coverage */}
+      <div className="bg-[#ECEDF0] pt-8 pb-8 md:pt-12 md:pb-16 lg:pb-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Mobile/Tablet: Show title above content */}
           <h2 className="text-5xl md:text-6xl font-bold mb-6 text-center lg:hidden">
             EVENT COVERAGE
@@ -78,7 +80,7 @@ const Services = () => {
 
           {/* Content */}
           <div className="max-w-4xl mx-auto xl:mx-0 text-center xl:text-left mb-6 xl:mb-0">
-            <p className="text-lg text-black leading-relaxed mb-8 font-medium" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
+            <p className="text-base md:text-lg text-black leading-relaxed mb-8 font-medium" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
               We specialize in bringing automotive events to life with vibrant footage and emotional
               resonance Malaysian Harley Davidson Gathering, Dosa With Ducati, BMW 1000RR Ride,
               Malaysian Auto Expo, Rynox Store Launch, Sip A Cofftee With 6kiom
@@ -114,24 +116,26 @@ const Services = () => {
             </div>
           )}
         </div>
+      </div>
 
-        {/* Expandable Content */}
-        <div
-          className={`overflow-hidden transition-all duration-500 ease-in-out ${
-            isExpanded ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0'
-          }`}
-        >
-          {/* Ad & Promo Films */}
-          <div className="mb-16 mt-8 md:mt-16 relative">
+      {/* Expandable Content */}
+      <div
+        className={`overflow-hidden transition-all duration-500 ease-in-out ${
+          isExpanded ? 'max-h-[3000px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        {/* Ad & Promo Films */}
+        <div className="bg-white pt-8 pb-8 md:pt-12 md:pb-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Content above image */}
             <div className="relative z-10 mb-2">
               <h2 className="text-5xl md:text-6xl font-bold mb-6 text-center lg:text-left">
                 AD & PROMO FILMS
               </h2>
-              <p className="text-lg text-black leading-relaxed mb-8 max-w-3xl mx-auto lg:mx-0 md:pl-16 lg:pl-0 font-medium text-left" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
+              <p className="text-base md:text-lg text-black leading-relaxed mb-8 max-w-3xl mx-auto lg:mx-0 md:pl-16 lg:pl-0 font-medium text-left" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
                 We craft ad films that fuel your brand's presence
               </p>
-              <ul className="space-y-3 text-lg text-black mb-2 max-w-3xl mx-auto lg:mx-0 md:pl-16 lg:pl-0 font-medium text-left" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
+              <ul className="space-y-3 text-base md:text-lg text-black mb-2 max-w-3xl mx-auto lg:mx-0 md:pl-16 lg:pl-0 font-medium text-left" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
                 <li className="flex items-start justify-start">
                   <span className="mr-3">•</span>
                   <span>Instagram Reels, Shorts & YouTube Ads</span>
@@ -156,13 +160,15 @@ const Services = () => {
               />
             </div>
           </div>
+        </div>
 
-          {/* Brand Coverage */}
-          <div className="mb-4 md:mb-0 lg:mb-4 lg:mt-24">
+        {/* Brand Coverage */}
+        <div className="bg-[#ECEDF0] pt-8 pb-8 md:pt-12 md:pb-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-5xl md:text-6xl font-bold mb-4 text-center lg:text-right">
               BRAND COVERAGE
             </h2>
-            <p className="text-lg text-black leading-relaxed mb-6 lg:mb-10 max-w-3xl mx-auto lg:ml-auto lg:mr-0 font-medium text-center lg:text-right" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
+            <p className="text-base md:text-lg text-black leading-relaxed mb-6 lg:mb-10 max-w-3xl mx-auto lg:ml-auto lg:mr-0 font-medium text-center lg:text-right" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
               We create powerful visuals for automotive brands like Lexus, Ultraviolette, Ducati and more
               capturing their identity, performance, and lifestyle with impact.
             </p>
