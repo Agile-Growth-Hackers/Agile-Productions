@@ -52,7 +52,7 @@ const Hero = () => {
       </div>
 
       {/* Content */}
-      <div className="relative h-full flex items-end pb-24 md:pb-28 lg:pb-20">
+      <div className="relative h-full flex items-end pb-28 md:pb-32 lg:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-3xl text-center md:text-left mx-auto md:mx-0">
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-3">
