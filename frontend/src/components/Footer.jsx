@@ -1,38 +1,40 @@
 const Footer = () => {
   return (
-    <footer id="contact" className="bg-black text-white py-12">
+    <footer id="contact" className="bg-black text-white relative -mt-[1px]">
+      {/* Curved Step Down Transition */}
+      <div className="w-full overflow-hidden leading-[0] -mb-1 bg-black">
+        <svg className="relative block w-full h-[65px] md:h-[85px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 85" preserveAspectRatio="none">
+          {/* Grey top section - extends beyond top */}
+          <path d="M0,-5 L720,-5 L720,0 C730,0 745,8 755,20 C765,32 775,42 785,48 C790,50 792,50 795,50 L1200,50 L1200,-5 Z" fill="#ECEDF0"></path>
+          {/* Black footer section with step down */}
+          <path d="M0,15 L720,15 C730,15 745,25 755,40 C765,55 775,70 785,78 C790,82 792,85 795,85 L1200,85 L1200,85 L0,85 Z" className="fill-black"></path>
+        </svg>
+      </div>
+      <div className="pt-1 pb-12 md:pt-2 md:pb-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid md:grid-cols-2 gap-8">
-          {/* Left - Logo and Branding */}
+        <div className="grid md:grid-cols-2 gap-8 md:items-end">
+          {/* Left - Logo and Contact */}
           <div>
-            <div className="flex items-center mb-4">
-              <svg className="h-10 w-10" viewBox="0 0 50 50" fill="none">
-                <path d="M25 5 L45 15 L35 45 L25 40 L15 45 L5 15 Z" fill="#fff" />
-              </svg>
-              <div className="ml-2">
-                <div className="text-lg font-bold tracking-tight">AGILE</div>
-                <div className="text-xs tracking-wider">PRODUCTIONS</div>
-              </div>
-            </div>
+            <img
+              src="/white AP logo.png"
+              alt="Agile Productions Logo"
+              className="h-12 w-auto mb-4"
+            />
+            <p className="text-sm text-gray-300 mb-1" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>+91 86086 86286</p>
+            <p className="text-sm text-gray-300 mb-1" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>hello@agilegrowthhackers.in</p>
+            <p className="text-sm text-gray-300" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
+              213, 2nd Floor, Ramnashree Arcade, MG Road, Bangalore - 560001
+            </p>
           </div>
 
-          {/* Right - Contact Info */}
-          <div className="md:text-right">
-            <p className="text-sm mb-2">+91 86085 88266</p>
-            <p className="text-sm mb-2">hello@agileproductions.in</p>
-            <p className="text-sm">
-              No.123/4, Subramanianagar, 4th Street Rd,<br />
-              Kodambakkam, Chennai, Tamil Nadu - 600024
+          {/* Right - Copyright */}
+          <div className="text-center md:text-right mt-6 md:mt-0">
+            <p className="text-sm text-gray-500" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
+              Copyright @ AgileGrowthHackers2025
             </p>
           </div>
         </div>
-
-        {/* Bottom - Copyright */}
-        <div className="mt-8 pt-8 border-t border-gray-800 text-center">
-          <p className="text-sm text-gray-400">
-            Copyright @AgileProductions/2025
-          </p>
-        </div>
+      </div>
       </div>
     </footer>
   );
