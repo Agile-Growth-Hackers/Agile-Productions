@@ -27,11 +27,13 @@ const Navbar = () => {
             <div className="relative z-10 h-full flex items-center justify-between px-10">
               {/* Logo on the left */}
               <div className="flex items-center">
-                <img
-                  src="/Agile Productions Logo.png"
-                  alt="Agile Productions Logo"
-                  className="h-10 w-auto object-contain transition-all duration-300"
-                />
+                <a href="#home" className="cursor-pointer">
+                  <img
+                    src="/Agile Productions Logo.png"
+                    alt="Agile Productions Logo"
+                    className="h-10 w-auto object-contain transition-all duration-300"
+                  />
+                </a>
               </div>
 
               {/* Menu on the right */}
@@ -82,12 +84,14 @@ const Navbar = () => {
             <div className="flex items-center justify-between h-full">
               {/* Logo on the left - constrained width */}
               <div className="flex items-center flex-shrink-0 pr-8">
-                <img
-                  src="/Agile Productions Logo.png"
-                  alt="Agile Productions Logo"
-                  className="h-20 w-auto object-contain"
-                  style={{ maxWidth: '350px' }}
-                />
+                <a href="#home" className="cursor-pointer">
+                  <img
+                    src="/Agile Productions Logo.png"
+                    alt="Agile Productions Logo"
+                    className="h-20 w-auto object-contain"
+                    style={{ maxWidth: '350px' }}
+                  />
+                </a>
               </div>
 
               {/* Menu on the right */}
@@ -139,11 +143,13 @@ const Navbar = () => {
         <div className="relative z-10 h-full flex justify-between items-center px-4">
           {/* Logo */}
           <div className="flex items-center">
-            <img
-              src="/Agile Productions Logo.png"
-              alt="Agile Productions Logo"
-              className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-8' : 'h-10'}`}
-            />
+            <a href="#home" className="cursor-pointer">
+              <img
+                src="/Agile Productions Logo.png"
+                alt="Agile Productions Logo"
+                className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-8' : 'h-10'}`}
+              />
+            </a>
           </div>
 
           {/* Mobile Menu Button */}
@@ -223,12 +229,14 @@ const Navbar = () => {
         <div className="relative z-10 h-full flex justify-between items-center px-4">
           {/* Logo */}
           <div className="flex items-center pl-4">
-            <img
-              src="/Agile Productions Logo.png"
-              alt="Agile Productions Logo"
-              className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-10' : 'h-12'}`}
-              style={{ maxWidth: '200px' }}
-            />
+            <a href="#home" className="cursor-pointer">
+              <img
+                src="/Agile Productions Logo.png"
+                alt="Agile Productions Logo"
+                className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-10' : 'h-12'}`}
+                style={{ maxWidth: '200px' }}
+              />
+            </a>
           </div>
 
           {/* Tablet Menu Button */}
