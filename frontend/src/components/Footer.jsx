@@ -20,8 +20,12 @@ const Footer = () => {
               alt="Agile Productions Logo"
               className="h-12 w-auto mb-4"
             />
-            <p className="text-sm text-gray-300 mb-1" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>+91 86086 86286</p>
-            <p className="text-sm text-gray-300 mb-1" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>hello@agilegrowthhackers.in</p>
+            <p className="text-sm text-gray-300 mb-1" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
+              <a href="tel:+918608686286" className="hover:text-white transition-colors">+91 86086 86286</a>
+            </p>
+            <p className="text-sm text-gray-300 mb-1" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
+              <a href="mailto:hello@agilegrowthhackers.in" className="hover:text-white transition-colors">hello@agilegrowthhackers.in</a>
+            </p>
             <p className="text-sm text-gray-300" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
               213, 2nd Floor, Ramnashree Arcade, MG Road, Bangalore - 560001
             </p>
