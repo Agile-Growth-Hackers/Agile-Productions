@@ -16,7 +16,7 @@ const Footer = () => {
           {/* Left - Logo and Contact */}
           <div>
             <img
-              src="/white AP logo.png"
+              src="/white AP logo.webp"
               alt="Agile Productions Logo"
               className="h-12 w-auto mb-4"
             />

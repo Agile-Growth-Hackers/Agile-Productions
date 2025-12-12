@@ -6,9 +6,9 @@ const Hero = () => {
   const [key, setKey] = useState(0);
 
   const images = [
-    "/slide1.jpg",
-    "/slide2.jpg",
-    "/slide3.jpg"
+    "/slide1.webp",
+    "/slide2.webp",
+    "/slide3.webp"
   ];
 
   const slideDuration = 5000; // 5 seconds per slide
@@ -18,7 +18,6 @@ const Hero = () => {
       setProgress((prev) => {
         if (prev >= 100) {
           const nextIndex = (currentImageIndex + 1) % images.length;
-          console.log('Changing to image:', nextIndex, images[nextIndex]);
           setCurrentImageIndex(nextIndex);
           setKey((k) => k + 1); // Force remount
           return 0;

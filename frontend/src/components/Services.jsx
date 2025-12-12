@@ -47,7 +47,7 @@ const Services = () => {
             {/* Right - Image */}
             <div className="lg:order-last flex justify-center lg:justify-end">
               <img
-                src="/known for.png"
+                src="/known for.webp"
                 alt="Motorcycle detail"
                 className="w-full h-auto max-w-md md:max-w-xl lg:max-w-none"
               />
@@ -67,7 +67,7 @@ const Services = () => {
           {/* Desktop: Image with overlaid title shown first */}
           <div className="hidden lg:block relative mb-5 w-[80%]">
             <img
-              src="/event coverage.png"
+              src="/event coverage.webp"
               alt="Event coverage"
               className="w-full h-auto"
             />
@@ -90,7 +90,7 @@ const Services = () => {
           {/* Mobile/Tablet: Image shown after content */}
           <div className="lg:hidden flex justify-center mt-6">
             <img
-              src="/event coverage.png"
+              src="/event coverage.webp"
               alt="Event coverage"
               className="w-full h-auto max-w-md md:max-w-2xl"
             />
@@ -103,7 +103,7 @@ const Services = () => {
                 onClick={() => setIsExpanded(true)}
                 className="text-white px-16 pt-4 pb-6 font-bold text-xl animate-bounce hover:scale-110 hover:animate-none transition-transform duration-300 ease-in-out"
                 style={{
-                  backgroundImage: 'url(/view.png)',
+                  backgroundImage: 'url(/view.webp)',
                   backgroundSize: '100% 100%',
                   backgroundPosition: 'center',
                   backgroundRepeat: 'no-repeat',
@@ -154,7 +154,7 @@ const Services = () => {
             {/* Ad & Promo Collage - Image overlays bottom of text */}
             <div className="flex justify-center relative -mt-12 md:-mt-28 lg:-mt-40">
               <img
-                src="/ad-promo.png"
+                src="/ad-promo.webp"
                 alt="Ad & Promo Films"
                 className="w-full h-auto max-w-6xl"
               />
@@ -176,7 +176,7 @@ const Services = () => {
             {/* Brand Coverage Collage - Desktop & Tablet */}
             <div className="hidden md:flex justify-center">
               <img
-                src="/brand-coverage-desktop.png"
+                src="/brand-coverage-desktop.webp"
                 alt="Brand Coverage"
                 className="w-full h-auto"
               />
@@ -185,7 +185,7 @@ const Services = () => {
             {/* Brand Coverage Collage - Mobile */}
             <div className="md:hidden flex justify-center">
               <img
-                src="/brand-coverage-mobile.png"
+                src="/brand-coverage-mobile.webp"
                 alt="Brand Coverage"
                 className="w-full h-auto max-w-md"
               />
