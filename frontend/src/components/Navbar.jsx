@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useOnLoad } from '../hooks/useOnLoad';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const hasLoaded = useOnLoad(100); // 100ms delay for smooth entrance
 
   const menuItems = ['HOME', 'ABOUT US', 'SERVICES', 'GALLERY', 'CONTACT'];
 
@@ -19,7 +21,7 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className={`fixed left-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'top-4' : 'top-0'}`}>
+    <nav className={`fixed left-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'top-4' : 'top-0'} animate-on-load ${hasLoaded ? 'has-loaded animate-fade-down' : ''}`}>
       {/* Desktop Navigation */}
       {isScrolled ? (
         <div className="hidden lg:block max-w-7xl mx-auto px-4">

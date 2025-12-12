@@ -1,17 +1,35 @@
+import { useInView } from '../hooks/useInView';
+
 const About = () => {
+  const [titleRef, titleInView] = useInView({ threshold: 0.2 });
+  const [content1Ref, content1InView] = useInView({ threshold: 0.2, delay: 100 });
+  const [content2Ref, content2InView] = useInView({ threshold: 0.2, delay: 200 });
+  const [content3Ref, content3InView] = useInView({ threshold: 0.2, delay: 300 });
+
   return (
     <section id="about-us" className="py-16 md:py-24 bg-[#ECEDF0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-5xl md:text-6xl font-bold text-center mb-12 uppercase">
+        <h2
+          ref={titleRef}
+          className={`text-5xl md:text-6xl font-bold text-center mb-12 uppercase animate-on-scroll will-animate ${titleInView ? 'is-visible animate-fade-up animation-complete' : ''}`}
+        >
           About Us
         </h2>
 
         <div className="max-w-4xl mx-auto text-center space-y-6">
-          <p className="text-lg md:text-xl text-black leading-relaxed font-medium" style={{ textTransform: 'none', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
+          <p
+            ref={content1Ref}
+            className={`text-lg md:text-xl text-black leading-relaxed font-medium animate-on-scroll will-animate ${content1InView ? 'is-visible animate-fade-up animation-complete' : ''}`}
+            style={{ textTransform: 'none', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
+          >
             We are speed chasers, storytellers, and visual engineers for the fast lane.
           </p>
 
-          <p className="text-base md:text-lg text-black leading-relaxed font-medium" style={{ textTransform: 'none', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
+          <p
+            ref={content2Ref}
+            className={`text-base md:text-lg text-black leading-relaxed font-medium animate-on-scroll will-animate ${content2InView ? 'is-visible animate-fade-up animation-complete' : ''}`}
+            style={{ textTransform: 'none', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
+          >
             Born at the crossroads of horsepower and{' '}
             <span className="hidden lg:inline"><br /></span>
             creativity, we specialize in capturing the untamed energy of motorsports and the raw{' '}
@@ -23,7 +41,11 @@ const About = () => {
             we transform fleeting moments into lasting cinematic experiences that resonate deeply with your audience.
           </p>
 
-          <p className="text-base md:text-lg text-black leading-relaxed font-medium" style={{ textTransform: 'none', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
+          <p
+            ref={content3Ref}
+            className={`text-base md:text-lg text-black leading-relaxed font-medium animate-on-scroll will-animate ${content3InView ? 'is-visible animate-fade-up animation-complete' : ''}`}
+            style={{ textTransform: 'none', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
+          >
             At Agile, every frame we shoot is built to race bold, precise, and impossible to ignore.
           </p>
         </div>

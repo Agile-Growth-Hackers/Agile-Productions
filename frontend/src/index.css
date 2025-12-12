@@ -19,3 +19,58 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* Animation Utilities */
+
+/* Initial states for scroll animations - elements start invisible */
+.animate-on-scroll {
+  opacity: 0;
+}
+
+/* When animation is triggered, remove initial opacity */
+.animate-on-scroll.is-visible {
+  opacity: 1;
+}
+
+/* Prevent flash of unstyled content on initial load */
+.animate-on-load {
+  opacity: 0;
+}
+
+.animate-on-load.has-loaded {
+  opacity: 1;
+}
+
+/* Performance optimizations for animations */
+.will-animate {
+  will-change: transform, opacity;
+}
+
+/* Remove will-change after animation completes to free resources */
+.animation-complete {
+  will-change: auto;
+}
+
+/* Utility for puzzle piece animations with custom CSS variables */
+.puzzle-piece {
+  opacity: 0;
+  transform-origin: center;
+}
+
+.puzzle-piece.animate-in {
+  animation: puzzle-slide-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Accessibility: Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-on-scroll,
+  .animate-on-load {
+    opacity: 1 !important;
+  }
+}
