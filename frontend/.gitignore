@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 .claude
+
+# Image conversion scripts and documentation
+convert-logos.js
+convert-all-images.js
+HOW-TO-ADD-LOGOS.md
