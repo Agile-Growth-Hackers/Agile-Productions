@@ -14,7 +14,7 @@ const Services = () => {
               <h2 className="text-5xl md:text-6xl font-bold mb-8 text-center lg:text-left">
                 WE ARE
                 <br />
-                KNOW FOR
+                KNOWN FOR
               </h2>
               <ul className="space-y-4 text-base md:text-lg lg:text-xl font-medium mx-auto lg:mx-0 max-w-2xl lg:max-w-none" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
                 <li className="flex items-start">
