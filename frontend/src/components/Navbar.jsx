@@ -145,7 +145,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <a href="#home" className="cursor-pointer">
               <img
-                src="/Agile Productions Logo.png"
+                src="/Agile Productions Logo.webp"
                 alt="Agile Productions Logo"
                 className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-8' : 'h-10'}`}
               />
@@ -231,7 +231,7 @@ const Navbar = () => {
           <div className="flex items-center pl-4">
             <a href="#home" className="cursor-pointer">
               <img
-                src="/Agile Productions Logo.png"
+                src="/Agile Productions Logo.webp"
                 alt="Agile Productions Logo"
                 className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-10' : 'h-12'}`}
                 style={{ maxWidth: '200px' }}

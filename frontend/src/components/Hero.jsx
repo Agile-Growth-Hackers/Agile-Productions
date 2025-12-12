@@ -44,6 +44,9 @@ const Hero = () => {
               src={image}
               alt={`Slide ${index + 1}`}
               className="w-full h-full object-cover"
+              style={{
+                objectPosition: index === 0 ? '72% center' : 'center center'
+              }}
             />
           </div>
         ))}
