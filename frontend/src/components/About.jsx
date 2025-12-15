@@ -1,17 +1,17 @@
 import { useInView } from '../hooks/useInView';
 
 const About = () => {
-  const [titleRef, titleInView] = useInView({ threshold: 0.2 });
-  const [content1Ref, content1InView] = useInView({ threshold: 0.2, delay: 100 });
-  const [content2Ref, content2InView] = useInView({ threshold: 0.2, delay: 200 });
-  const [content3Ref, content3InView] = useInView({ threshold: 0.2, delay: 300 });
+  const [titleRef, titleInView] = useInView({ threshold: 0.5 });
+  const [content1Ref, content1InView] = useInView({ threshold: 0.5, delay: 100 });
+  const [content2Ref, content2InView] = useInView({ threshold: 0.5, delay: 200 });
+  const [content3Ref, content3InView] = useInView({ threshold: 0.5, delay: 300 });
 
   return (
     <section id="about-us" className="py-16 md:py-24 bg-[#ECEDF0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2
           ref={titleRef}
-          className={`text-5xl md:text-6xl font-bold text-center mb-12 uppercase animate-on-scroll will-animate ${titleInView ? 'is-visible animate-fade-up animation-complete' : ''}`}
+          className={`text-5xl md:text-6xl font-bold text-center mb-12 uppercase will-animate ${titleInView ? 'animate-fade-up animation-complete' : ''}`}
         >
           About Us
         </h2>
@@ -19,7 +19,7 @@ const About = () => {
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <p
             ref={content1Ref}
-            className={`text-lg md:text-xl text-black leading-relaxed font-medium animate-on-scroll will-animate ${content1InView ? 'is-visible animate-fade-up animation-complete' : ''}`}
+            className={`text-lg md:text-xl text-black leading-relaxed font-medium will-animate ${content1InView ? 'animate-fade-up animation-complete' : ''}`}
             style={{ textTransform: 'none', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
           >
             We are speed chasers, storytellers, and visual engineers for the fast lane.
@@ -27,7 +27,7 @@ const About = () => {
 
           <p
             ref={content2Ref}
-            className={`text-base md:text-lg text-black leading-relaxed font-medium animate-on-scroll will-animate ${content2InView ? 'is-visible animate-fade-up animation-complete' : ''}`}
+            className={`text-base md:text-lg text-black leading-relaxed font-medium will-animate ${content2InView ? 'animate-fade-up animation-complete' : ''}`}
             style={{ textTransform: 'none', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
           >
             Born at the crossroads of horsepower and{' '}
@@ -43,7 +43,7 @@ const About = () => {
 
           <p
             ref={content3Ref}
-            className={`text-base md:text-lg text-black leading-relaxed font-medium animate-on-scroll will-animate ${content3InView ? 'is-visible animate-fade-up animation-complete' : ''}`}
+            className={`text-base md:text-lg text-black leading-relaxed font-medium will-animate ${content3InView ? 'animate-fade-up animation-complete' : ''}`}
             style={{ textTransform: 'none', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
           >
             At Agile, every frame we shoot is built to race bold, precise, and impossible to ignore.

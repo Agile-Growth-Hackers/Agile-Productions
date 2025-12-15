@@ -13,7 +13,7 @@ export default {
         'fade-up': {
           '0%': {
             opacity: '0',
-            transform: 'translateY(40px)',
+            transform: 'translateY(80px)',
           },
           '100%': {
             opacity: '1',
@@ -23,7 +23,7 @@ export default {
         'fade-down': {
           '0%': {
             opacity: '0',
-            transform: 'translateY(-40px)',
+            transform: 'translateY(-80px)',
           },
           '100%': {
             opacity: '1',
@@ -33,7 +33,7 @@ export default {
         'fade-left': {
           '0%': {
             opacity: '0',
-            transform: 'translateX(60px)',
+            transform: 'translateX(100px)',
           },
           '100%': {
             opacity: '1',
@@ -43,7 +43,7 @@ export default {
         'fade-right': {
           '0%': {
             opacity: '0',
-            transform: 'translateX(-60px)',
+            transform: 'translateX(-100px)',
           },
           '100%': {
             opacity: '1',
@@ -72,18 +72,18 @@ export default {
         },
       },
       animation: {
-        'fade-up': 'fade-up 0.8s ease-out forwards',
-        'fade-down': 'fade-down 0.8s ease-out forwards',
-        'fade-left': 'fade-left 0.8s ease-out forwards',
-        'fade-right': 'fade-right 0.8s ease-out forwards',
-        'puzzle-slide-in': 'puzzle-slide-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
-        'scale-in': 'scale-in 0.6s ease-out forwards',
+        'fade-up': 'fade-up 1.2s ease-in-out forwards',
+        'fade-down': 'fade-down 1.2s ease-in-out forwards',
+        'fade-left': 'fade-left 1.2s ease-in-out forwards',
+        'fade-right': 'fade-right 1.2s ease-in-out forwards',
+        'puzzle-slide-in': 'puzzle-slide-in 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+        'scale-in': 'scale-in 1s ease-in-out forwards',
 
         // Delayed versions for stagger effects
-        'fade-up-delay-100': 'fade-up 0.8s ease-out 0.1s forwards',
-        'fade-up-delay-200': 'fade-up 0.8s ease-out 0.2s forwards',
-        'fade-up-delay-300': 'fade-up 0.8s ease-out 0.3s forwards',
-        'fade-up-delay-400': 'fade-up 0.8s ease-out 0.4s forwards',
+        'fade-up-delay-100': 'fade-up 1.2s ease-in-out 0.1s forwards',
+        'fade-up-delay-200': 'fade-up 1.2s ease-in-out 0.2s forwards',
+        'fade-up-delay-300': 'fade-up 1.2s ease-in-out 0.3s forwards',
+        'fade-up-delay-400': 'fade-up 1.2s ease-in-out 0.4s forwards',
       },
     },
   },

@@ -1,4 +1,9 @@
+import { useInView } from '../hooks/useInView';
+
 const Footer = () => {
+  const [leftRef, leftInView] = useInView({ threshold: 0.2 });
+  const [rightRef, rightInView] = useInView({ threshold: 0.2, delay: 100 });
+
   return (
     <footer id="contact" className="bg-black text-white relative -mt-[1px]">
       {/* Curved Step Down Transition */}
@@ -14,7 +19,10 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-2 gap-8 md:items-end">
           {/* Left - Logo and Contact */}
-          <div>
+          <div
+            ref={leftRef}
+            className={`animate-on-scroll will-animate md:${leftInView ? 'is-visible animate-fade-right animation-complete' : ''} ${leftInView ? 'is-visible animate-fade-up animation-complete' : ''} md:opacity-0`}
+          >
             <img
               src="/white AP logo.webp"
               alt="Agile Productions Logo"
@@ -32,7 +40,10 @@ const Footer = () => {
           </div>
 
           {/* Right - Copyright */}
-          <div className="text-center md:text-right mt-6 md:mt-0">
+          <div
+            ref={rightRef}
+            className={`text-center md:text-right mt-6 md:mt-0 animate-on-scroll will-animate md:${rightInView ? 'is-visible animate-fade-left animation-complete' : ''} ${rightInView ? 'is-visible animate-fade-up animation-complete' : ''} md:opacity-0`}
+          >
             <p className="text-sm text-gray-500" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
               Copyright @ AgileGrowthHackers2025
             </p>

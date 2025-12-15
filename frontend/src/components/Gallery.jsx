@@ -1,7 +1,43 @@
 import { useState } from 'react';
+import { useInView } from '../hooks/useInView';
 
 const Gallery = () => {
   const [activeImage, setActiveImage] = useState(null);
+
+  // Animation refs
+  const [titleRef, titleInView] = useInView({ threshold: 0.5 });
+  const [mobileGalleryRef, mobileGalleryInView] = useInView({ threshold: 0.3 });
+  const [desktopGalleryRef, desktopGalleryInView] = useInView({ threshold: 0.3 });
+
+  // Puzzle piece slide directions for mobile (10 images)
+  const mobilePuzzleDirections = [
+    { x: '-150px', y: '-150px', rotate: '-20deg' },  // Image 1: top-left
+    { x: '0', y: '-200px', rotate: '15deg' },        // Image 2: top-center
+    { x: '150px', y: '-150px', rotate: '-12deg' },   // Image 3: top-right
+    { x: '-180px', y: '0', rotate: '18deg' },        // Image 4: middle-left
+    { x: '200px', y: '120px', rotate: '-10deg' },    // Image 5: center (mustang)
+    { x: '-200px', y: '100px', rotate: '20deg' },    // Image 6: lower-left
+    { x: '180px', y: '120px', rotate: '-15deg' },    // Image 7: lower-right
+    { x: '-150px', y: '200px', rotate: '12deg' },    // Image 8: bottom-left
+    { x: '0', y: '200px', rotate: '-18deg' },        // Image 9: bottom-center
+    { x: '150px', y: '200px', rotate: '15deg' }      // Image 10: bottom-right
+  ];
+
+  // Puzzle piece slide directions for desktop (12 images)
+  const desktopPuzzleDirections = [
+    { x: '-180px', y: '-180px', rotate: '-20deg' },  // Image 1: R1C1
+    { x: '-120px', y: '-150px', rotate: '15deg' },   // Image 2: R1C2
+    { x: '0', y: '-200px', rotate: '-12deg' },       // Image 3: R1C3 (tall)
+    { x: '120px', y: '-180px', rotate: '18deg' },    // Image 4: R1C4
+    { x: '200px', y: '-150px', rotate: '-15deg' },   // Image 5: R1C5
+    { x: '-200px', y: '80px', rotate: '20deg' },     // Image 6: R2C1+C2 (wide)
+    { x: '150px', y: '100px', rotate: '-18deg' },    // Image 7: R2C4
+    { x: '200px', y: '80px', rotate: '15deg' },      // Image 8: R2C5
+    { x: '-180px', y: '200px', rotate: '18deg' },    // Image 9: R3C1+C2
+    { x: '-120px', y: '180px', rotate: '-20deg' },   // Image 10: R3C2
+    { x: '0', y: '200px', rotate: '15deg' },         // Image 11: R3C3
+    { x: '200px', y: '200px', rotate: '-18deg' }     // Image 12: R3C5
+  ];
 
   const galleryImages = [
     'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=600',
@@ -25,12 +61,16 @@ const Gallery = () => {
   return (
     <section id="gallery" className="pt-12 pb-0 md:pt-16 md:pb-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-5xl md:text-6xl font-bold text-center mb-12">
+        <h2
+          ref={titleRef}
+          className={`text-5xl md:text-6xl font-bold text-center mb-12 will-animate ${titleInView ? 'animate-fade-up animation-complete' : ''}`}
+        >
           GALLERY
         </h2>
 
         {/* Mobile: Custom Collage Grid */}
         <div
+          ref={mobileGalleryRef}
           className="md:hidden relative overflow-visible mx-auto"
           style={{
             maxWidth: '400px'
@@ -45,7 +85,17 @@ const Gallery = () => {
             }}
           >
             {/* Image 1: Top-left corner - small */}
-            <div style={{ gridRow: '1 / 4', gridColumn: '1' }} className="relative cursor-pointer overflow-visible rounded-tl-3xl">
+            <div
+              style={{
+                gridRow: '1 / 4',
+                gridColumn: '1',
+                '--slide-x': mobilePuzzleDirections[0].x,
+                '--slide-y': mobilePuzzleDirections[0].y,
+                '--rotate': mobilePuzzleDirections[0].rotate,
+                animationDelay: '0ms'
+              }}
+              className={`relative cursor-pointer overflow-visible rounded-tl-3xl puzzle-piece ${mobileGalleryInView ? 'animate-in' : ''}`}
+            >
               <img
                 src={galleryImages[0]}
                 alt="Gallery 1"
@@ -62,7 +112,17 @@ const Gallery = () => {
             </div>
 
             {/* Image 2: Top-center - tall */}
-            <div style={{ gridRow: '1 / 6', gridColumn: '2' }} className="relative cursor-pointer overflow-visible">
+            <div
+              style={{
+                gridRow: '1 / 6',
+                gridColumn: '2',
+                '--slide-x': mobilePuzzleDirections[1].x,
+                '--slide-y': mobilePuzzleDirections[1].y,
+                '--rotate': mobilePuzzleDirections[1].rotate,
+                animationDelay: '100ms'
+              }}
+              className={`relative cursor-pointer overflow-visible puzzle-piece ${mobileGalleryInView ? 'animate-in' : ''}`}
+            >
               <img
                 src={galleryImages[1]}
                 alt="Gallery 2"
@@ -79,7 +139,17 @@ const Gallery = () => {
             </div>
 
             {/* Image 3: Top-right corner - medium */}
-            <div style={{ gridRow: '1 / 6', gridColumn: '3' }} className="relative cursor-pointer overflow-visible rounded-tr-3xl">
+            <div
+              style={{
+                gridRow: '1 / 6',
+                gridColumn: '3',
+                '--slide-x': mobilePuzzleDirections[2].x,
+                '--slide-y': mobilePuzzleDirections[2].y,
+                '--rotate': mobilePuzzleDirections[2].rotate,
+                animationDelay: '200ms'
+              }}
+              className={`relative cursor-pointer overflow-visible rounded-tr-3xl puzzle-piece ${mobileGalleryInView ? 'animate-in' : ''}`}
+            >
               <img
                 src={galleryImages[2]}
                 alt="Gallery 3"
@@ -96,7 +166,17 @@ const Gallery = () => {
             </div>
 
             {/* Image 4: Middle-left - small */}
-            <div style={{ gridRow: '4 / 7', gridColumn: '1' }} className="relative cursor-pointer overflow-visible">
+            <div
+              style={{
+                gridRow: '4 / 7',
+                gridColumn: '1',
+                '--slide-x': mobilePuzzleDirections[3].x,
+                '--slide-y': mobilePuzzleDirections[3].y,
+                '--rotate': mobilePuzzleDirections[3].rotate,
+                animationDelay: '300ms'
+              }}
+              className={`relative cursor-pointer overflow-visible puzzle-piece ${mobileGalleryInView ? 'animate-in' : ''}`}
+            >
               <img
                 src={galleryImages[3]}
                 alt="Gallery 4"
@@ -113,7 +193,17 @@ const Gallery = () => {
             </div>
 
             {/* Image 5: Center - large Mustang spanning 2 columns */}
-            <div style={{ gridRow: '6 / 11', gridColumn: '2 / 4' }} className="relative cursor-pointer overflow-visible">
+            <div
+              style={{
+                gridRow: '6 / 11',
+                gridColumn: '2 / 4',
+                '--slide-x': mobilePuzzleDirections[4].x,
+                '--slide-y': mobilePuzzleDirections[4].y,
+                '--rotate': mobilePuzzleDirections[4].rotate,
+                animationDelay: '400ms'
+              }}
+              className={`relative cursor-pointer overflow-visible puzzle-piece ${mobileGalleryInView ? 'animate-in' : ''}`}
+            >
               <img
                 src={galleryImages[4]}
                 alt="Gallery 5"
@@ -130,7 +220,17 @@ const Gallery = () => {
             </div>
 
             {/* Image 6: Lower-left - Camaro */}
-            <div style={{ gridRow: '7 / 12', gridColumn: '1' }} className="relative cursor-pointer overflow-visible">
+            <div
+              style={{
+                gridRow: '7 / 12',
+                gridColumn: '1',
+                '--slide-x': mobilePuzzleDirections[5].x,
+                '--slide-y': mobilePuzzleDirections[5].y,
+                '--rotate': mobilePuzzleDirections[5].rotate,
+                animationDelay: '500ms'
+              }}
+              className={`relative cursor-pointer overflow-visible puzzle-piece ${mobileGalleryInView ? 'animate-in' : ''}`}
+            >
               <img
                 src={galleryImages[5]}
                 alt="Gallery 6"
@@ -147,7 +247,17 @@ const Gallery = () => {
             </div>
 
             {/* Image 7: Lower-right - car */}
-            <div style={{ gridRow: '11 / 15', gridColumn: '3' }} className="relative cursor-pointer overflow-visible">
+            <div
+              style={{
+                gridRow: '11 / 15',
+                gridColumn: '3',
+                '--slide-x': mobilePuzzleDirections[6].x,
+                '--slide-y': mobilePuzzleDirections[6].y,
+                '--rotate': mobilePuzzleDirections[6].rotate,
+                animationDelay: '600ms'
+              }}
+              className={`relative cursor-pointer overflow-visible puzzle-piece ${mobileGalleryInView ? 'animate-in' : ''}`}
+            >
               <img
                 src={galleryImages[6]}
                 alt="Gallery 7"
@@ -164,7 +274,17 @@ const Gallery = () => {
             </div>
 
             {/* Image 8: Bottom-left corner - palm trees */}
-            <div style={{ gridRow: '12 / 16', gridColumn: '1' }} className="relative cursor-pointer overflow-visible rounded-bl-3xl">
+            <div
+              style={{
+                gridRow: '12 / 16',
+                gridColumn: '1',
+                '--slide-x': mobilePuzzleDirections[7].x,
+                '--slide-y': mobilePuzzleDirections[7].y,
+                '--rotate': mobilePuzzleDirections[7].rotate,
+                animationDelay: '700ms'
+              }}
+              className={`relative cursor-pointer overflow-visible rounded-bl-3xl puzzle-piece ${mobileGalleryInView ? 'animate-in' : ''}`}
+            >
               <img
                 src={galleryImages[7]}
                 alt="Gallery 8"
@@ -181,7 +301,17 @@ const Gallery = () => {
             </div>
 
             {/* Image 9: Bottom-center - golfer */}
-            <div style={{ gridRow: '11 / 16', gridColumn: '2' }} className="relative cursor-pointer overflow-visible">
+            <div
+              style={{
+                gridRow: '11 / 16',
+                gridColumn: '2',
+                '--slide-x': mobilePuzzleDirections[8].x,
+                '--slide-y': mobilePuzzleDirections[8].y,
+                '--rotate': mobilePuzzleDirections[8].rotate,
+                animationDelay: '800ms'
+              }}
+              className={`relative cursor-pointer overflow-visible puzzle-piece ${mobileGalleryInView ? 'animate-in' : ''}`}
+            >
               <img
                 src={galleryImages[8]}
                 alt="Gallery 9"
@@ -198,7 +328,17 @@ const Gallery = () => {
             </div>
 
             {/* Image 10: Bottom-right corner - car */}
-            <div style={{ gridRow: '15 / 16', gridColumn: '3' }} className="relative cursor-pointer overflow-visible rounded-br-3xl">
+            <div
+              style={{
+                gridRow: '15 / 16',
+                gridColumn: '3',
+                '--slide-x': mobilePuzzleDirections[9].x,
+                '--slide-y': mobilePuzzleDirections[9].y,
+                '--rotate': mobilePuzzleDirections[9].rotate,
+                animationDelay: '900ms'
+              }}
+              className={`relative cursor-pointer overflow-visible rounded-br-3xl puzzle-piece ${mobileGalleryInView ? 'animate-in' : ''}`}
+            >
               <img
                 src={galleryImages[9]}
                 alt="Gallery 10"
@@ -218,6 +358,7 @@ const Gallery = () => {
 
         {/* Desktop: Custom Complex Grid */}
         <div
+          ref={desktopGalleryRef}
           className="hidden md:grid gap-1.5 overflow-visible"
           style={{
             gridTemplateColumns: '1fr 1.3fr 1.5fr 1.5fr 1.6fr',
@@ -226,7 +367,17 @@ const Gallery = () => {
           }}
         >
           {/* Image 1: R1C1 - Top Left Corner */}
-          <div style={{ gridRow: '1 / 5', gridColumn: '1' }} className={`relative group cursor-pointer overflow-visible rounded-tl-3xl ${activeImage === 0 ? 'z-50' : 'z-0 hover:z-50'}`}>
+          <div
+            style={{
+              gridRow: '1 / 5',
+              gridColumn: '1',
+              '--slide-x': desktopPuzzleDirections[0].x,
+              '--slide-y': desktopPuzzleDirections[0].y,
+              '--rotate': desktopPuzzleDirections[0].rotate,
+              animationDelay: '0ms'
+            }}
+            className={`relative group cursor-pointer overflow-visible rounded-tl-3xl puzzle-piece ${desktopGalleryInView ? 'animate-in' : ''} ${activeImage === 0 ? 'z-50' : 'z-0 hover:z-50'}`}
+          >
             <img
               src={galleryImages[0]}
               alt="Gallery 1"
@@ -247,7 +398,17 @@ const Gallery = () => {
           </div>
 
           {/* Image 2: R1C2 */}
-          <div style={{ gridRow: '1 / 5', gridColumn: '2' }} className={`relative group cursor-pointer overflow-visible ${activeImage === 1 ? 'z-50' : 'z-0 hover:z-50'}`}>
+          <div
+            style={{
+              gridRow: '1 / 5',
+              gridColumn: '2',
+              '--slide-x': desktopPuzzleDirections[1].x,
+              '--slide-y': desktopPuzzleDirections[1].y,
+              '--rotate': desktopPuzzleDirections[1].rotate,
+              animationDelay: '100ms'
+            }}
+            className={`relative group cursor-pointer overflow-visible puzzle-piece ${desktopGalleryInView ? 'animate-in' : ''} ${activeImage === 1 ? 'z-50' : 'z-0 hover:z-50'}`}
+          >
             <img
               src={galleryImages[1]}
               alt="Gallery 2"
@@ -268,7 +429,17 @@ const Gallery = () => {
           </div>
 
           {/* Image 3: R1C3 + R2C3 (spans 2 rows) */}
-          <div style={{ gridRow: '1 / 9', gridColumn: '3' }} className={`relative group cursor-pointer overflow-visible ${activeImage === 2 ? 'z-50' : 'z-0 hover:z-50'}`}>
+          <div
+            style={{
+              gridRow: '1 / 9',
+              gridColumn: '3',
+              '--slide-x': desktopPuzzleDirections[2].x,
+              '--slide-y': desktopPuzzleDirections[2].y,
+              '--rotate': desktopPuzzleDirections[2].rotate,
+              animationDelay: '200ms'
+            }}
+            className={`relative group cursor-pointer overflow-visible puzzle-piece ${desktopGalleryInView ? 'animate-in' : ''} ${activeImage === 2 ? 'z-50' : 'z-0 hover:z-50'}`}
+          >
             <img
               src={galleryImages[2]}
               alt="Gallery 3"
@@ -289,7 +460,17 @@ const Gallery = () => {
           </div>
 
           {/* Image 4: R1C4 + part of R2C4 */}
-          <div style={{ gridRow: '1 / 6', gridColumn: '4' }} className={`relative group cursor-pointer overflow-visible ${activeImage === 3 ? 'z-50' : 'z-0 hover:z-50'}`}>
+          <div
+            style={{
+              gridRow: '1 / 6',
+              gridColumn: '4',
+              '--slide-x': desktopPuzzleDirections[3].x,
+              '--slide-y': desktopPuzzleDirections[3].y,
+              '--rotate': desktopPuzzleDirections[3].rotate,
+              animationDelay: '300ms'
+            }}
+            className={`relative group cursor-pointer overflow-visible puzzle-piece ${desktopGalleryInView ? 'animate-in' : ''} ${activeImage === 3 ? 'z-50' : 'z-0 hover:z-50'}`}
+          >
             <img
               src={galleryImages[3]}
               alt="Gallery 4"
@@ -310,7 +491,17 @@ const Gallery = () => {
           </div>
 
           {/* Image 5: More than half of R1C5 (increased height) - Top Right Corner */}
-          <div style={{ gridRow: '1 / 4', gridColumn: '5' }} className={`relative group cursor-pointer overflow-visible rounded-tr-3xl ${activeImage === 4 ? 'z-50' : 'z-0 hover:z-50'}`}>
+          <div
+            style={{
+              gridRow: '1 / 4',
+              gridColumn: '5',
+              '--slide-x': desktopPuzzleDirections[4].x,
+              '--slide-y': desktopPuzzleDirections[4].y,
+              '--rotate': desktopPuzzleDirections[4].rotate,
+              animationDelay: '400ms'
+            }}
+            className={`relative group cursor-pointer overflow-visible rounded-tr-3xl puzzle-piece ${desktopGalleryInView ? 'animate-in' : ''} ${activeImage === 4 ? 'z-50' : 'z-0 hover:z-50'}`}
+          >
             <img
               src={galleryImages[4]}
               alt="Gallery 5"
@@ -331,7 +522,17 @@ const Gallery = () => {
           </div>
 
           {/* Image 6: R2C1 + R2C2 (spans 2 columns) */}
-          <div style={{ gridRow: '5 / 9', gridColumn: '1 / 3' }} className={`relative group cursor-pointer overflow-visible ${activeImage === 5 ? 'z-50' : 'z-0 hover:z-50'}`}>
+          <div
+            style={{
+              gridRow: '5 / 9',
+              gridColumn: '1 / 3',
+              '--slide-x': desktopPuzzleDirections[5].x,
+              '--slide-y': desktopPuzzleDirections[5].y,
+              '--rotate': desktopPuzzleDirections[5].rotate,
+              animationDelay: '500ms'
+            }}
+            className={`relative group cursor-pointer overflow-visible puzzle-piece ${desktopGalleryInView ? 'animate-in' : ''} ${activeImage === 5 ? 'z-50' : 'z-0 hover:z-50'}`}
+          >
             <img
               src={galleryImages[5]}
               alt="Gallery 6"
@@ -352,7 +553,17 @@ const Gallery = () => {
           </div>
 
           {/* Image 7: Rest of R2C4 + R3C4 */}
-          <div style={{ gridRow: '6 / 13', gridColumn: '4' }} className={`relative group cursor-pointer overflow-visible ${activeImage === 6 ? 'z-50' : 'z-0 hover:z-50'}`}>
+          <div
+            style={{
+              gridRow: '6 / 13',
+              gridColumn: '4',
+              '--slide-x': desktopPuzzleDirections[6].x,
+              '--slide-y': desktopPuzzleDirections[6].y,
+              '--rotate': desktopPuzzleDirections[6].rotate,
+              animationDelay: '600ms'
+            }}
+            className={`relative group cursor-pointer overflow-visible puzzle-piece ${desktopGalleryInView ? 'animate-in' : ''} ${activeImage === 6 ? 'z-50' : 'z-0 hover:z-50'}`}
+          >
             <img
               src={galleryImages[6]}
               alt="Gallery 7"
@@ -373,7 +584,17 @@ const Gallery = () => {
           </div>
 
           {/* Image 8: Rest of R1C5 + R2C5 + part of R3C5 (reduced height) */}
-          <div style={{ gridRow: '4 / 10', gridColumn: '5' }} className={`relative group cursor-pointer overflow-visible ${activeImage === 7 ? 'z-50' : 'z-0 hover:z-50'}`}>
+          <div
+            style={{
+              gridRow: '4 / 10',
+              gridColumn: '5',
+              '--slide-x': desktopPuzzleDirections[7].x,
+              '--slide-y': desktopPuzzleDirections[7].y,
+              '--rotate': desktopPuzzleDirections[7].rotate,
+              animationDelay: '700ms'
+            }}
+            className={`relative group cursor-pointer overflow-visible puzzle-piece ${desktopGalleryInView ? 'animate-in' : ''} ${activeImage === 7 ? 'z-50' : 'z-0 hover:z-50'}`}
+          >
             <img
               src={galleryImages[7]}
               alt="Gallery 8"
@@ -394,7 +615,17 @@ const Gallery = () => {
           </div>
 
           {/* Image 9: R3C1 + more of R3C2 (increased width) - Bottom Left Corner */}
-          <div style={{ gridRow: '9 / 13', gridColumn: '1 / 2.6' }} className={`relative group cursor-pointer overflow-visible rounded-bl-3xl ${activeImage === 8 ? 'z-50' : 'z-0 hover:z-50'}`}>
+          <div
+            style={{
+              gridRow: '9 / 13',
+              gridColumn: '1 / 2.6',
+              '--slide-x': desktopPuzzleDirections[8].x,
+              '--slide-y': desktopPuzzleDirections[8].y,
+              '--rotate': desktopPuzzleDirections[8].rotate,
+              animationDelay: '800ms'
+            }}
+            className={`relative group cursor-pointer overflow-visible rounded-bl-3xl puzzle-piece ${desktopGalleryInView ? 'animate-in' : ''} ${activeImage === 8 ? 'z-50' : 'z-0 hover:z-50'}`}
+          >
             <img
               src={galleryImages[8]}
               alt="Gallery 9"
@@ -415,7 +646,17 @@ const Gallery = () => {
           </div>
 
           {/* Image 10: Rest of R3C2 (reduced width) */}
-          <div style={{ gridRow: '9 / 13', gridColumn: '2.6 / 3' }} className={`relative group cursor-pointer overflow-visible ${activeImage === 9 ? 'z-50' : 'z-0 hover:z-50'}`}>
+          <div
+            style={{
+              gridRow: '9 / 13',
+              gridColumn: '2.6 / 3',
+              '--slide-x': desktopPuzzleDirections[9].x,
+              '--slide-y': desktopPuzzleDirections[9].y,
+              '--rotate': desktopPuzzleDirections[9].rotate,
+              animationDelay: '900ms'
+            }}
+            className={`relative group cursor-pointer overflow-visible puzzle-piece ${desktopGalleryInView ? 'animate-in' : ''} ${activeImage === 9 ? 'z-50' : 'z-0 hover:z-50'}`}
+          >
             <img
               src={galleryImages[9]}
               alt="Gallery 10"
@@ -436,7 +677,17 @@ const Gallery = () => {
           </div>
 
           {/* Image 11: R3C3 */}
-          <div style={{ gridRow: '9 / 13', gridColumn: '3' }} className={`relative group cursor-pointer overflow-visible ${activeImage === 10 ? 'z-50' : 'z-0 hover:z-50'}`}>
+          <div
+            style={{
+              gridRow: '9 / 13',
+              gridColumn: '3',
+              '--slide-x': desktopPuzzleDirections[10].x,
+              '--slide-y': desktopPuzzleDirections[10].y,
+              '--rotate': desktopPuzzleDirections[10].rotate,
+              animationDelay: '1000ms'
+            }}
+            className={`relative group cursor-pointer overflow-visible puzzle-piece ${desktopGalleryInView ? 'animate-in' : ''} ${activeImage === 10 ? 'z-50' : 'z-0 hover:z-50'}`}
+          >
             <img
               src={galleryImages[10]}
               alt="Gallery 11"
@@ -457,7 +708,17 @@ const Gallery = () => {
           </div>
 
           {/* Image 12: Rest of R3C5 (increased height) - Bottom Right Corner */}
-          <div style={{ gridRow: '10 / 13', gridColumn: '5' }} className={`relative group cursor-pointer overflow-visible rounded-br-3xl ${activeImage === 11 ? 'z-50' : 'z-0 hover:z-50'}`}>
+          <div
+            style={{
+              gridRow: '10 / 13',
+              gridColumn: '5',
+              '--slide-x': desktopPuzzleDirections[11].x,
+              '--slide-y': desktopPuzzleDirections[11].y,
+              '--rotate': desktopPuzzleDirections[11].rotate,
+              animationDelay: '1100ms'
+            }}
+            className={`relative group cursor-pointer overflow-visible rounded-br-3xl puzzle-piece ${desktopGalleryInView ? 'animate-in' : ''} ${activeImage === 11 ? 'z-50' : 'z-0 hover:z-50'}`}
+          >
             <img
               src={galleryImages[11]}
               alt="Gallery 12"

@@ -53,7 +53,6 @@ body {
 
 /* Utility for puzzle piece animations with custom CSS variables */
 .puzzle-piece {
-  opacity: 0;
   transform-origin: center;
 }
 
