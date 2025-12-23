@@ -91,7 +91,7 @@ export default function UsageSection() {
     setLoading(true);
     setError('');
     try {
-      const data = await api.getUsage();
+      const data = await api.getUsageStats();
       setUsage(data);
       setLastUpdated(new Date());
     } catch (err) {
