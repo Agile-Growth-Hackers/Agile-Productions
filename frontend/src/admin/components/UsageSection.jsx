@@ -117,11 +117,12 @@ export default function UsageSection() {
     setError('');
     try {
       const data = await api.getUsageStats();
+      console.log('Usage data received:', data);
       setUsage(data);
       setLastUpdated(new Date());
     } catch (err) {
-      setError('Failed to load usage metrics');
-      console.error(err);
+      setError('Failed to load usage metrics: ' + err.message);
+      console.error('Usage fetch error:', err);
     } finally {
       setLoading(false);
     }
@@ -309,9 +310,9 @@ export default function UsageSection() {
           <MetricCard
             title="D1 Database Size"
             value={usage.d1?.size_mb || 0}
-            limit={null}
+            limit={5000}
             unit="MB"
-            description="Total database storage"
+            description="Total database storage (5 GB limit)"
             icon={
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
