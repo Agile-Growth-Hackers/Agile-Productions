@@ -31,7 +31,7 @@ const Navbar = () => {
               <div className="flex items-center">
                 <a href="#home" className="cursor-pointer">
                   <img
-                    src="/Agile Productions Logo.webp"
+                    src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
                     alt="Agile Productions Logo"
                     className="h-10 w-auto object-contain transition-all duration-300"
                   />
@@ -88,7 +88,7 @@ const Navbar = () => {
               <div className="flex items-center flex-shrink-0 pr-8">
                 <a href="#home" className="cursor-pointer">
                   <img
-                    src="/Agile Productions Logo.webp"
+                    src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
                     alt="Agile Productions Logo"
                     className="h-20 w-auto object-contain"
                     style={{ maxWidth: '350px' }}
@@ -147,7 +147,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <a href="#home" className="cursor-pointer">
               <img
-                src="/Agile Productions Logo.webp"
+                src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
                 alt="Agile Productions Logo"
                 className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-8' : 'h-10'}`}
               />
@@ -233,7 +233,7 @@ const Navbar = () => {
           <div className="flex items-center pl-4">
             <a href="#home" className="cursor-pointer">
               <img
-                src="/Agile Productions Logo.webp"
+                src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
                 alt="Agile Productions Logo"
                 className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-10' : 'h-12'}`}
                 style={{ maxWidth: '200px' }}

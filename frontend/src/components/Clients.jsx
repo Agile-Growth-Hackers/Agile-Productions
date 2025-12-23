@@ -1,38 +1,36 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useInView } from '../hooks/useInView';
+import api from '../services/api';
 
 const Clients = () => {
   // Track number of pages loaded for each device type
   const [mobilePages, setMobilePages] = useState(1);
   const [tabletPages, setTabletPages] = useState(1);
   const [desktopPages, setDesktopPages] = useState(1);
+  const [clients, setClients] = useState([]);
 
   // Animation refs
   const [titleRef, titleInView] = useInView({ threshold: 0.5 });
   const [gridRef, gridInView] = useInView({ threshold: 0.3 });
 
-  // Dynamically import all WebP logos from the logos folder
-  const logoModules = import.meta.glob('/public/logos/*.webp', { eager: true, as: 'url' });
-
-  // Convert to array and extract file names
-  const clients = Object.keys(logoModules)
-    .map(path => {
-      const fileName = path.split('/').pop().replace('.webp', '');
-      return {
-        name: fileName,
-        logo: `/logos/${fileName}.webp`,
-        path: logoModules[path]
-      };
-    })
-    .sort((a, b) => {
-      // Sort numerically if both are numbers, otherwise alphabetically
-      const aNum = parseInt(a.name);
-      const bNum = parseInt(b.name);
-      if (!isNaN(aNum) && !isNaN(bNum)) {
-        return aNum - bNum;
+  // Fetch logos from API
+  useEffect(() => {
+    async function fetchLogos() {
+      try {
+        const data = await api.getLogos();
+        const formattedLogos = data.map(logo => ({
+          name: logo.alt_text || `Logo ${logo.id}`,
+          logo: logo.cdn_url,
+          path: logo.cdn_url
+        }));
+        setClients(formattedLogos);
+      } catch (error) {
+        console.error('Failed to load logos:', error);
+        setClients([]);
       }
-      return a.name.localeCompare(b.name);
-    });
+    }
+    fetchLogos();
+  }, []);
 
   // Logos per page (per device)
   // Mobile: 9 rows × 3 columns = 27 logos per page
@@ -127,7 +125,7 @@ const Clients = () => {
               onClick={() => setMobilePages(prev => prev + 1)}
               className="text-white px-16 pt-4 pb-6 font-bold text-xl animate-bounce hover:scale-110 hover:animate-none transition-transform duration-300 ease-in-out"
               style={{
-                backgroundImage: 'url(/view.webp)',
+                backgroundImage: 'url(https://r2.agileproductions.in/site-images/view.webp)',
                 backgroundSize: '100% 100%',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
@@ -147,7 +145,7 @@ const Clients = () => {
               onClick={() => setTabletPages(prev => prev + 1)}
               className="text-white px-16 pt-4 pb-6 font-bold text-xl animate-bounce hover:scale-110 hover:animate-none transition-transform duration-300 ease-in-out"
               style={{
-                backgroundImage: 'url(/view.webp)',
+                backgroundImage: 'url(https://r2.agileproductions.in/site-images/view.webp)',
                 backgroundSize: '100% 100%',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
@@ -167,7 +165,7 @@ const Clients = () => {
               onClick={() => setDesktopPages(prev => prev + 1)}
               className="text-white px-16 pt-4 pb-6 font-bold text-xl animate-bounce hover:scale-110 hover:animate-none transition-transform duration-300 ease-in-out"
               style={{
-                backgroundImage: 'url(/view.webp)',
+                backgroundImage: 'url(https://r2.agileproductions.in/site-images/view.webp)',
                 backgroundSize: '100% 100%',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',

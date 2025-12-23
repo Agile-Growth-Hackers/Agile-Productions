@@ -19,10 +19,10 @@ const About = () => {
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <p
             ref={content1Ref}
-            className={`text-lg md:text-xl text-black leading-relaxed font-medium will-animate ${content1InView ? 'animate-fade-up animation-complete' : ''}`}
+            className={`text-lg md:text-xl text-black leading-relaxed font-bold will-animate ${content1InView ? 'animate-fade-up animation-complete' : ''}`}
             style={{ textTransform: 'none', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
           >
-            We are speed chasers, storytellers, and visual engineers for the fast lane.
+            We Are Speed Chasers, Storytellers, And Visual Engineers For The Fast Lane.
           </p>
 
           <p

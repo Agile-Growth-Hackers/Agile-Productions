@@ -1,17 +1,54 @@
 import { useState, useEffect } from 'react';
 import { useOnLoad } from '../hooks/useOnLoad';
+import api from '../services/api';
 
 const Hero = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [key, setKey] = useState(0);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(true);
   const hasLoaded = useOnLoad(300); // 300ms delay (after navbar)
 
-  const images = [
-    "/slide1.webp",
-    "/slide2.webp",
-    "/slide3.webp"
-  ];
+  // Fetch slider images from API (with time-based caching to prevent reloads)
+  useEffect(() => {
+    const cacheKey = 'slider_images';
+    const cacheTimeKey = 'slider_images_time';
+    const cached = sessionStorage.getItem(cacheKey);
+    const cacheTime = sessionStorage.getItem(cacheTimeKey);
+
+    // Cache expires after 30 seconds
+    const CACHE_DURATION = 30 * 1000; // 30 seconds
+    const now = Date.now();
+
+    if (cached && cacheTime && (now - parseInt(cacheTime)) < CACHE_DURATION) {
+      try {
+        const cachedImages = JSON.parse(cached);
+        setImages(cachedImages);
+        setLoading(false);
+        return;
+      } catch (e) {
+        // Invalid cache, continue to fetch
+      }
+    }
+
+    async function fetchImages() {
+      try {
+        const data = await api.getSliderImages();
+        setImages(data);
+
+        // Cache in sessionStorage with timestamp
+        sessionStorage.setItem(cacheKey, JSON.stringify(data));
+        sessionStorage.setItem(cacheTimeKey, now.toString());
+      } catch (error) {
+        console.error('Failed to load slider images:', error);
+        setImages([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchImages();
+  }, []);
 
   const slideDuration = 5000; // 5 seconds per slide
 
@@ -43,11 +80,11 @@ const Hero = () => {
             }`}
           >
             <img
-              src={image}
+              src={image.cdn_url || image}
               alt={`Slide ${index + 1}`}
               className="w-full h-full object-cover"
               style={{
-                objectPosition: index === 0 ? '72% center' : 'center center'
+                objectPosition: image.object_position || (index === 0 ? '72% center' : 'center center')
               }}
             />
           </div>

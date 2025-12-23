@@ -24,7 +24,7 @@ const Footer = () => {
             className={`animate-on-scroll will-animate md:${leftInView ? 'is-visible animate-fade-right animation-complete' : ''} ${leftInView ? 'is-visible animate-fade-up animation-complete' : ''} md:opacity-0`}
           >
             <img
-              src="/white AP logo.webp"
+              src="https://r2.agileproductions.in/logos/site/white-logo.webp"
               alt="Agile Productions Logo"
               className="h-12 w-auto mb-4"
             />

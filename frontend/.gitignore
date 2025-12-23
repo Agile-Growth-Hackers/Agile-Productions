@@ -28,3 +28,7 @@ dist-ssr
 convert-logos.js
 convert-all-images.js
 HOW-TO-ADD-LOGOS.md
+
+# Windows reserved names
+nul
+NUL

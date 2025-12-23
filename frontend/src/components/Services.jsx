@@ -39,15 +39,15 @@ const Services = () => {
                   <span className="text-black">
                     Motorsports Coverage: Track days, Championships,{' '}
                     <span className="hidden lg:inline"><br /></span>
-                    behind-the-scenes access
+                    Behind-The-Scenes
                   </span>
                 </li>
                 <li className="flex items-start">
                   <span className="text-2xl mr-3">•</span>
                   <span className="text-black">
-                    Automotive Events: Product launches, community rides,{' '}
+                    Automotive Events: Product launches, Community Rides,{' '}
                     <span className="hidden lg:inline"><br /></span>
-                    dealership experiences
+                    Dealership Experiences
                   </span>
                 </li>
                 <li className="flex items-start">
@@ -67,7 +67,7 @@ const Services = () => {
               className={`lg:order-last flex justify-center lg:justify-end will-animate ${knownImageInView ? 'animate-fade-up lg:animate-fade-left animation-complete' : ''}`}
             >
               <img
-                src="/known for.webp"
+                src="https://r2.agileproductions.in/site-images/known-for.webp"
                 alt="Motorcycle detail"
                 className="w-full h-auto max-w-md md:max-w-xl lg:max-w-none"
               />
@@ -93,7 +93,7 @@ const Services = () => {
             className={`hidden lg:block relative mb-5 w-[80%] will-animate ${eventTitleInView ? 'animate-fade-left animation-complete' : ''}`}
           >
             <img
-              src="/event coverage.webp"
+              src="https://r2.agileproductions.in/site-images/event-coverage.webp"
               alt="Event coverage"
               className="w-full h-auto"
             />
@@ -122,7 +122,7 @@ const Services = () => {
             className={`lg:hidden flex justify-center mt-6 will-animate ${eventContentInView ? 'animate-fade-up animation-complete' : ''}`}
           >
             <img
-              src="/event coverage.webp"
+              src="https://r2.agileproductions.in/site-images/event-coverage.webp"
               alt="Event coverage"
               className="w-full h-auto max-w-md md:max-w-2xl"
             />
@@ -168,7 +168,7 @@ const Services = () => {
               className={`flex justify-center relative -mt-12 md:-mt-28 lg:-mt-40 will-animate ${adImageInView ? 'animate-fade-up lg:animate-fade-left animation-complete' : ''}`}
             >
               <img
-                src="/ad-promo.webp"
+                src="https://r2.agileproductions.in/site-images/ad-promo.webp"
                 alt="Ad & Promo Films"
                 className="w-full h-auto max-w-6xl"
               />
@@ -187,7 +187,7 @@ const Services = () => {
               BRAND COVERAGE
             </h2>
             <p className="text-base md:text-lg text-black leading-relaxed mb-6 lg:mb-10 max-w-3xl mx-auto lg:ml-auto lg:mr-0 font-medium text-center lg:text-right" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
-              We create powerful visuals for automotive brands like Lexus, Ultraviolette, Ducati and more
+              We create powerful visuals for automotive brands like Rolls-Royce, Bentley, Lexus, Ultraviolette, Ducati and more
               capturing their identity, performance, and lifestyle with impact.
             </p>
             </div>
@@ -198,7 +198,7 @@ const Services = () => {
               className={`hidden md:flex justify-center will-animate ${brandImageInView ? 'animate-fade-up lg:animate-fade-right animation-complete' : ''}`}
             >
               <img
-                src="/brand-coverage-desktop.webp"
+                src="https://r2.agileproductions.in/site-images/brand-coverage-desktop.webp"
                 alt="Brand Coverage"
                 className="w-full h-auto"
               />
@@ -210,7 +210,7 @@ const Services = () => {
               className={`md:hidden flex justify-center will-animate ${brandImageInView ? 'animate-fade-up animation-complete' : ''}`}
             >
               <img
-                src="/brand-coverage-mobile.webp"
+                src="https://r2.agileproductions.in/site-images/brand-coverage-mobile.webp"
                 alt="Brand Coverage"
                 className="w-full h-auto max-w-md"
               />

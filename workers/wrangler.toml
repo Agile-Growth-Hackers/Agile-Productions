@@ -1,0 +1,23 @@
+name = "agile-productions-api"
+main = "src/index.js"
+compatibility_date = "2025-12-22"
+compatibility_flags = ["nodejs_compat"]
+account_id = "a80eabbb536a884ecd8ba3dc123bee10"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "agile-productions-db"
+database_id = "c6a1baab-390d-4798-8b02-8aa500642fd7"
+
+# R2 Storage binding
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "agile-productions-assets"
+
+# Environment variables
+[vars]
+ALLOWED_ORIGINS = "https://agileproductions.in,https://agileproductions.ae,http://localhost:5173"
+
+# Note: JWT_SECRET should be set as a Cloudflare secret, not in this file
+# Run: npx wrangler secret put JWT_SECRET

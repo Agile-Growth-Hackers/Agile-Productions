@@ -1,13 +1,72 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useInView } from '../hooks/useInView';
+import api from '../services/api';
 
 const Gallery = () => {
   const [activeImage, setActiveImage] = useState(null);
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   // Animation refs
   const [titleRef, titleInView] = useInView({ threshold: 0.5 });
   const [mobileGalleryRef, mobileGalleryInView] = useInView({ threshold: 0.3 });
   const [desktopGalleryRef, desktopGalleryInView] = useInView({ threshold: 0.3 });
+
+  // Fallback images
+  const fallbackImages = [
+    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=600',
+    'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=600',
+    'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?q=80&w=600',
+    'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=600',
+    'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=600',
+    'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=600',
+    'https://images.unsplash.com/photo-1580273916550-e323be2ae537?q=80&w=600',
+    'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?q=80&w=600',
+    'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=600',
+    'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=600',
+    'https://images.unsplash.com/photo-1563720360172-67b8f3dce741?q=80&w=600',
+    'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=600',
+  ];
+
+  // Fetch gallery images from API (with time-based caching to prevent reloads)
+  useEffect(() => {
+    const cacheKey = `gallery_${isMobile ? 'mobile' : 'desktop'}`;
+    const cacheTimeKey = `${cacheKey}_time`;
+    const cached = sessionStorage.getItem(cacheKey);
+    const cacheTime = sessionStorage.getItem(cacheTimeKey);
+
+    // Cache expires after 30 seconds
+    const CACHE_DURATION = 30 * 1000; // 30 seconds
+    const now = Date.now();
+
+    if (cached && cacheTime && (now - parseInt(cacheTime)) < CACHE_DURATION) {
+      try {
+        const cachedImages = JSON.parse(cached);
+        setGalleryImages(cachedImages);
+        return;
+      } catch (e) {
+        // Invalid cache, continue to fetch
+      }
+    }
+
+    async function fetchImages() {
+      try {
+        const endpoint = isMobile ? 'mobile' : '';
+        const data = await api.getGalleryImages(endpoint);
+        const imageUrls = data.map(img => img.cdn_url).filter(url => url); // Filter out null/undefined
+        const images = imageUrls.length > 0 ? imageUrls : fallbackImages;
+        setGalleryImages(images);
+
+        // Cache in sessionStorage with timestamp
+        sessionStorage.setItem(cacheKey, JSON.stringify(images));
+        sessionStorage.setItem(cacheTimeKey, now.toString());
+      } catch (error) {
+        console.error('Failed to load gallery images:', error);
+        setGalleryImages(fallbackImages);
+      }
+    }
+    fetchImages();
+  }, [isMobile]);
 
   // Puzzle piece slide directions for mobile (10 images)
   const mobilePuzzleDirections = [
@@ -37,21 +96,6 @@ const Gallery = () => {
     { x: '-120px', y: '180px', rotate: '-20deg' },   // Image 10: R3C2
     { x: '0', y: '200px', rotate: '15deg' },         // Image 11: R3C3
     { x: '200px', y: '200px', rotate: '-18deg' }     // Image 12: R3C5
-  ];
-
-  const galleryImages = [
-    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=600',
-    'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=600',
-    'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?q=80&w=600',
-    'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=600',
-    'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=600',
-    'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=600',
-    'https://images.unsplash.com/photo-1580273916550-e323be2ae537?q=80&w=600',
-    'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?q=80&w=600',
-    'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=600',
-    'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=600',
-    'https://images.unsplash.com/photo-1563720360172-67b8f3dce741?q=80&w=600',
-    'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=600',
   ];
 
   const handleImageClick = (index) => {
@@ -99,6 +143,7 @@ const Gallery = () => {
               <img
                 src={galleryImages[0]}
                 alt="Gallery 1"
+                decoding="async"
                 onClick={() => handleImageClick(0)}
                 className={`w-full h-full object-cover rounded-tl-3xl transition-all duration-500 ease-in-out ${
                   activeImage === 0 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -126,6 +171,7 @@ const Gallery = () => {
               <img
                 src={galleryImages[1]}
                 alt="Gallery 2"
+                decoding="async"
                 onClick={() => handleImageClick(1)}
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                   activeImage === 1 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -153,6 +199,7 @@ const Gallery = () => {
               <img
                 src={galleryImages[2]}
                 alt="Gallery 3"
+                decoding="async"
                 onClick={() => handleImageClick(2)}
                 className={`w-full h-full object-cover rounded-tr-3xl transition-all duration-500 ease-in-out ${
                   activeImage === 2 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -180,6 +227,7 @@ const Gallery = () => {
               <img
                 src={galleryImages[3]}
                 alt="Gallery 4"
+                decoding="async"
                 onClick={() => handleImageClick(3)}
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                   activeImage === 3 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -207,6 +255,7 @@ const Gallery = () => {
               <img
                 src={galleryImages[4]}
                 alt="Gallery 5"
+                decoding="async"
                 onClick={() => handleImageClick(4)}
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                   activeImage === 4 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -234,6 +283,7 @@ const Gallery = () => {
               <img
                 src={galleryImages[5]}
                 alt="Gallery 6"
+                decoding="async"
                 onClick={() => handleImageClick(5)}
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                   activeImage === 5 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -261,6 +311,7 @@ const Gallery = () => {
               <img
                 src={galleryImages[6]}
                 alt="Gallery 7"
+                decoding="async"
                 onClick={() => handleImageClick(6)}
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                   activeImage === 6 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -288,6 +339,7 @@ const Gallery = () => {
               <img
                 src={galleryImages[7]}
                 alt="Gallery 8"
+                decoding="async"
                 onClick={() => handleImageClick(7)}
                 className={`w-full h-full object-cover rounded-bl-3xl transition-all duration-500 ease-in-out ${
                   activeImage === 7 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -315,6 +367,7 @@ const Gallery = () => {
               <img
                 src={galleryImages[8]}
                 alt="Gallery 9"
+                decoding="async"
                 onClick={() => handleImageClick(8)}
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                   activeImage === 8 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -342,6 +395,7 @@ const Gallery = () => {
               <img
                 src={galleryImages[9]}
                 alt="Gallery 10"
+                decoding="async"
                 onClick={() => handleImageClick(9)}
                 className={`w-full h-full object-cover rounded-br-3xl transition-all duration-500 ease-in-out ${
                   activeImage === 9 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -381,6 +435,7 @@ const Gallery = () => {
             <img
               src={galleryImages[0]}
               alt="Gallery 1"
+              loading="lazy"
               onClick={() => handleImageClick(0)}
               className={`w-full h-full object-cover rounded-tl-3xl transition-all duration-500 ease-in-out ${
                 activeImage === 0
@@ -412,6 +467,7 @@ const Gallery = () => {
             <img
               src={galleryImages[1]}
               alt="Gallery 2"
+              loading="lazy"
               onClick={() => handleImageClick(1)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 1
@@ -443,6 +499,7 @@ const Gallery = () => {
             <img
               src={galleryImages[2]}
               alt="Gallery 3"
+              loading="lazy"
               onClick={() => handleImageClick(2)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 2
@@ -474,6 +531,7 @@ const Gallery = () => {
             <img
               src={galleryImages[3]}
               alt="Gallery 4"
+              loading="lazy"
               onClick={() => handleImageClick(3)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 3
@@ -505,6 +563,7 @@ const Gallery = () => {
             <img
               src={galleryImages[4]}
               alt="Gallery 5"
+              loading="lazy"
               onClick={() => handleImageClick(4)}
               className={`w-full h-full object-cover rounded-tr-3xl transition-all duration-500 ease-in-out ${
                 activeImage === 4
@@ -536,6 +595,7 @@ const Gallery = () => {
             <img
               src={galleryImages[5]}
               alt="Gallery 6"
+              loading="lazy"
               onClick={() => handleImageClick(5)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 5
@@ -567,6 +627,7 @@ const Gallery = () => {
             <img
               src={galleryImages[6]}
               alt="Gallery 7"
+              loading="lazy"
               onClick={() => handleImageClick(6)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 6
@@ -598,6 +659,7 @@ const Gallery = () => {
             <img
               src={galleryImages[7]}
               alt="Gallery 8"
+              loading="lazy"
               onClick={() => handleImageClick(7)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 7
@@ -629,6 +691,7 @@ const Gallery = () => {
             <img
               src={galleryImages[8]}
               alt="Gallery 9"
+              loading="lazy"
               onClick={() => handleImageClick(8)}
               className={`w-full h-full object-cover rounded-bl-3xl transition-all duration-500 ease-in-out ${
                 activeImage === 8
@@ -660,6 +723,7 @@ const Gallery = () => {
             <img
               src={galleryImages[9]}
               alt="Gallery 10"
+              loading="lazy"
               onClick={() => handleImageClick(9)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 9
@@ -691,6 +755,7 @@ const Gallery = () => {
             <img
               src={galleryImages[10]}
               alt="Gallery 11"
+              loading="lazy"
               onClick={() => handleImageClick(10)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 10
@@ -722,6 +787,7 @@ const Gallery = () => {
             <img
               src={galleryImages[11]}
               alt="Gallery 12"
+              loading="lazy"
               onClick={() => handleImageClick(11)}
               className={`w-full h-full object-cover rounded-br-3xl transition-all duration-500 ease-in-out ${
                 activeImage === 11
