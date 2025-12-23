@@ -7,19 +7,25 @@ usage.get('/', async (c) => {
     const db = c.env.DB;
     const bucket = c.env.BUCKET;
 
+    console.log('Fetching usage stats...');
+
     // Fetch R2 storage usage
     const r2Stats = await getR2Stats(bucket);
+    console.log('R2 Stats:', r2Stats);
 
     // Fetch D1 database usage
     const d1Stats = await getD1Stats(db);
+    console.log('D1 Stats:', d1Stats);
 
     // Fetch file counts by category
     const fileCounts = await getFileCounts(db);
+    console.log('File Counts:', fileCounts);
 
     // Fetch operations tracker (if exists)
     const operations = await getOperationsTracker(db);
+    console.log('Operations:', operations);
 
-    return c.json({
+    const response = {
       r2: {
         storage_gb: r2Stats.storage_gb,
         class_a_operations: operations.r2_class_a || 0,
@@ -40,10 +46,13 @@ usage.get('/', async (c) => {
       },
       files: fileCounts,
       last_reset: operations.last_reset || null,
-    });
+    };
+
+    console.log('Usage response:', JSON.stringify(response));
+    return c.json(response);
   } catch (error) {
     console.error('Usage stats error:', error);
-    return c.json({ error: 'Failed to fetch usage stats' }, 500);
+    return c.json({ error: 'Failed to fetch usage stats: ' + error.message }, 500);
   }
 });
 
@@ -78,19 +87,31 @@ async function getD1Stats(db) {
     // Count total rows across all tables
     const tables = ['slider_images', 'gallery_images', 'client_logos', 'admin_users'];
     let total_rows = 0;
+    const tableCounts = {};
 
     for (const table of tables) {
-      const { results } = await db.prepare(`SELECT COUNT(*) as count FROM ${table}`).all();
-      total_rows += results[0]?.count || 0;
+      try {
+        const { results } = await db.prepare(`SELECT COUNT(*) as count FROM ${table}`).all();
+        const count = results[0]?.count || 0;
+        tableCounts[table] = count;
+        total_rows += count;
+        console.log(`Table ${table}: ${count} rows`);
+      } catch (tableError) {
+        console.error(`Error counting ${table}:`, tableError);
+        tableCounts[table] = 0;
+      }
     }
 
-    // Get database size (approximate - D1 doesn't provide exact size)
-    // Rough estimate: assume average row size of 1KB
-    const size_mb = ((total_rows * 1024) / (1024 * 1024)).toFixed(2);
+    // Get database size estimate
+    // D1 doesn't provide exact size via API, so we estimate
+    // Assume average row size of 2KB (more realistic for tables with images/text)
+    const size_mb = parseFloat(((total_rows * 2048) / (1024 * 1024)).toFixed(2));
+
+    console.log('D1 Stats:', { total_rows, size_mb, tableCounts });
 
     return {
       total_rows,
-      size_mb: parseFloat(size_mb),
+      size_mb,
     };
   } catch (error) {
     console.error('D1 stats error:', error);
