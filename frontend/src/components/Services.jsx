@@ -111,7 +111,7 @@ const Services = () => {
           >
             <p className="text-base md:text-lg text-black leading-relaxed mb-8 font-medium" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
               We specialize in bringing automotive events to life with vibrant footage and emotional
-              resonance Malaysian Harley Davidson Gathering, Dosa With Ducati, BMW 1000RR Ride,
+              resonance. Rolls-Royce Private Dinner, Malaysian Harley Davidson Gathering, Dosas With Ducati, BMW 1000RR Ride,
               Malaysian Auto Expo, Rynox Store Launch, Sip A Cofftee With 6kiom
             </p>
           </div>
