@@ -86,8 +86,13 @@ function MetricCard({ title, value, limit, unit, icon, description }) {
           </>
         )}
 
-        {!limit && (
-          <p className="text-xs text-gray-500 italic mt-2">No limit - pay as you go</p>
+        {!limit && value > 0 && (
+          <p className="text-xs text-green-600 font-medium mt-2 flex items-center">
+            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            Unlimited - No charges
+          </p>
         )}
       </div>
     </div>
@@ -356,35 +361,35 @@ export default function UsageSection() {
           <ul className="text-sm text-blue-900 space-y-2">
             <li className="flex items-start">
               <span className="text-blue-600 mr-2">✓</span>
-              <span><strong>R2 Storage:</strong> 10 GB/month</span>
+              <span><strong>R2 Storage:</strong> 10 GB free/month</span>
             </li>
             <li className="flex items-start">
               <span className="text-blue-600 mr-2">✓</span>
-              <span><strong>R2 Class A Ops:</strong> 1 million/month</span>
+              <span><strong>R2 Class A Ops:</strong> 1M free/month</span>
             </li>
             <li className="flex items-start">
               <span className="text-blue-600 mr-2">✓</span>
-              <span><strong>R2 Class B Ops:</strong> 10 million/month</span>
+              <span><strong>R2 Class B Ops:</strong> 10M free/month</span>
             </li>
           </ul>
           <ul className="text-sm text-blue-900 space-y-2">
             <li className="flex items-start">
               <span className="text-blue-600 mr-2">✓</span>
-              <span><strong>Workers Requests:</strong> 100,000/day</span>
+              <span><strong>Workers Requests:</strong> 100K free/day</span>
             </li>
             <li className="flex items-start">
               <span className="text-blue-600 mr-2">✓</span>
-              <span><strong>D1 Database:</strong> 5 million rows, 5 GB</span>
+              <span><strong>D1 Database:</strong> 5M rows, 5 GB free</span>
             </li>
             <li className="flex items-start">
-              <span className="text-blue-600 mr-2">✓</span>
-              <span><strong>Bandwidth:</strong> No egress fees with R2</span>
+              <span className="text-green-600 mr-2">★</span>
+              <span><strong>R2 Bandwidth:</strong> Unlimited - Always free!</span>
             </li>
           </ul>
         </div>
         <div className="mt-4 p-3 bg-blue-100/50 rounded-lg">
           <p className="text-xs text-blue-800">
-            <strong>Note:</strong> Storage usage is updated in real-time. Operation counters (Class A/B, Workers requests) require tracking setup and reset monthly.
+            <strong>Note:</strong> R2 bandwidth is completely free with no limits. Storage usage is updated in real-time. Operation counters reset monthly.
           </p>
         </div>
       </div>
