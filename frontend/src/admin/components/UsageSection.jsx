@@ -4,70 +4,90 @@ import api from '../../services/api';
 function MetricCard({ title, value, limit, unit, icon, description }) {
   const percentage = limit ? (value / limit) * 100 : 0;
   const getColor = () => {
-    if (percentage >= 80) return 'red';
-    if (percentage >= 50) return 'yellow';
+    if (percentage >= 90) return 'red';
+    if (percentage >= 70) return 'yellow';
     return 'green';
   };
 
   const color = getColor();
+  const showWarning = percentage >= 70;
+
   const colorClasses = {
     green: {
-      bg: 'bg-green-50',
-      border: 'border-green-200',
-      text: 'text-green-800',
-      bar: 'bg-green-500'
+      bg: 'bg-gradient-to-br from-green-50 to-green-100',
+      border: 'border-green-300',
+      text: 'text-green-900',
+      bar: 'bg-gradient-to-r from-green-500 to-green-600',
+      icon: 'text-green-600'
     },
     yellow: {
-      bg: 'bg-yellow-50',
-      border: 'border-yellow-200',
-      text: 'text-yellow-800',
-      bar: 'bg-yellow-500'
+      bg: 'bg-gradient-to-br from-yellow-50 to-yellow-100',
+      border: 'border-yellow-300',
+      text: 'text-yellow-900',
+      bar: 'bg-gradient-to-r from-yellow-500 to-orange-500',
+      icon: 'text-yellow-600'
     },
     red: {
-      bg: 'bg-red-50',
-      border: 'border-red-200',
-      text: 'text-red-800',
-      bar: 'bg-red-500'
+      bg: 'bg-gradient-to-br from-red-50 to-red-100',
+      border: 'border-red-300',
+      text: 'text-red-900',
+      bar: 'bg-gradient-to-r from-red-500 to-red-600',
+      icon: 'text-red-600'
     }
   };
 
   return (
-    <div className={`rounded-lg border-2 p-6 ${colorClasses[color].bg} ${colorClasses[color].border}`}>
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-          <p className="text-sm text-gray-600 mt-1">{description}</p>
+    <div className={`rounded-xl border-2 p-6 shadow-sm hover:shadow-md transition-shadow ${colorClasses[color].bg} ${colorClasses[color].border} relative overflow-hidden`}>
+      {/* Warning badge */}
+      {showWarning && (
+        <div className="absolute top-3 right-3">
+          <div className={`p-1.5 rounded-full ${color === 'red' ? 'bg-red-500' : 'bg-yellow-500'} animate-pulse`}>
+            <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          </div>
         </div>
-        <div className={`p-3 rounded-lg ${colorClasses[color].bg}`}>
+      )}
+
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-1 pr-2">
+          <h3 className="text-lg font-bold text-gray-900 mb-1">{title}</h3>
+          <p className="text-xs text-gray-600 leading-tight">{description}</p>
+        </div>
+        <div className={`p-3 rounded-lg bg-white/80 shadow-sm ${colorClasses[color].icon}`}>
           {icon}
         </div>
       </div>
 
       <div className="space-y-3">
         <div className="flex items-baseline justify-between">
-          <span className={`text-3xl font-bold ${colorClasses[color].text}`}>
+          <span className={`text-4xl font-extrabold ${colorClasses[color].text}`}>
             {value.toLocaleString()}
           </span>
-          <span className="text-sm text-gray-600">{unit}</span>
+          <span className="text-sm font-semibold text-gray-700 bg-white/60 px-2 py-1 rounded">{unit}</span>
         </div>
 
         {limit && (
           <>
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div className="w-full bg-gray-300 rounded-full h-3 shadow-inner">
               <div
-                className={`h-2.5 rounded-full transition-all ${colorClasses[color].bar}`}
+                className={`h-3 rounded-full transition-all duration-500 ${colorClasses[color].bar} shadow-sm`}
                 style={{ width: `${Math.min(percentage, 100)}%` }}
               ></div>
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-600">
-                {limit.toLocaleString()} {unit} limit
+              <span className="text-gray-700 font-medium">
+                Limit: {limit.toLocaleString()} {unit}
               </span>
-              <span className={`font-medium ${colorClasses[color].text}`}>
-                {percentage.toFixed(1)}% used
+              <span className={`font-bold ${colorClasses[color].text} text-base`}>
+                {percentage.toFixed(1)}%
               </span>
             </div>
           </>
+        )}
+
+        {!limit && (
+          <p className="text-xs text-gray-500 italic mt-2">No limit - pay as you go</p>
         )}
       </div>
     </div>
@@ -121,37 +141,89 @@ export default function UsageSection() {
     );
   }
 
+  // Calculate critical alerts
+  const getCriticalAlerts = () => {
+    if (!usage) return [];
+    const alerts = [];
+
+    const checkLimit = (name, value, limit, unit) => {
+      if (!limit) return;
+      const percentage = (value / limit) * 100;
+      if (percentage >= 90) {
+        alerts.push({ name, percentage: percentage.toFixed(1), severity: 'critical', value, limit, unit });
+      } else if (percentage >= 70) {
+        alerts.push({ name, percentage: percentage.toFixed(1), severity: 'warning', value, limit, unit });
+      }
+    };
+
+    checkLimit('R2 Storage', usage.r2?.storage_gb || 0, 10, 'GB');
+    checkLimit('R2 Class A Operations', usage.r2?.class_a_operations || 0, 1000000, 'ops');
+    checkLimit('R2 Class B Operations', usage.r2?.class_b_operations || 0, 10000000, 'ops');
+    checkLimit('Workers Requests', usage.workers?.requests || 0, 100000, 'req/day');
+    checkLimit('D1 Database Rows', usage.d1?.total_rows || 0, 5000000, 'rows');
+
+    return alerts;
+  };
+
+  const criticalAlerts = getCriticalAlerts();
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Cloudflare Resource Usage</h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Monitor your free tier limits to avoid unexpected charges
-          </p>
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 text-white shadow-lg">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold mb-2">Cloudflare Resource Usage</h2>
+            <p className="text-blue-100">
+              Monitor your free tier limits to avoid unexpected charges
+            </p>
+          </div>
+          <button
+            onClick={fetchUsage}
+            disabled={loading}
+            className="px-5 py-2.5 bg-white text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-all disabled:opacity-50 flex items-center space-x-2 shadow-md"
+          >
+            <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Refresh</span>
+          </button>
         </div>
-        <button
-          onClick={fetchUsage}
-          disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center space-x-2"
-        >
-          <svg className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          <span>Refresh</span>
-        </button>
+        {lastUpdated && (
+          <p className="text-xs text-blue-200 mt-3">
+            Last updated: {lastUpdated.toLocaleTimeString()}
+          </p>
+        )}
       </div>
 
-      {lastUpdated && (
-        <p className="text-xs text-gray-500">
-          Last updated: {lastUpdated.toLocaleTimeString()}
-        </p>
+      {/* Critical Alerts Banner */}
+      {criticalAlerts.length > 0 && (
+        <div className={`rounded-xl border-2 p-5 ${criticalAlerts.some(a => a.severity === 'critical') ? 'bg-red-50 border-red-300' : 'bg-yellow-50 border-yellow-300'}`}>
+          <div className="flex items-start space-x-3">
+            <div className={`p-2 rounded-full ${criticalAlerts.some(a => a.severity === 'critical') ? 'bg-red-500' : 'bg-yellow-500'}`}>
+              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className={`font-bold text-lg mb-2 ${criticalAlerts.some(a => a.severity === 'critical') ? 'text-red-900' : 'text-yellow-900'}`}>
+                {criticalAlerts.some(a => a.severity === 'critical') ? 'Critical: Resources Near Limit!' : 'Warning: High Resource Usage'}
+              </h3>
+              <ul className="space-y-1">
+                {criticalAlerts.map((alert, idx) => (
+                  <li key={idx} className={`text-sm ${alert.severity === 'critical' ? 'text-red-800' : 'text-yellow-800'} font-medium`}>
+                    • <strong>{alert.name}</strong>: {alert.value.toLocaleString()} / {alert.limit.toLocaleString()} {alert.unit} ({alert.percentage}% used)
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
       )}
 
       {error && (
-        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-sm text-yellow-800">{error}</p>
+        <div className="p-4 bg-red-50 border-2 border-red-200 rounded-xl">
+          <p className="text-sm text-red-800 font-medium">{error}</p>
         </div>
       )}
 
@@ -273,16 +345,48 @@ export default function UsageSection() {
       )}
 
       {/* Free Tier Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 mb-2">Cloudflare Free Tier Limits</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>• R2 Storage: 10 GB</li>
-          <li>• R2 Class A Operations: 1 million/month</li>
-          <li>• R2 Class B Operations: 10 million/month</li>
-          <li>• Workers Requests: 100,000/day</li>
-          <li>• D1 Database: 5 million rows</li>
-          <li>• Bandwidth: Included with Workers</li>
-        </ul>
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-6 shadow-sm">
+        <h3 className="font-bold text-blue-900 mb-3 text-lg flex items-center">
+          <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+          </svg>
+          Cloudflare Free Tier Limits
+        </h3>
+        <div className="grid md:grid-cols-2 gap-x-8 gap-y-2">
+          <ul className="text-sm text-blue-900 space-y-2">
+            <li className="flex items-start">
+              <span className="text-blue-600 mr-2">✓</span>
+              <span><strong>R2 Storage:</strong> 10 GB/month</span>
+            </li>
+            <li className="flex items-start">
+              <span className="text-blue-600 mr-2">✓</span>
+              <span><strong>R2 Class A Ops:</strong> 1 million/month</span>
+            </li>
+            <li className="flex items-start">
+              <span className="text-blue-600 mr-2">✓</span>
+              <span><strong>R2 Class B Ops:</strong> 10 million/month</span>
+            </li>
+          </ul>
+          <ul className="text-sm text-blue-900 space-y-2">
+            <li className="flex items-start">
+              <span className="text-blue-600 mr-2">✓</span>
+              <span><strong>Workers Requests:</strong> 100,000/day</span>
+            </li>
+            <li className="flex items-start">
+              <span className="text-blue-600 mr-2">✓</span>
+              <span><strong>D1 Database:</strong> 5 million rows, 5 GB</span>
+            </li>
+            <li className="flex items-start">
+              <span className="text-blue-600 mr-2">✓</span>
+              <span><strong>Bandwidth:</strong> No egress fees with R2</span>
+            </li>
+          </ul>
+        </div>
+        <div className="mt-4 p-3 bg-blue-100/50 rounded-lg">
+          <p className="text-xs text-blue-800">
+            <strong>Note:</strong> Storage usage is updated in real-time. Operation counters (Class A/B, Workers requests) require tracking setup and reset monthly.
+          </p>
+        </div>
       </div>
     </div>
   );
