@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { uploadToR2, deleteFromR2, generateUniqueKey } from '../utils/r2.js';
+import { trackR2ClassA } from '../utils/tracker.js';
 
 const logos = new Hono();
 
@@ -48,6 +49,7 @@ logos.post('/', async (c) => {
       filename = file.name;
       r2Key = generateUniqueKey('logos/client', filename);
       cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
+      await trackR2ClassA(db); // Track upload operation
       altText = altText || filename.replace(/\.(webp|png|jpg|jpeg)$/i, '');
     } else {
       return c.json({ error: 'Invalid content type' }, 400);
@@ -106,6 +108,7 @@ logos.delete('/:id', async (c) => {
     // Only delete from R2 and image_storage if not used elsewhere
     if (!isUsedElsewhere) {
       await deleteFromR2(c.env.BUCKET, logo.r2_key);
+      await trackR2ClassA(db); // Track delete operation
       await db.prepare('DELETE FROM image_storage WHERE r2_key = ?').bind(logo.r2_key).run();
     }
 
@@ -199,6 +202,7 @@ logos.post('/delete-multiple', async (c) => {
         // Only delete from R2 and image_storage if not used elsewhere
         if (!isUsedElsewhere) {
           await deleteFromR2(c.env.BUCKET, logo.r2_key);
+          await trackR2ClassA(db); // Track delete operation
           await db.prepare('DELETE FROM image_storage WHERE r2_key = ?').bind(logo.r2_key).run();
         }
       }

@@ -107,9 +107,7 @@ export default function UsageSection() {
 
   useEffect(() => {
     fetchUsage();
-    // Refresh every 5 minutes
-    const interval = setInterval(fetchUsage, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    // No auto-refresh - manual refresh only to track exact usage
   }, []);
 
   const fetchUsage = async () => {
@@ -117,7 +115,6 @@ export default function UsageSection() {
     setError('');
     try {
       const data = await api.getUsageStats();
-      console.log('Usage data received:', data);
       setUsage(data);
       setLastUpdated(new Date());
     } catch (err) {
@@ -163,10 +160,9 @@ export default function UsageSection() {
     };
 
     checkLimit('R2 Storage', usage.r2?.storage_gb || 0, 10, 'GB');
-    checkLimit('R2 Class A Operations', usage.r2?.class_a_operations || 0, 1000000, 'ops');
-    checkLimit('R2 Class B Operations', usage.r2?.class_b_operations || 0, 10000000, 'ops');
     checkLimit('Workers Requests', usage.workers?.requests || 0, 100000, 'req/day');
     checkLimit('D1 Database Rows', usage.d1?.total_rows || 0, 5000000, 'rows');
+    checkLimit('D1 Database Size', usage.d1?.size_mb || 0, 5000, 'MB');
 
     return alerts;
   };
@@ -242,38 +238,10 @@ export default function UsageSection() {
             value={usage.r2?.storage_gb || 0}
             limit={10}
             unit="GB"
-            description="Total storage used in R2 bucket"
+            description="Total storage used in R2 bucket (real-time)"
             icon={
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
-              </svg>
-            }
-          />
-
-          {/* R2 Class A Operations */}
-          <MetricCard
-            title="R2 Class A Operations"
-            value={usage.r2?.class_a_operations || 0}
-            limit={1000000}
-            unit="ops/month"
-            description="Writes, lists, and other mutating operations"
-            icon={
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-            }
-          />
-
-          {/* R2 Class B Operations */}
-          <MetricCard
-            title="R2 Class B Operations"
-            value={usage.r2?.class_b_operations || 0}
-            limit={10000000}
-            unit="ops/month"
-            description="Reads and other non-mutating operations"
-            icon={
-              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
               </svg>
             }
           />
@@ -284,10 +252,24 @@ export default function UsageSection() {
             value={usage.workers?.requests || 0}
             limit={100000}
             unit="req/day"
-            description="Total API requests this month"
+            description="Total API requests today (from Analytics API)"
             icon={
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            }
+          />
+
+          {/* Workers Errors */}
+          <MetricCard
+            title="Workers Errors"
+            value={usage.workers?.errors || 0}
+            limit={null}
+            unit="errors"
+            description="Failed requests today (from Analytics API)"
+            icon={
+              <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             }
           />
@@ -298,7 +280,7 @@ export default function UsageSection() {
             value={usage.d1?.total_rows || 0}
             limit={5000000}
             unit="rows"
-            description="Total rows across all tables"
+            description="Total rows across all tables (real-time)"
             icon={
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -312,7 +294,7 @@ export default function UsageSection() {
             value={usage.d1?.size_mb || 0}
             limit={5000}
             unit="MB"
-            description="Total database storage (5 GB limit)"
+            description="Total database storage (real-time)"
             icon={
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" />
@@ -339,18 +321,10 @@ export default function UsageSection() {
             </li>
             <li className="flex items-start">
               <span className="text-blue-600 mr-2">✓</span>
-              <span><strong>R2 Class A Ops:</strong> 1M free/month</span>
-            </li>
-            <li className="flex items-start">
-              <span className="text-blue-600 mr-2">✓</span>
-              <span><strong>R2 Class B Ops:</strong> 10M free/month</span>
+              <span><strong>Workers Requests:</strong> 100K free/day</span>
             </li>
           </ul>
           <ul className="text-sm text-blue-900 space-y-2">
-            <li className="flex items-start">
-              <span className="text-blue-600 mr-2">✓</span>
-              <span><strong>Workers Requests:</strong> 100K free/day</span>
-            </li>
             <li className="flex items-start">
               <span className="text-blue-600 mr-2">✓</span>
               <span><strong>D1 Database:</strong> 5M rows, 5 GB free</span>
@@ -363,7 +337,7 @@ export default function UsageSection() {
         </div>
         <div className="mt-4 p-3 bg-blue-100/50 rounded-lg">
           <p className="text-xs text-blue-800">
-            <strong>Note:</strong> R2 bandwidth is completely free with no limits. Storage usage is updated in real-time. Operation counters reset monthly.
+            <strong>Note:</strong> All metrics update in real-time. Workers requests from Cloudflare Analytics API. Check Cloudflare dashboard for R2 operation details.
           </p>
         </div>
       </div>

@@ -174,6 +174,7 @@ slider.delete('/:id', async (c) => {
     // Only delete from R2 and image_storage if not used elsewhere
     if (!isUsedElsewhere) {
       await deleteFromR2(c.env.BUCKET, slide.r2_key);
+      await trackR2ClassA(db); // Track delete operation
       await db.prepare('DELETE FROM image_storage WHERE r2_key = ?').bind(slide.r2_key).run();
     }
 

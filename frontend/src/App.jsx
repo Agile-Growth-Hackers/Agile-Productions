@@ -11,6 +11,7 @@ import Footer from './components/Footer';
 import LoginPage from './admin/pages/LoginPage';
 import DashboardPage from './admin/pages/DashboardPage';
 import ProtectedRoute from './admin/components/ProtectedRoute';
+import ErrorTest from './components/ErrorTest';
 
 function PublicSite() {
   return (
@@ -43,6 +44,8 @@ function App() {
               }
             />
           </Routes>
+          {/* Test button - only shows in development */}
+          {import.meta.env.DEV && <ErrorTest />}
         </BrowserRouter>
       </ToastProvider>
     </AuthProvider>
