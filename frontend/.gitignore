@@ -13,6 +13,12 @@ dist-ssr
 *.local
 .wrangler
 
+# Environment variables
+.env
+.env.local
+.env.production
+.env.production.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
