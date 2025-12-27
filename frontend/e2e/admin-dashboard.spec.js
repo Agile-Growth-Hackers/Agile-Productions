@@ -123,8 +123,7 @@ test.describe('Admin Dashboard', () => {
         await page.waitForTimeout(500);
 
         // Should see upload dialog or file input
-        const fileInput = page.locator('input[type="file"]');
-        const fileInputVisible = await fileInput.isVisible().catch(() => false);
+        await page.locator('input[type="file"]').isVisible().catch(() => false);
 
         // At minimum, page shouldn't crash
         await expect(page).toHaveURL(/\/admin/);
@@ -175,9 +174,9 @@ test.describe('Admin Dashboard', () => {
     }
   });
 
-  test('should handle API errors gracefully', async ({ page, route }) => {
+  test('should handle API errors gracefully', async ({ page }) => {
     // Intercept API calls and return error
-    await route('**/api/admin/**', route => {
+    await page.route('**/api/admin/**', route => {
       route.fulfill({
         status: 500,
         body: JSON.stringify({ error: 'Internal Server Error' })

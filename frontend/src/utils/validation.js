@@ -119,9 +119,7 @@ export function sanitizeInput(input) {
 
   // Remove null bytes and control characters
   // eslint-disable-next-line no-control-regex
-  let sanitized = input.replace(/\0/g, '');
-  // eslint-disable-next-line no-control-regex
-  sanitized = sanitized.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
+  let sanitized = input.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
 
   return sanitized.trim();
 }

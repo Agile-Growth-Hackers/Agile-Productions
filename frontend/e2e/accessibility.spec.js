@@ -27,7 +27,6 @@ test.describe('Accessibility', () => {
 
     for (const img of images) {
       const alt = await img.getAttribute('alt');
-      const src = await img.getAttribute('src');
 
       // All images should have alt attribute (can be empty for decorative)
       expect(alt !== null).toBeTruthy();
@@ -130,7 +129,7 @@ test.describe('Accessibility', () => {
     await page.waitForTimeout(200);
 
     // Check if focused element has visual focus indicator
-    const hasFocusStyle = await page.evaluate(() => {
+    await page.evaluate(() => {
       const el = document.activeElement;
       if (!el) return false;
 
@@ -181,7 +180,7 @@ test.describe('Accessibility', () => {
     if (exists) {
       // Skip link should be focusable
       await page.keyboard.press('Tab');
-      const focused = await page.evaluate(() => {
+      await page.evaluate(() => {
         const link = document.querySelector('a[href*="#main"], a[href*="#content"]');
         return link === document.activeElement;
       });

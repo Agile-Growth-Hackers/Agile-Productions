@@ -24,6 +24,17 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'react-hooks/refs': 'off', // Allow react-dnd pattern: drag(drop(ref))
+      'react-hooks/set-state-in-effect': 'off', // Allow initialization from cache/localStorage
+    },
+  },
+  {
+    files: ['e2e/**/*.{js,jsx}', 'playwright.config.js'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
     },
   },
 ])

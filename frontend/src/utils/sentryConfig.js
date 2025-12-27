@@ -39,7 +39,7 @@ export function initSentry() {
     replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
 
     // Filter out errors in development
-    beforeSend(event, hint) {
+    beforeSend(event) {
       // Don't send errors in development
       if (import.meta.env.DEV) {
         console.log('[Sentry] Would send error:', event);

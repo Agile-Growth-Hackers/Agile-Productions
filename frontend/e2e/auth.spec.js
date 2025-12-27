@@ -78,7 +78,7 @@ test.describe('Admin Authentication', () => {
     }
   });
 
-  test('should have CSRF protection', async ({ page, request }) => {
+  test('should have CSRF protection', async ({ request }) => {
     // Make a direct API call without going through the form
     const apiResponse = await request.post('/api/auth/login', {
       data: {
@@ -135,16 +135,10 @@ test.describe('Admin Authentication', () => {
     // Wait for error handling
     await page.waitForTimeout(2000);
 
-    // Should show some error indication
-    const body = await page.textContent('body');
-    const showsError = body?.toLowerCase().includes('error') ||
-                      body?.toLowerCase().includes('network') ||
-                      body?.toLowerCase().includes('failed');
-
     // Re-enable network
     await context.setOffline(false);
 
-    // At minimum, should not crash
+    // At minimum, should not crash and stay on login page
     await expect(page).toHaveURL(/\/admin\/login/);
   });
 
