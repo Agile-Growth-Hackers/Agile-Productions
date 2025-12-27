@@ -118,46 +118,59 @@ storage.post('/', async (c) => {
     const r2Key = generateUniqueKey(category, filename);
     console.log('R2 key:', r2Key);
 
-    console.log('Uploading desktop version to R2...');
-    const cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
-    console.log('Desktop upload successful, CDN URL:', cdnUrl);
-
-    // Create mobile version if category supports it
+    // Optimize images with TinyPNG if available
+    let cdnUrl;
     let cdnUrlMobile = null;
+
     if (shouldOptimizeForMobile(category) && c.env.TINYPNG_API_KEY) {
       try {
-        console.log('Creating mobile version with TinyPNG...');
-
-        // Convert file to ArrayBuffer
+        // Convert file to ArrayBuffer once
         const imageBuffer = await file.arrayBuffer();
 
-        // Get mobile dimensions for this category
+        // 1. Compress desktop version with TinyPNG (no resize, just compress)
+        console.log('Compressing desktop version with TinyPNG...');
+        const desktopBuffer = await compressImage(
+          imageBuffer,
+          c.env.TINYPNG_API_KEY,
+          {} // No dimensions = compression only
+        );
+
+        const desktopFile = new File([desktopBuffer], filename, {
+          type: 'image/webp'
+        });
+
+        console.log('Uploading compressed desktop version to R2...');
+        cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, desktopFile, 'image/webp');
+        console.log('Desktop upload successful, CDN URL:', cdnUrl);
+
+        // 2. Create mobile version (resize + compress)
+        console.log('Creating mobile version with TinyPNG...');
         const mobileDims = getMobileDimensions(category);
         console.log(`Mobile dimensions for ${category}:`, mobileDims);
 
-        // Compress and resize for mobile
         const mobileBuffer = await compressImage(
           imageBuffer,
           c.env.TINYPNG_API_KEY,
           mobileDims
         );
 
-        // Generate mobile R2 key (add -mobile suffix before extension)
         const mobileR2Key = r2Key.replace(/\.webp$/, '-mobile.webp');
-
-        // Create File object from buffer for mobile version
         const mobileFile = new File([mobileBuffer], filename.replace(/\.webp$/, '-mobile.webp'), {
           type: 'image/webp'
         });
 
-        // Upload mobile version to R2
         console.log('Uploading mobile version to R2...');
         cdnUrlMobile = await uploadToR2(c.env.BUCKET, mobileR2Key, mobileFile, 'image/webp');
         console.log('Mobile upload successful, CDN URL:', cdnUrlMobile);
       } catch (error) {
-        console.error('Mobile version creation failed (continuing with desktop only):', error);
-        // Don't fail the whole upload if mobile version fails
+        console.error('TinyPNG optimization failed, uploading original:', error);
+        // Fallback: upload original file if TinyPNG fails
+        cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
       }
+    } else {
+      // No TinyPNG available, upload original
+      console.log('Uploading original to R2 (no TinyPNG)...');
+      cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
     }
 
     // Store in database

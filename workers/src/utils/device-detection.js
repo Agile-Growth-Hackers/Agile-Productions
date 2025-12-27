@@ -12,7 +12,10 @@ export function isMobileDevice(request) {
   const userAgent = request.headers.get('user-agent') || '';
 
   // Check for mobile indicators in user agent
-  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+  // Exclude tablets - they should get desktop images due to larger screens
+  // Android(?!.*tablet) = Android but NOT if followed by "tablet"
+  // Removed iPad from the match
+  const mobileRegex = /Android(?!.*tablet)|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i;
   return mobileRegex.test(userAgent);
 }
 
