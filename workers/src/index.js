@@ -8,6 +8,7 @@ import { isMobileDevice, transformForDevice } from './utils/device-detection.js'
 import { securityHeadersMiddleware } from './middleware/security-headers.js';
 import { httpsEnforcementMiddleware } from './middleware/https-enforcement.js';
 import { requestSizeLimitMiddleware } from './middleware/request-size-limit.js';
+import { sentryInitMiddleware } from './middleware/sentry-init.js';
 import authRoutes from './routes/auth.js';
 import storageRoutes from './routes/storage.js';
 import sliderRoutes from './routes/slider.js';
@@ -20,7 +21,10 @@ import profileRoutes from './routes/profile.js';
 
 const app = new Hono();
 
-// Apply HTTPS enforcement first (redirects HTTP to HTTPS)
+// Initialize Sentry error tracking (must be first to access env)
+app.use('*', sentryInitMiddleware);
+
+// Apply HTTPS enforcement (redirects HTTP to HTTPS)
 app.use('*', httpsEnforcementMiddleware);
 
 // Apply security headers to all routes

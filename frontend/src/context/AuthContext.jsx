@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
+import { setUserContext as setSentryUser } from '../utils/sentryConfig';
 
 const AuthContext = createContext(null);
 
@@ -36,6 +37,10 @@ export function AuthProvider({ children }) {
     };
     setUser(userData);
     localStorage.setItem('admin_user', JSON.stringify(userData));
+
+    // Set user context in Sentry
+    setSentryUser(userData);
+
     return data;
   };
 
@@ -48,6 +53,9 @@ export function AuthProvider({ children }) {
     api.clearAuth();
     setUser(null);
     localStorage.removeItem('admin_user');
+
+    // Clear user context in Sentry
+    setSentryUser(null);
   };
 
   return (
