@@ -5,7 +5,7 @@ import PasswordInput from '../../components/PasswordInput';
 import { validatePassword, getPasswordRequirements } from '../../utils/passwordValidation';
 
 export default function EditProfileModal({ onClose, onSaved }) {
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -145,7 +145,6 @@ export default function EditProfileModal({ onClose, onSaved }) {
       setSuccess('Profile picture removed successfully!');
 
       // Refresh user data
-      const updatedProfile = await api.getProfile();
       const updatedUser = {
         ...user,
         profilePictureUrl: null

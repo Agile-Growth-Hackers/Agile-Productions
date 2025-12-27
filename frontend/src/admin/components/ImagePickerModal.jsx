@@ -27,6 +27,7 @@ export default function ImagePickerModal({ isOpen, category, onSelect, onClose, 
     if (isOpen && category) {
       fetchStorageImages();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, category]);
 
   const fetchStorageImages = async () => {

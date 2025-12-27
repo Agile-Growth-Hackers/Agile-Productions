@@ -44,7 +44,7 @@ const Gallery = () => {
         const cachedImages = JSON.parse(cached);
         setGalleryImages(cachedImages);
         return;
-      } catch (e) {
+      } catch {
         // Invalid cache, continue to fetch
       }
     }

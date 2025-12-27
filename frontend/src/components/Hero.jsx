@@ -7,7 +7,6 @@ const Hero = () => {
   const [progress, setProgress] = useState(0);
   const [key, setKey] = useState(0);
   const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(true);
   const hasLoaded = useOnLoad(300); // 300ms delay (after navbar)
 
   // Fetch slider images from API (with time-based caching to prevent reloads)
@@ -25,9 +24,8 @@ const Hero = () => {
       try {
         const cachedImages = JSON.parse(cached);
         setImages(cachedImages);
-        setLoading(false);
         return;
-      } catch (e) {
+      } catch {
         // Invalid cache, continue to fetch
       }
     }
@@ -43,8 +41,6 @@ const Hero = () => {
       } catch (error) {
         console.error('Failed to load slider images:', error);
         setImages([]);
-      } finally {
-        setLoading(false);
       }
     }
     fetchImages();

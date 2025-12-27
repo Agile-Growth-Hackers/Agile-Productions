@@ -53,6 +53,7 @@ export default function ActivityLogSection() {
 
   useEffect(() => {
     fetchLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [actionTypeFilter, entityTypeFilter, dateFilter, customStartDate, customEndDate, currentPage]);
 
   const getDateRange = () => {
@@ -65,12 +66,13 @@ export default function ActivityLogSection() {
           start_date: today.toISOString(),
           end_date: new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString()
         };
-      case 'yesterday':
+      case 'yesterday': {
         const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
         return {
           start_date: yesterday.toISOString(),
           end_date: today.toISOString()
         };
+      }
       case '24h':
         return {
           start_date: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),

@@ -1011,7 +1011,6 @@ export default function GallerySection() {
 
       {/* Additional Images Section - Images not shown in the main preview */}
       {(() => {
-        const maxDisplay = previewMode === 'mobile' ? 10 : 12;
         const remainingImages = previewMode === 'mobile'
           ? [...visibleImages.slice(10), ...hiddenImages]
           : [...galleryImages.slice(12), ...hiddenImages.filter((img, idx) => idx >= 12 || !galleryImages.slice(0, 12).includes(img))];
