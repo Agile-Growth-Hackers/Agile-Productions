@@ -36,11 +36,11 @@ export async function compressImage(imageBuffer, apiKey, options = {}) {
       throw new Error('TinyPNG did not return a compressed image URL');
     }
 
-    // Step 2: Download compressed image (with optional resize)
-    let downloadUrl = compressedUrl;
+    // Step 2: Apply resize if needed, then download
+    let finalResponse;
 
-    // If resize dimensions provided, apply resizing
     if (options.width || options.height) {
+      // Apply resize operation to the compressed image
       const resizeResponse = await fetch(compressedUrl, {
         method: 'POST',
         headers: {
@@ -57,14 +57,17 @@ export async function compressImage(imageBuffer, apiKey, options = {}) {
       });
 
       if (!resizeResponse.ok) {
+        const errorText = await resizeResponse.text();
+        console.error('TinyPNG resize error:', errorText);
         throw new Error(`TinyPNG resize failed: ${resizeResponse.statusText}`);
       }
 
-      downloadUrl = resizeResponse.headers.get('Location') || compressedUrl;
+      // The resize response body IS the resized image
+      finalResponse = resizeResponse;
+    } else {
+      // No resize needed, just download compressed image
+      finalResponse = await fetch(compressedUrl);
     }
-
-    // Step 3: Download final image
-    const finalResponse = await fetch(downloadUrl);
 
     if (!finalResponse.ok) {
       throw new Error(`Failed to download compressed image: ${finalResponse.statusText}`);
