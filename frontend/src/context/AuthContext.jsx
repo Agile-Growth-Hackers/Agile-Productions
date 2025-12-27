@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
     if (token && userData) {
       try {
         setUser(JSON.parse(userData));
-      } catch (e) {
+      } catch {
         localStorage.removeItem('admin_user');
         setUser({ authenticated: true });
       }
