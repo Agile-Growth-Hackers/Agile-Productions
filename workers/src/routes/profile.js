@@ -3,6 +3,7 @@ import { uploadToR2, deleteFromR2, generateUniqueKey } from '../utils/r2.js';
 import { hashPassword } from '../utils/password.js';
 import { getClientIP, getUserAgent } from '../utils/activity-logger.js';
 import { validatePasswordStrength } from '../utils/password-validation.js';
+import { validateFileSize } from '../utils/file-validation.js';
 
 const profile = new Hono();
 
@@ -144,6 +145,13 @@ profile.post('/picture', async (c) => {
 
     if (!file) {
       return c.json({ error: 'Image required' }, 400);
+    }
+
+    // Validate file size (2MB max for profile pictures)
+    try {
+      validateFileSize(file, 'PROFILE_PICTURE');
+    } catch (err) {
+      return c.json({ error: err.message }, 400);
     }
 
     // Get current profile picture to delete old one

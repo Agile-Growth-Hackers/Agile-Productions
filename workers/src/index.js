@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { corsMiddleware } from './middleware/cors.js';
 import { authMiddleware } from './middleware/auth.js';
 import { requireSuperAdmin } from './middleware/rbac.js';
+import { publicRateLimit, adminRateLimit } from './middleware/rate-limit.js';
 import { activityLoggerMiddleware } from './utils/activity-logger.js';
 import authRoutes from './routes/auth.js';
 import storageRoutes from './routes/storage.js';
@@ -17,6 +18,11 @@ const app = new Hono();
 
 // Apply CORS to all routes
 app.use('*', corsMiddleware);
+
+// Apply rate limiting to public API routes
+app.use('/api/slider', publicRateLimit);
+app.use('/api/gallery*', publicRateLimit);
+app.use('/api/logos', publicRateLimit);
 
 // Public routes - no authentication required
 app.get('/api/slider', async (c) => {
@@ -70,8 +76,9 @@ app.get('/api/logos', async (c) => {
 // Auth routes (login doesn't need auth middleware)
 app.route('/api/auth', authRoutes);
 
-// Protected admin routes - apply auth and activity logging middleware
+// Protected admin routes - apply auth, rate limiting, and activity logging middleware
 app.use('/api/admin/*', authMiddleware); // Checks JWT validity and isActive from token
+app.use('/api/admin/*', adminRateLimit); // Rate limit: 300 req/min per user
 app.use('/api/admin/*', activityLoggerMiddleware); // Adds logging helper
 
 // Super admin only routes (apply before registering routes)

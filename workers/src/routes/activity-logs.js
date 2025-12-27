@@ -15,8 +15,8 @@ activityLogs.get('/', async (c) => {
     const endDate = c.req.query('end_date');
 
     // OPTIMIZATION: Enforce max limit to prevent excessive data transfer
-    if (limit > 100) {
-      limit = 100;
+    if (limit > 50) {
+      limit = 50;
     }
 
     // Build query

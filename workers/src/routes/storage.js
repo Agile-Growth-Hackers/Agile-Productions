@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { uploadToR2, deleteFromR2, generateUniqueKey } from '../utils/r2.js';
+import { validateFileSize } from '../utils/file-validation.js';
 import { ensureWebPExtension } from '../utils/webp.js';
 
 const storage = new Hono();
@@ -98,6 +99,13 @@ storage.post('/', async (c) => {
 
     if (!file || !category) {
       return c.json({ error: 'Image and category required' }, 400);
+    }
+
+    // Validate file size (30MB max for content images)
+    try {
+      validateFileSize(file, 'CONTENT_IMAGE');
+    } catch (err) {
+      return c.json({ error: err.message }, 400);
     }
 
     // Extract filename - in Workers, File objects may not have .name directly
