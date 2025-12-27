@@ -35,7 +35,7 @@ gallery.post('/', async (c) => {
   try {
     const contentType = c.req.header('content-type') || '';
     const db = c.env.DB;
-    let r2Key, cdnUrl, filename, mobileVisible;
+    let r2Key, cdnUrl, cdnUrlMobile, filename, mobileVisible;
 
     // Handle both FormData (file upload) and JSON (from storage)
     if (contentType.includes('application/json')) {
@@ -43,6 +43,7 @@ gallery.post('/', async (c) => {
       const body = await c.req.json();
       r2Key = body.r2_key;
       cdnUrl = body.cdn_url;
+      cdnUrlMobile = body.cdn_url_mobile || null;
       filename = body.filename;
       // Convert boolean to integer (D1 expects 0 or 1, not true/false)
       mobileVisible = body.mobile_visible !== undefined ? (body.mobile_visible ? 1 : 0) : 1;
@@ -64,7 +65,7 @@ gallery.post('/', async (c) => {
       mobileVisible = 1;
 
       // Compress with TinyPNG if available
-      let cdnUrlMobile = null;
+      cdnUrlMobile = null;
       if (c.env.TINYPNG_API_KEY) {
         try {
           const imageBuffer = await file.arrayBuffer();
@@ -132,7 +133,7 @@ gallery.put('/:id', async (c) => {
     const contentType = c.req.header('content-type') || '';
     console.log('Gallery update - ID:', id, 'Content-Type:', contentType);
     const db = c.env.DB;
-    let r2Key, cdnUrl, filename;
+    let r2Key, cdnUrl, cdnUrlMobile, filename;
 
     // Handle both FormData (file upload) and JSON (from storage)
     if (contentType.includes('application/json')) {
@@ -142,6 +143,7 @@ gallery.put('/:id', async (c) => {
       console.log('Request body:', JSON.stringify(body));
       r2Key = body.r2_key;
       cdnUrl = body.cdn_url;
+      cdnUrlMobile = body.cdn_url_mobile || null;
       filename = body.filename;
 
       // Allow null or empty values for clearing the image
@@ -168,8 +170,8 @@ gallery.put('/:id', async (c) => {
 
       // Update database (don't delete old R2 file since it might be in use elsewhere)
       await db.prepare(
-        'UPDATE gallery_images SET filename = ?, r2_key = ?, cdn_url = ? WHERE id = ?'
-      ).bind(filename, r2Key, cdnUrl, id).run();
+        'UPDATE gallery_images SET filename = ?, r2_key = ?, cdn_url = ?, cdn_url_mobile = ? WHERE id = ?'
+      ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, id).run();
 
       // Log activity
       const logActivity = c.get('logActivity');
@@ -214,7 +216,7 @@ gallery.put('/:id', async (c) => {
         r2Key = generateUniqueKey('gallery', file.name || `upload-${Date.now()}.webp`);
         filename = file.name || `upload-${Date.now()}.webp`;
 
-        let cdnUrlMobile = null;
+        cdnUrlMobile = null;
         if (c.env.TINYPNG_API_KEY) {
           try {
             const imageBuffer = await file.arrayBuffer();

@@ -22,7 +22,7 @@ slider.post('/', async (c) => {
   try {
     const contentType = c.req.header('content-type') || '';
     const db = c.env.DB;
-    let r2Key, cdnUrl, filename, objectPosition;
+    let r2Key, cdnUrl, cdnUrlMobile, filename, objectPosition;
 
     // Handle both FormData (file upload) and JSON (from storage)
     if (contentType.includes('application/json')) {
@@ -30,6 +30,7 @@ slider.post('/', async (c) => {
       const body = await c.req.json();
       r2Key = body.r2_key;
       cdnUrl = body.cdn_url;
+      cdnUrlMobile = body.cdn_url_mobile || null;
       filename = body.filename;
       objectPosition = body.object_position || 'center center';
 
@@ -50,7 +51,7 @@ slider.post('/', async (c) => {
       r2Key = generateUniqueKey('slider', filename);
 
       // Compress with TinyPNG if available
-      let cdnUrlMobile = null;
+      cdnUrlMobile = null;
       if (c.env.TINYPNG_API_KEY) {
         try {
           const imageBuffer = await file.arrayBuffer();
@@ -118,7 +119,7 @@ slider.put('/:id', async (c) => {
     const id = c.req.param('id');
     const contentType = c.req.header('content-type') || '';
     const db = c.env.DB;
-    let r2Key, cdnUrl, filename, objectPosition;
+    let r2Key, cdnUrl, cdnUrlMobile, filename, objectPosition;
 
     // Handle both FormData (file upload) and JSON (from storage)
     if (contentType.includes('application/json')) {
@@ -126,6 +127,7 @@ slider.put('/:id', async (c) => {
       const body = await c.req.json();
       r2Key = body.r2_key;
       cdnUrl = body.cdn_url;
+      cdnUrlMobile = body.cdn_url_mobile || null;
       filename = body.filename;
       objectPosition = body.object_position || 'center center';
 
@@ -140,8 +142,8 @@ slider.put('/:id', async (c) => {
 
       // Update database (don't delete old R2 file since it might be in use elsewhere)
       await db.prepare(
-        'UPDATE slider_images SET filename = ?, r2_key = ?, cdn_url = ?, object_position = ? WHERE id = ?'
-      ).bind(filename, r2Key, cdnUrl, objectPosition, id).run();
+        'UPDATE slider_images SET filename = ?, r2_key = ?, cdn_url = ?, cdn_url_mobile = ?, object_position = ? WHERE id = ?'
+      ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, objectPosition, id).run();
 
       // Log activity
       const logActivity = c.get('logActivity');
@@ -184,7 +186,7 @@ slider.put('/:id', async (c) => {
         r2Key = generateUniqueKey('slider', file.name);
         filename = file.name;
 
-        let cdnUrlMobile = null;
+        cdnUrlMobile = null;
         if (c.env.TINYPNG_API_KEY) {
           try {
             const imageBuffer = await file.arrayBuffer();

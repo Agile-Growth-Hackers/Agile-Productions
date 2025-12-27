@@ -22,7 +22,7 @@ logos.post('/', async (c) => {
   try {
     const contentType = c.req.header('content-type') || '';
     const db = c.env.DB;
-    let r2Key, cdnUrl, filename, altText;
+    let r2Key, cdnUrl, cdnUrlMobile, filename, altText;
 
     // Handle both FormData (file upload) and JSON (from storage)
     if (contentType.includes('application/json')) {
@@ -30,6 +30,7 @@ logos.post('/', async (c) => {
       const body = await c.req.json();
       r2Key = body.r2_key;
       cdnUrl = body.cdn_url;
+      cdnUrlMobile = body.cdn_url_mobile || null;
       filename = body.filename;
       altText = body.alt_text || filename.replace(/\.(webp|png|jpg|jpeg)$/i, '');
 
@@ -51,7 +52,7 @@ logos.post('/', async (c) => {
       altText = altText || filename.replace(/\.(webp|png|jpg|jpeg)$/i, '');
 
       // Compress with TinyPNG if available
-      let cdnUrlMobile = null;
+      cdnUrlMobile = null;
       if (c.env.TINYPNG_API_KEY) {
         try {
           const imageBuffer = await file.arrayBuffer();
