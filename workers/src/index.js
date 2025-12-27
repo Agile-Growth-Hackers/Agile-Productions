@@ -9,6 +9,7 @@ import { securityHeadersMiddleware } from './middleware/security-headers.js';
 import { httpsEnforcementMiddleware } from './middleware/https-enforcement.js';
 import { requestSizeLimitMiddleware } from './middleware/request-size-limit.js';
 import { sentryInitMiddleware } from './middleware/sentry-init.js';
+import { csrfProtection } from './middleware/csrf.js';
 import authRoutes from './routes/auth.js';
 import storageRoutes from './routes/storage.js';
 import sliderRoutes from './routes/slider.js';
@@ -139,8 +140,9 @@ app.get('/api/logos', async (c) => {
 // Auth routes (login doesn't need auth middleware)
 app.route('/api/auth', authRoutes);
 
-// Protected admin routes - apply auth, rate limiting, and activity logging middleware
+// Protected admin routes - apply auth, CSRF, rate limiting, and activity logging middleware
 app.use('/api/admin/*', authMiddleware); // Checks JWT validity and isActive from token
+app.use('/api/admin/*', csrfProtection); // CSRF protection for state-changing requests
 app.use('/api/admin/*', adminRateLimit); // Rate limit: 300 req/min per user
 app.use('/api/admin/*', activityLoggerMiddleware); // Adds logging helper
 

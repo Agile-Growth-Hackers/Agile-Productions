@@ -3,6 +3,8 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
 class ApiService {
   constructor() {
     this.token = localStorage.getItem('admin_token');
+    this.csrfToken = localStorage.getItem('csrf_token');
+    this.csrfHeader = 'x-csrf-token';
   }
 
   setToken(token) {
@@ -11,6 +13,16 @@ class ApiService {
       localStorage.setItem('admin_token', token);
     } else {
       localStorage.removeItem('admin_token');
+    }
+  }
+
+  setCsrfToken(token, header = 'x-csrf-token') {
+    this.csrfToken = token;
+    this.csrfHeader = header;
+    if (token) {
+      localStorage.setItem('csrf_token', token);
+    } else {
+      localStorage.removeItem('csrf_token');
     }
   }
 
@@ -26,6 +38,12 @@ class ApiService {
 
     if (this.token && !options.skipAuth) {
       headers['Authorization'] = `Bearer ${this.token}`;
+    }
+
+    // Add CSRF token for state-changing requests
+    const isStateChangingRequest = ['POST', 'PUT', 'DELETE', 'PATCH'].includes(options.method?.toUpperCase());
+    if (this.csrfToken && !options.skipAuth && isStateChangingRequest) {
+      headers[this.csrfHeader] = this.csrfToken;
     }
 
     try {
@@ -69,11 +87,18 @@ class ApiService {
       skipAuth: true,
     });
     this.setToken(data.token);
+
+    // Store CSRF token if provided
+    if (data.csrfToken) {
+      this.setCsrfToken(data.csrfToken, data.csrfHeader);
+    }
+
     return data;
   }
 
   clearAuth() {
     this.setToken(null);
+    this.setCsrfToken(null);
   }
 
   async logout() {

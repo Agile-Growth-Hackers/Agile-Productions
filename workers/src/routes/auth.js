@@ -3,6 +3,7 @@ import { verifyPassword } from '../utils/password.js';
 import { createJWT } from '../utils/jwt.js';
 import { getClientIP, getUserAgent } from '../utils/activity-logger.js';
 import { validateRequest, schemas } from '../middleware/request-validation.js';
+import { generateCsrfResponse } from '../middleware/csrf.js';
 
 const auth = new Hono();
 
@@ -171,6 +172,9 @@ auth.post('/login', validateRequest(schemas.login), async (c) => {
       c.env.JWT_SECRET
     );
 
+    // Generate CSRF token
+    const csrfData = await generateCsrfResponse(c);
+
     return c.json({
       token,
       user: {
@@ -180,7 +184,8 @@ auth.post('/login', validateRequest(schemas.login), async (c) => {
         email: user.email,
         isSuperAdmin: user.is_super_admin === 1,
         profilePictureUrl: user.profile_picture_url
-      }
+      },
+      ...csrfData
     });
   } catch (error) {
     console.error('Login error:', error);
