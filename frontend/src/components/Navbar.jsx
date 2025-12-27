@@ -33,8 +33,6 @@ const Navbar = () => {
                   <img
                     src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
                     alt="Agile Productions Logo"
-                    loading="eager"
-                    fetchpriority="high"
                     width="200"
                     height="40"
                     className="h-10 w-auto object-contain transition-all duration-300"
@@ -94,7 +92,6 @@ const Navbar = () => {
                   <img
                     src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
                     alt="Agile Productions Logo"
-                    loading="eager"
                     width="350"
                     height="80"
                     className="h-20 w-auto object-contain"
@@ -156,8 +153,6 @@ const Navbar = () => {
               <img
                 src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
                 alt="Agile Productions Logo"
-                loading="eager"
-                fetchpriority="high"
                 width="200"
                 height="40"
                 className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-8' : 'h-10'}`}
@@ -246,8 +241,6 @@ const Navbar = () => {
               <img
                 src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
                 alt="Agile Productions Logo"
-                loading="eager"
-                fetchpriority="high"
                 width="200"
                 height="48"
                 className={`w-auto object-contain transition-all duration-300 ${isScrolled ? 'h-10' : 'h-12'}`}

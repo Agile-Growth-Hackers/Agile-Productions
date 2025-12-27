@@ -35,20 +35,27 @@ function App() {
     <AuthProvider>
       <ToastProvider>
         <BrowserRouter>
-          <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
-            <Routes>
-              <Route path="/" element={<PublicSite />} />
-              <Route path="/admin/login" element={<LoginPage />} />
-              <Route
-                path="/admin"
-                element={
+          <Routes>
+            <Route path="/" element={<PublicSite />} />
+            <Route
+              path="/admin/login"
+              element={
+                <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
+                  <LoginPage />
+                </Suspense>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
                   <ProtectedRoute>
                     <DashboardPage />
                   </ProtectedRoute>
-                }
-              />
-            </Routes>
-          </Suspense>
+                </Suspense>
+              }
+            />
+          </Routes>
           {/* Test button - only shows in development */}
           {import.meta.env.DEV && <ErrorTest />}
         </BrowserRouter>

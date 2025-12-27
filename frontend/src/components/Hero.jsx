@@ -83,9 +83,6 @@ const Hero = () => {
               src={image.cdn_url || image}
               alt={`Slide ${index + 1}`}
               className="w-full h-full object-cover"
-              loading={index === 0 ? 'eager' : 'lazy'}
-              fetchpriority={index === 0 ? 'high' : 'low'}
-              decoding={index === 0 ? 'sync' : 'async'}
               width="1920"
               height="1080"
               style={{
