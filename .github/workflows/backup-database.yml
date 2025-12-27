@@ -1,0 +1,62 @@
+name: Database Backup
+
+on:
+  schedule:
+    # Run every Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  backup:
+    name: Backup D1 Database
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wrangler
+        run: npm install -g wrangler
+
+      - name: Export Database
+        working-directory: ./workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          # Get current date for filename
+          DATE=$(date +%Y-%m-%d)
+
+          # Export database to SQL file
+          npx wrangler d1 export agile-productions-db --output=backup-${DATE}.sql
+
+          # Create backups directory if it doesn't exist
+          mkdir -p backups
+
+          # Move backup to backups directory
+          mv backup-${DATE}.sql backups/
+
+      - name: Upload Backup Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_number }}
+          path: workers/backups/*.sql
+          retention-days: 90 # Keep backups for 90 days
+
+      - name: Notify on Success
+        if: success()
+        run: echo "✅ Database backup completed successfully"
+
+      - name: Notify on Failure
+        if: failure()
+        run: echo "❌ Database backup failed"
+
+      # Optional: Upload to cloud storage (S3, R2, etc.)
+      # - name: Upload to R2
+      #   run: |
+      #     npx wrangler r2 object put agile-backups/db-backup-${DATE}.sql --file=workers/backups/backup-${DATE}.sql
