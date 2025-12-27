@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import PasswordInput from '../../components/PasswordInput';
+import { validateUsername, sanitizeInput } from '../../utils/validation';
 
 export default function LoginPage() {
   const [username, setUsername] = useState('');
@@ -14,10 +15,25 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Client-side validation
+    const sanitizedUsername = sanitizeInput(username);
+    const usernameValidation = validateUsername(sanitizedUsername);
+
+    if (!usernameValidation.valid) {
+      setError(usernameValidation.error);
+      return;
+    }
+
+    if (!password || password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await login(username, password);
+      await login(sanitizedUsername, password);
       navigate('/admin');
     } catch (err) {
       setError(err.message || 'Invalid credentials. Please try again.');

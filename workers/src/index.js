@@ -5,6 +5,9 @@ import { requireSuperAdmin } from './middleware/rbac.js';
 import { publicRateLimit, adminRateLimit } from './middleware/rate-limit.js';
 import { activityLoggerMiddleware } from './utils/activity-logger.js';
 import { isMobileDevice, transformForDevice } from './utils/device-detection.js';
+import { securityHeadersMiddleware } from './middleware/security-headers.js';
+import { httpsEnforcementMiddleware } from './middleware/https-enforcement.js';
+import { requestSizeLimitMiddleware } from './middleware/request-size-limit.js';
 import authRoutes from './routes/auth.js';
 import storageRoutes from './routes/storage.js';
 import sliderRoutes from './routes/slider.js';
@@ -17,15 +20,46 @@ import profileRoutes from './routes/profile.js';
 
 const app = new Hono();
 
+// Apply HTTPS enforcement first (redirects HTTP to HTTPS)
+app.use('*', httpsEnforcementMiddleware);
+
+// Apply security headers to all routes
+app.use('*', securityHeadersMiddleware);
+
 // Apply CORS to all routes
 app.use('*', corsMiddleware);
+
+// Apply request size limits to all routes
+app.use('*', requestSizeLimitMiddleware);
 
 // Apply rate limiting to public API routes
 app.use('/api/slider', publicRateLimit);
 app.use('/api/gallery*', publicRateLimit);
 app.use('/api/logos', publicRateLimit);
 
+// API Version header
+app.use('/api/*', (c, next) => {
+  c.header('X-API-Version', 'v1');
+  return next();
+});
+
 // Public routes - no authentication required
+// v1 API (versioned)
+app.get('/api/v1/slider', async (c) => {
+  try {
+    const db = c.env.DB;
+    const isMobile = isMobileDevice(c.req.raw);
+    const { results } = await db.prepare(
+      'SELECT id, cdn_url, cdn_url_mobile, object_position, display_order FROM slider_images WHERE is_active = 1 ORDER BY display_order'
+    ).all();
+    const transformedResults = transformForDevice(results, isMobile);
+    return c.json(transformedResults);
+  } catch (error) {
+    return c.json({ error: 'Failed to fetch slides' }, 500);
+  }
+});
+
+// Legacy route (backwards compatibility) - redirects to v1
 app.get('/api/slider', async (c) => {
   try {
     const db = c.env.DB;
@@ -40,6 +74,22 @@ app.get('/api/slider', async (c) => {
   }
 });
 
+// v1 Gallery endpoint
+app.get('/api/v1/gallery', async (c) => {
+  try {
+    const db = c.env.DB;
+    const isMobile = isMobileDevice(c.req.raw);
+    const { results } = await db.prepare(
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 ORDER BY display_order'
+    ).all();
+    const transformedResults = transformForDevice(results, isMobile);
+    return c.json(transformedResults);
+  } catch (error) {
+    return c.json({ error: 'Failed to fetch gallery' }, 500);
+  }
+});
+
+// Legacy gallery route
 app.get('/api/gallery', async (c) => {
   try {
     const db = c.env.DB;
@@ -94,7 +144,17 @@ app.use('/api/admin/*', activityLoggerMiddleware); // Adds logging helper
 app.use('/api/admin/users/*', requireSuperAdmin);
 app.use('/api/admin/activity-logs/*', requireSuperAdmin);
 
-// Register all admin routes
+// Register v1 admin routes
+app.route('/api/v1/admin/users', usersRoutes);
+app.route('/api/v1/admin/activity-logs', activityLogsRoutes);
+app.route('/api/v1/admin/profile', profileRoutes);
+app.route('/api/v1/admin/storage', storageRoutes);
+app.route('/api/v1/admin/slider', sliderRoutes);
+app.route('/api/v1/admin/gallery', galleryRoutes);
+app.route('/api/v1/admin/logos', logosRoutes);
+app.route('/api/v1/admin/usage', usageRoutes);
+
+// Legacy admin routes (backwards compatibility)
 app.route('/api/admin/users', usersRoutes);
 app.route('/api/admin/activity-logs', activityLogsRoutes);
 app.route('/api/admin/profile', profileRoutes);
@@ -107,6 +167,46 @@ app.route('/api/admin/usage', usageRoutes);
 // Health check
 app.get('/', (c) => {
   return c.json({ status: 'ok', message: 'Agile Productions API' });
+});
+
+// Comprehensive health check endpoint
+app.get('/health', async (c) => {
+  const health = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    checks: {}
+  };
+
+  // Check database connectivity
+  try {
+    await c.env.DB.prepare('SELECT 1').first();
+    health.checks.database = { status: 'healthy' };
+  } catch (error) {
+    health.status = 'unhealthy';
+    health.checks.database = { status: 'unhealthy', error: error.message };
+  }
+
+  // Check R2 bucket access
+  try {
+    await c.env.BUCKET.head('test-health-check');
+    health.checks.storage = { status: 'healthy' };
+  } catch (error) {
+    // Head might fail if object doesn't exist, which is ok
+    if (error.message && error.message.includes('Not Found')) {
+      health.checks.storage = { status: 'healthy' };
+    } else {
+      health.status = 'degraded';
+      health.checks.storage = { status: 'degraded', error: error.message };
+    }
+  }
+
+  // Check TinyPNG API key presence (not connectivity)
+  health.checks.tinypng = {
+    status: c.env.TINYPNG_API_KEY ? 'configured' : 'not_configured'
+  };
+
+  const statusCode = health.status === 'healthy' ? 200 : health.status === 'degraded' ? 200 : 503;
+  return c.json(health, statusCode);
 });
 
 // Scheduled cleanup of old activity logs (runs daily at 2 AM UTC)

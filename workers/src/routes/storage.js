@@ -3,6 +3,9 @@ import { uploadToR2, deleteFromR2, generateUniqueKey } from '../utils/r2.js';
 import { validateFileSize } from '../utils/file-validation.js';
 import { ensureWebPExtension } from '../utils/webp.js';
 import { compressImage, getMobileDimensions, shouldOptimizeForMobile } from '../utils/tinypng.js';
+import { validateImageMimeType, getInvalidFileTypeError } from '../utils/mime-validation.js';
+import { sanitizeFilename } from '../utils/sanitize.js';
+import { executeBatch, createQuery } from '../utils/db-transaction.js';
 
 const storage = new Hono();
 
@@ -109,11 +112,18 @@ storage.post('/', async (c) => {
       return c.json({ error: err.message }, 400);
     }
 
-    // Extract filename - in Workers, File objects may not have .name directly
+    // Validate MIME type (check magic bytes)
+    const isValidImage = await validateImageMimeType(file);
+    if (!isValidImage) {
+      return c.json({ error: getInvalidFileTypeError() }, 400);
+    }
+
+    // Extract and sanitize filename
     let filename = file.name || `upload-${Date.now()}.webp`;
     console.log('Original filename:', filename);
+    filename = sanitizeFilename(filename);
     filename = ensureWebPExtension(filename);
-    console.log('Filename:', filename);
+    console.log('Sanitized filename:', filename);
 
     const r2Key = generateUniqueKey(category, filename);
     console.log('R2 key:', r2Key);
@@ -212,7 +222,8 @@ storage.post('/', async (c) => {
     console.error('Upload error details:', error);
     console.error('Error message:', error.message);
     console.error('Error stack:', error.stack);
-    return c.json({ error: `Upload failed: ${error.message}` }, 500);
+    // Don't leak internal error details to client
+    return c.json({ error: 'Upload failed. Please try again or contact support.' }, 500);
   }
 });
 

@@ -4,6 +4,7 @@ import { hashPassword } from '../utils/password.js';
 import { getClientIP, getUserAgent } from '../utils/activity-logger.js';
 import { validatePasswordStrength } from '../utils/password-validation.js';
 import { validateFileSize } from '../utils/file-validation.js';
+import { validateRequest, schemas } from '../middleware/request-validation.js';
 
 const profile = new Hono();
 
@@ -71,11 +72,11 @@ profile.put('/', async (c) => {
 });
 
 // Update password
-profile.put('/password', async (c) => {
+profile.put('/password', validateRequest(schemas.changePassword), async (c) => {
   try {
     const user = c.get('user');
     const db = c.env.DB;
-    const { currentPassword, newPassword } = await c.req.json();
+    const { currentPassword, newPassword } = c.get('validatedBody');
 
     if (!currentPassword || !newPassword) {
       return c.json({ error: 'Current password and new password required' }, 400);

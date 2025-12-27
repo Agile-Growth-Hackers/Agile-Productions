@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { hashPassword } from '../utils/password.js';
 import { logActivity, getClientIP, getUserAgent } from '../utils/activity-logger.js';
 import { validatePasswordStrength } from '../utils/password-validation.js';
+import { validateRequest, schemas } from '../middleware/request-validation.js';
 
 const users = new Hono();
 
@@ -25,11 +26,11 @@ users.get('/', async (c) => {
 });
 
 // Create new user (super admin only)
-users.post('/', async (c) => {
+users.post('/', validateRequest(schemas.createUser), async (c) => {
   try {
     const db = c.env.DB;
     const user = c.get('user');
-    const { username, email, fullName, password, isSuperAdmin } = await c.req.json();
+    const { username, email, fullName, password, isSuperAdmin } = c.get('validatedBody');
 
     // Validation
     if (!username || !email || !password) {

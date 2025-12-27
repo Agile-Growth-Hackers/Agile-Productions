@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { verifyPassword } from '../utils/password.js';
 import { createJWT } from '../utils/jwt.js';
 import { getClientIP, getUserAgent } from '../utils/activity-logger.js';
+import { validateRequest, schemas } from '../middleware/request-validation.js';
 
 const auth = new Hono();
 
@@ -52,12 +53,12 @@ function recordFailedAttempt(username) {
 }
 
 // Login endpoint
-auth.post('/login', async (c) => {
+auth.post('/login', validateRequest(schemas.login), async (c) => {
   const ipAddress = getClientIP(c);
   const userAgent = getUserAgent(c);
 
   try {
-    const { username, password } = await c.req.json();
+    const { username, password } = c.get('validatedBody');
 
     if (!username || !password) {
       return c.json({ error: 'Username and password required' }, 400);

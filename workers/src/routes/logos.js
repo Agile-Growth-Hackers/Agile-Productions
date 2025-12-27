@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 import { uploadToR2, deleteFromR2, generateUniqueKey } from '../utils/r2.js';
 import { compressImage, getMobileDimensions } from '../utils/tinypng.js';
+import { validateImageMimeType, getInvalidFileTypeError } from '../utils/mime-validation.js';
+import { sanitizeAltText, sanitizeFilename } from '../utils/sanitize.js';
 
 const logos = new Hono();
 
@@ -31,8 +33,8 @@ logos.post('/', async (c) => {
       r2Key = body.r2_key;
       cdnUrl = body.cdn_url;
       cdnUrlMobile = body.cdn_url_mobile || null;
-      filename = body.filename;
-      altText = body.alt_text || filename.replace(/\.(webp|png|jpg|jpeg)$/i, '');
+      filename = sanitizeFilename(body.filename);
+      altText = sanitizeAltText(body.alt_text || filename.replace(/\.(webp|png|jpg|jpeg)$/i, ''));
 
       if (!r2Key || !cdnUrl || !filename) {
         return c.json({ error: 'r2_key, cdn_url, and filename required' }, 400);
@@ -47,9 +49,15 @@ logos.post('/', async (c) => {
         return c.json({ error: 'Image required' }, 400);
       }
 
-      filename = file.name;
+      // Validate MIME type
+      const isValidImage = await validateImageMimeType(file);
+      if (!isValidImage) {
+        return c.json({ error: getInvalidFileTypeError() }, 400);
+      }
+
+      filename = sanitizeFilename(file.name);
       r2Key = generateUniqueKey('logos/client', filename);
-      altText = altText || filename.replace(/\.(webp|png|jpg|jpeg)$/i, '');
+      altText = sanitizeAltText(altText || filename.replace(/\.(webp|png|jpg|jpeg)$/i, ''));
 
       // Compress with TinyPNG if available
       cdnUrlMobile = null;

@@ -1,6 +1,8 @@
 import { Hono } from 'hono';
 import { uploadToR2, deleteFromR2, generateUniqueKey } from '../utils/r2.js';
 import { compressImage, getMobileDimensions } from '../utils/tinypng.js';
+import { validateImageMimeType, getInvalidFileTypeError } from '../utils/mime-validation.js';
+import { sanitizeFilename } from '../utils/sanitize.js';
 
 const gallery = new Hono();
 
@@ -44,7 +46,7 @@ gallery.post('/', async (c) => {
       r2Key = body.r2_key;
       cdnUrl = body.cdn_url;
       cdnUrlMobile = body.cdn_url_mobile || null;
-      filename = body.filename;
+      filename = sanitizeFilename(body.filename);
       // Convert boolean to integer (D1 expects 0 or 1, not true/false)
       mobileVisible = body.mobile_visible !== undefined ? (body.mobile_visible ? 1 : 0) : 1;
 
@@ -60,7 +62,13 @@ gallery.post('/', async (c) => {
         return c.json({ error: 'Image required' }, 400);
       }
 
-      filename = file.name;
+      // Validate MIME type
+      const isValidImage = await validateImageMimeType(file);
+      if (!isValidImage) {
+        return c.json({ error: getInvalidFileTypeError() }, 400);
+      }
+
+      filename = sanitizeFilename(file.name);
       r2Key = generateUniqueKey('gallery', filename);
       mobileVisible = 1;
 
@@ -144,7 +152,7 @@ gallery.put('/:id', async (c) => {
       r2Key = body.r2_key;
       cdnUrl = body.cdn_url;
       cdnUrlMobile = body.cdn_url_mobile || null;
-      filename = body.filename;
+      filename = sanitizeFilename(body.filename);
 
       // Allow null or empty values for clearing the image
       if ((r2Key === null || r2Key === '') && (cdnUrl === null || cdnUrl === '') && (filename === null || filename === '')) {
@@ -198,6 +206,12 @@ gallery.put('/:id', async (c) => {
         return c.json({ error: 'Image required' }, 400);
       }
 
+      // Validate MIME type
+      const isValidImageUpdate = await validateImageMimeType(file);
+      if (!isValidImageUpdate) {
+        return c.json({ error: getInvalidFileTypeError() }, 400);
+      }
+
       // Get old image
       const { results } = await db.prepare(
         'SELECT * FROM gallery_images WHERE id = ?'
@@ -213,8 +227,8 @@ gallery.put('/:id', async (c) => {
         }
 
         // Upload new image with compression
-        r2Key = generateUniqueKey('gallery', file.name || `upload-${Date.now()}.webp`);
-        filename = file.name || `upload-${Date.now()}.webp`;
+        filename = sanitizeFilename(file.name || `upload-${Date.now()}.webp`);
+        r2Key = generateUniqueKey('gallery', filename);
 
         cdnUrlMobile = null;
         if (c.env.TINYPNG_API_KEY) {
