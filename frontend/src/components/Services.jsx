@@ -69,6 +69,9 @@ const Services = () => {
               <img
                 src="https://r2.agileproductions.in/site-images/known-for.webp"
                 alt="Motorcycle detail"
+                loading="lazy"
+                width="800"
+                height="600"
                 className="w-full h-auto max-w-md md:max-w-xl lg:max-w-none"
               />
             </div>
@@ -95,6 +98,9 @@ const Services = () => {
             <img
               src="https://r2.agileproductions.in/site-images/event-coverage.webp"
               alt="Event coverage"
+              loading="lazy"
+              width="1200"
+              height="800"
               className="w-full h-auto"
             />
             <h2 className="absolute top-[35%] left-[85%] -translate-y-1/2 text-5xl md:text-6xl font-bold text-black">
@@ -124,6 +130,9 @@ const Services = () => {
             <img
               src="https://r2.agileproductions.in/site-images/event-coverage.webp"
               alt="Event coverage"
+              loading="lazy"
+              width="1200"
+              height="800"
               className="w-full h-auto max-w-md md:max-w-2xl"
             />
           </div>
@@ -170,6 +179,9 @@ const Services = () => {
               <img
                 src="https://r2.agileproductions.in/site-images/ad-promo.webp"
                 alt="Ad & Promo Films"
+                loading="lazy"
+                width="1400"
+                height="600"
                 className="w-full h-auto max-w-6xl"
               />
             </div>
@@ -200,6 +212,9 @@ const Services = () => {
               <img
                 src="https://r2.agileproductions.in/site-images/brand-coverage-desktop.webp"
                 alt="Brand Coverage"
+                loading="lazy"
+                width="1400"
+                height="800"
                 className="w-full h-auto"
               />
             </div>
@@ -212,6 +227,9 @@ const Services = () => {
               <img
                 src="https://r2.agileproductions.in/site-images/brand-coverage-mobile.webp"
                 alt="Brand Coverage"
+                loading="lazy"
+                width="600"
+                height="900"
                 className="w-full h-auto max-w-md"
               />
             </div>
