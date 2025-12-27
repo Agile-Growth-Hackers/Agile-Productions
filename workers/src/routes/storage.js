@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { uploadToR2, deleteFromR2, generateUniqueKey } from '../utils/r2.js';
 import { validateFileSize } from '../utils/file-validation.js';
 import { ensureWebPExtension } from '../utils/webp.js';
+import { compressImage, getMobileDimensions, shouldOptimizeForMobile } from '../utils/tinypng.js';
 
 const storage = new Hono();
 
@@ -117,9 +118,47 @@ storage.post('/', async (c) => {
     const r2Key = generateUniqueKey(category, filename);
     console.log('R2 key:', r2Key);
 
-    console.log('Uploading to R2...');
+    console.log('Uploading desktop version to R2...');
     const cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
-    console.log('Upload successful, CDN URL:', cdnUrl);
+    console.log('Desktop upload successful, CDN URL:', cdnUrl);
+
+    // Create mobile version if category supports it
+    let cdnUrlMobile = null;
+    if (shouldOptimizeForMobile(category) && c.env.TINYPNG_API_KEY) {
+      try {
+        console.log('Creating mobile version with TinyPNG...');
+
+        // Convert file to ArrayBuffer
+        const imageBuffer = await file.arrayBuffer();
+
+        // Get mobile dimensions for this category
+        const mobileDims = getMobileDimensions(category);
+        console.log(`Mobile dimensions for ${category}:`, mobileDims);
+
+        // Compress and resize for mobile
+        const mobileBuffer = await compressImage(
+          imageBuffer,
+          c.env.TINYPNG_API_KEY,
+          mobileDims
+        );
+
+        // Generate mobile R2 key (add -mobile suffix before extension)
+        const mobileR2Key = r2Key.replace(/\.webp$/, '-mobile.webp');
+
+        // Create File object from buffer for mobile version
+        const mobileFile = new File([mobileBuffer], filename.replace(/\.webp$/, '-mobile.webp'), {
+          type: 'image/webp'
+        });
+
+        // Upload mobile version to R2
+        console.log('Uploading mobile version to R2...');
+        cdnUrlMobile = await uploadToR2(c.env.BUCKET, mobileR2Key, mobileFile, 'image/webp');
+        console.log('Mobile upload successful, CDN URL:', cdnUrlMobile);
+      } catch (error) {
+        console.error('Mobile version creation failed (continuing with desktop only):', error);
+        // Don't fail the whole upload if mobile version fails
+      }
+    }
 
     // Store in database
     console.log('Storing in database...');
@@ -127,8 +166,8 @@ storage.post('/', async (c) => {
     const fileSize = file.size || null;
     console.log('File size:', fileSize);
     const result = await db.prepare(
-      'INSERT INTO image_storage (filename, r2_key, cdn_url, category, file_size) VALUES (?, ?, ?, ?, ?)'
-    ).bind(filename, r2Key, cdnUrl, category, fileSize).run();
+      'INSERT INTO image_storage (filename, r2_key, cdn_url, cdn_url_mobile, category, file_size) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, category, fileSize).run();
     console.log('Database insert successful');
 
     // Get the inserted ID
@@ -151,6 +190,7 @@ storage.post('/', async (c) => {
       id: insertedId,
       filename,
       cdn_url: cdnUrl,
+      cdn_url_mobile: cdnUrlMobile,
       r2_key: r2Key,
       category,
       file_size: fileSize

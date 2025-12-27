@@ -4,6 +4,7 @@ import { authMiddleware } from './middleware/auth.js';
 import { requireSuperAdmin } from './middleware/rbac.js';
 import { publicRateLimit, adminRateLimit } from './middleware/rate-limit.js';
 import { activityLoggerMiddleware } from './utils/activity-logger.js';
+import { isMobileDevice, transformForDevice } from './utils/device-detection.js';
 import authRoutes from './routes/auth.js';
 import storageRoutes from './routes/storage.js';
 import sliderRoutes from './routes/slider.js';
@@ -28,10 +29,12 @@ app.use('/api/logos', publicRateLimit);
 app.get('/api/slider', async (c) => {
   try {
     const db = c.env.DB;
+    const isMobile = isMobileDevice(c.req.raw);
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, object_position, display_order FROM slider_images WHERE is_active = 1 ORDER BY display_order'
+      'SELECT id, cdn_url, cdn_url_mobile, object_position, display_order FROM slider_images WHERE is_active = 1 ORDER BY display_order'
     ).all();
-    return c.json(results);
+    const transformedResults = transformForDevice(results, isMobile);
+    return c.json(transformedResults);
   } catch (error) {
     return c.json({ error: 'Failed to fetch slides' }, 500);
   }
@@ -40,10 +43,12 @@ app.get('/api/slider', async (c) => {
 app.get('/api/gallery', async (c) => {
   try {
     const db = c.env.DB;
+    const isMobile = isMobileDevice(c.req.raw);
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, display_order FROM gallery_images WHERE is_active = 1 ORDER BY display_order'
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 ORDER BY display_order'
     ).all();
-    return c.json(results);
+    const transformedResults = transformForDevice(results, isMobile);
+    return c.json(transformedResults);
   } catch (error) {
     return c.json({ error: 'Failed to fetch gallery' }, 500);
   }
@@ -52,10 +57,12 @@ app.get('/api/gallery', async (c) => {
 app.get('/api/gallery/mobile', async (c) => {
   try {
     const db = c.env.DB;
+    const isMobile = true; // This endpoint is specifically for mobile
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, display_order FROM gallery_images WHERE is_active = 1 AND mobile_visible = 1 ORDER BY display_order LIMIT 10'
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND mobile_visible = 1 ORDER BY display_order LIMIT 10'
     ).all();
-    return c.json(results);
+    const transformedResults = transformForDevice(results, isMobile);
+    return c.json(transformedResults);
   } catch (error) {
     return c.json({ error: 'Failed to fetch gallery' }, 500);
   }
@@ -64,10 +71,12 @@ app.get('/api/gallery/mobile', async (c) => {
 app.get('/api/logos', async (c) => {
   try {
     const db = c.env.DB;
+    const isMobile = isMobileDevice(c.req.raw);
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, alt_text, display_order FROM client_logos WHERE is_active = 1 ORDER BY display_order'
+      'SELECT id, cdn_url, cdn_url_mobile, alt_text, display_order FROM client_logos WHERE is_active = 1 ORDER BY display_order'
     ).all();
-    return c.json(results);
+    const transformedResults = transformForDevice(results, isMobile);
+    return c.json(transformedResults);
   } catch (error) {
     return c.json({ error: 'Failed to fetch logos' }, 500);
   }

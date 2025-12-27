@@ -6,7 +6,9 @@
       "Bash(cat:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(npx wrangler d1 execute:*)",
+      "Bash(npx wrangler secret put:*)"
     ]
   }
 }
