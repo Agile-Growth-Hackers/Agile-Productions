@@ -120,10 +120,14 @@ export default function LogosSection() {
         filename: selectedImage.filename,
         alt_text: selectedImage.filename.replace(/\.(webp|png|jpg|jpeg)$/i, '')
       });
+      setShowPicker(false);
       await fetchLogos();
       setError('');
+      showToast('Logo added successfully!', 'success');
     } catch (err) {
-      setError('Failed to add logo');
+      const errorMessage = err.message || 'Failed to add logo';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
       console.error(err);
     }
   };
@@ -298,9 +302,10 @@ export default function LogosSection() {
 
         <ImagePickerModal
           isOpen={showPicker}
-          category="client-logo"
+          category="logos/client"
           onSelect={handleSelectImage}
           onClose={() => setShowPicker(false)}
+          excludeR2Keys={logos.map(logo => logo.r2_key)}
         />
 
         {/* Save Confirmation Modal */}

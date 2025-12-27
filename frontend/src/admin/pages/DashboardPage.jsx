@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useAuth } from '../../context/AuthContext';
@@ -7,16 +6,14 @@ import SliderSection from '../components/SliderSection';
 import GallerySection from '../components/GallerySection';
 import LogosSection from '../components/LogosSection';
 import UsageSection from '../components/UsageSection';
+import UsersSection from '../components/UsersSection';
+import ActivityLogSection from '../components/ActivityLogSection';
+import ProfileDropdown from '../components/ProfileDropdown';
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const { logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/admin/login');
-  };
+  const { user } = useAuth();
+  const isSuperAdmin = user?.isSuperAdmin;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -29,12 +26,7 @@ export default function DashboardPage() {
               <span className="text-gray-400">|</span>
               <span className="text-sm text-gray-600">Agile Productions</span>
             </div>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              Logout
-            </button>
+            <ProfileDropdown />
           </div>
         </div>
       </header>
@@ -53,6 +45,30 @@ export default function DashboardPage() {
             >
               Dashboard
             </button>
+            {isSuperAdmin && (
+              <>
+                <button
+                  onClick={() => setActiveTab('users')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === 'users'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Users
+                </button>
+                <button
+                  onClick={() => setActiveTab('activity-log')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === 'activity-log'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Activity Log
+                </button>
+              </>
+            )}
             <button
               onClick={() => setActiveTab('usage')}
               className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
@@ -70,7 +86,7 @@ export default function DashboardPage() {
       {/* Main Content */}
       <DndProvider backend={HTML5Backend}>
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {activeTab === 'dashboard' ? (
+          {activeTab === 'dashboard' && (
             <div className="space-y-8">
               {/* Hero Slider Section */}
               <SliderSection />
@@ -81,9 +97,13 @@ export default function DashboardPage() {
               {/* Client Logos Section */}
               <LogosSection />
             </div>
-          ) : (
-            <UsageSection />
           )}
+
+          {activeTab === 'users' && isSuperAdmin && <UsersSection />}
+
+          {activeTab === 'activity-log' && isSuperAdmin && <ActivityLogSection />}
+
+          {activeTab === 'usage' && <UsageSection />}
         </main>
       </DndProvider>
     </div>

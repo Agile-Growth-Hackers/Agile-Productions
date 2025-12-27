@@ -29,7 +29,7 @@ storage.get('/download/:r2Key', async (c) => {
       headers: {
         'Content-Type': 'image/webp',
         'Content-Disposition': `attachment; filename="${filename}"`,
-        'Cache-Control': 'public, max-age=31536000',
+        'Cache-Control': 'public, max-age=600, s-maxage=31536000',
       },
     });
   } catch (error) {
@@ -44,8 +44,8 @@ storage.get('/:category', async (c) => {
     const category = c.req.param('category');
     const db = c.env.DB;
 
-    // For client-logo category, also include images from client_logos table
-    if (category === 'client-logo') {
+    // For logos/client category, also include images from client_logos table
+    if (category === 'logos/client') {
       // Get from image_storage
       const { results: storageResults } = await db.prepare(
         'SELECT * FROM image_storage WHERE category = ? ORDER BY created_at DESC'
@@ -64,7 +64,7 @@ storage.get('/:category', async (c) => {
         if (!existingKeys.has(logo.r2_key)) {
           merged.push({
             ...logo,
-            category: 'client-logo'
+            category: 'logos/client'
           });
         }
       }
@@ -125,6 +125,18 @@ storage.post('/', async (c) => {
 
     // Get the inserted ID
     const insertedId = result.meta.last_row_id;
+
+    // Log activity
+    const logActivity = c.get('logActivity');
+    if (logActivity) {
+      await logActivity({
+        actionType: 'image_upload',
+        entityType: 'image_storage',
+        entityId: insertedId,
+        description: `Uploaded image to storage: ${filename}`,
+        newValues: { filename, category, r2Key, fileSize }
+      });
+    }
 
     return c.json({
       success: true,
@@ -198,9 +210,9 @@ storage.delete('/:id', async (c) => {
     ).bind(image.r2_key).all();
     if (galleryResults.length > 0) usedIn.push('Gallery');
 
-    // Check client_logos
+    // Check client_logos (only active logos)
     const { results: logoResults } = await db.prepare(
-      'SELECT id FROM client_logos WHERE r2_key = ?'
+      'SELECT id FROM client_logos WHERE r2_key = ? AND is_active = 1'
     ).bind(image.r2_key).all();
     if (logoResults.length > 0) usedIn.push('Logos');
 
@@ -216,6 +228,18 @@ storage.delete('/:id', async (c) => {
 
     // Delete from database
     await db.prepare('DELETE FROM image_storage WHERE id = ?').bind(id).run();
+
+    // Log activity
+    const logActivity = c.get('logActivity');
+    if (logActivity) {
+      await logActivity({
+        actionType: 'image_delete',
+        entityType: 'image_storage',
+        entityId: id,
+        description: `Deleted image from storage: ${image.filename}`,
+        oldValues: image
+      });
+    }
 
     return c.json({ success: true });
   } catch (error) {

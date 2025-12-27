@@ -72,8 +72,12 @@ class ApiService {
     return data;
   }
 
-  logout() {
+  clearAuth() {
     this.setToken(null);
+  }
+
+  async logout() {
+    return this.request('/api/auth/logout', { method: 'POST' });
   }
 
   // Public endpoints
@@ -92,7 +96,7 @@ class ApiService {
 
   // Admin - Storage
   async getStorageImages(category) {
-    return this.request(`/api/admin/storage/${category}`);
+    return this.request(`/api/admin/storage/${encodeURIComponent(category)}`);
   }
 
   async uploadToStorage(file, category) {
@@ -336,6 +340,76 @@ class ApiService {
   // Admin - Usage
   async getUsageStats() {
     return this.request('/api/admin/usage');
+  }
+
+  // Admin - User Management (Super Admin only)
+  async getUsers() {
+    return this.request('/api/admin/users');
+  }
+
+  async createUser(userData) {
+    return this.request('/api/admin/users', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  }
+
+  async updateUser(userId, userData) {
+    return this.request(`/api/admin/users/${userId}`, {
+      method: 'PUT',
+      body: JSON.stringify(userData),
+    });
+  }
+
+  async deleteUser(userId) {
+    return this.request(`/api/admin/users/${userId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Admin - Activity Logs (Super Admin only)
+  async getActivityLogs(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    return this.request(`/api/admin/activity-logs?${query}`);
+  }
+
+  async getActivityLog(id) {
+    return this.request(`/api/admin/activity-logs/${id}`);
+  }
+
+  // Admin - Profile
+  async getProfile() {
+    return this.request('/api/admin/profile');
+  }
+
+  async updateProfile(data) {
+    return this.request('/api/admin/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updatePassword(currentPassword, newPassword) {
+    return this.request('/api/admin/profile/password', {
+      method: 'PUT',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+  }
+
+  async uploadProfilePicture(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    return this.request('/api/admin/profile/picture', {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  async deleteProfilePicture() {
+    return this.request('/api/admin/profile/picture', {
+      method: 'DELETE',
+    });
   }
 }
 

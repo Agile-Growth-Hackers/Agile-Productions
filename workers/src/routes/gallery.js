@@ -72,7 +72,7 @@ gallery.post('/', async (c) => {
     ).all();
     const nextOrder = (results[0]?.max_order || 0) + 1;
 
-    await db.prepare(
+    const result = await db.prepare(
       'INSERT INTO gallery_images (filename, r2_key, cdn_url, display_order, mobile_visible) VALUES (?, ?, ?, ?, ?)'
     ).bind(filename, r2Key, cdnUrl, nextOrder, mobileVisible).run();
 
@@ -80,6 +80,18 @@ gallery.post('/', async (c) => {
     await db.prepare(
       'INSERT OR IGNORE INTO image_storage (filename, r2_key, cdn_url, category) VALUES (?, ?, ?, ?)'
     ).bind(filename, r2Key, cdnUrl, 'gallery').run();
+
+    // Log activity
+    const logActivity = c.get('logActivity');
+    if (logActivity) {
+      await logActivity({
+        actionType: 'content_create',
+        entityType: 'gallery_image',
+        entityId: result.meta.last_row_id,
+        description: `Added new gallery image: ${filename}`,
+        newValues: { filename, r2Key, cdnUrl, displayOrder: nextOrder, mobileVisible }
+      });
+    }
 
     return c.json({ success: true, cdnUrl, r2Key });
   } catch (error) {
@@ -123,10 +135,29 @@ gallery.put('/:id', async (c) => {
       }
 
       console.log('Updating database with:', { filename, r2Key, cdnUrl, id });
+
+      // Get old values before update
+      const { results: oldData } = await db.prepare(
+        'SELECT filename, r2_key, cdn_url FROM gallery_images WHERE id = ?'
+      ).bind(id).all();
+
       // Update database (don't delete old R2 file since it might be in use elsewhere)
       await db.prepare(
         'UPDATE gallery_images SET filename = ?, r2_key = ?, cdn_url = ? WHERE id = ?'
       ).bind(filename, r2Key, cdnUrl, id).run();
+
+      // Log activity
+      const logActivity = c.get('logActivity');
+      if (logActivity && oldData.length > 0) {
+        await logActivity({
+          actionType: 'content_update',
+          entityType: 'gallery_image',
+          entityId: id,
+          description: `Updated gallery image ID ${id}`,
+          oldValues: oldData[0],
+          newValues: { filename, r2Key, cdnUrl }
+        });
+      }
 
       console.log('Gallery update successful');
       return c.json({ success: true, cdnUrl });
@@ -160,6 +191,19 @@ gallery.put('/:id', async (c) => {
           'UPDATE gallery_images SET filename = ?, r2_key = ?, cdn_url = ? WHERE id = ?'
         ).bind(filename, r2Key, cdnUrl, id).run();
 
+        // Log activity
+        const logActivity = c.get('logActivity');
+        if (logActivity) {
+          await logActivity({
+            actionType: 'content_update',
+            entityType: 'gallery_image',
+            entityId: id,
+            description: `Updated gallery image ID ${id} (replaced file)`,
+            oldValues: results[0],
+            newValues: { filename, r2Key, cdnUrl }
+          });
+        }
+
         console.log('Gallery update successful');
         return c.json({ success: true, cdnUrl });
       }
@@ -182,9 +226,27 @@ gallery.put('/:id/mobile-visibility', async (c) => {
     const { visible } = await c.req.json();
     const db = c.env.DB;
 
+    // Get old value
+    const { results: oldData } = await db.prepare(
+      'SELECT mobile_visible FROM gallery_images WHERE id = ?'
+    ).bind(id).all();
+
     await db.prepare(
       'UPDATE gallery_images SET mobile_visible = ? WHERE id = ?'
     ).bind(visible ? 1 : 0, id).run();
+
+    // Log activity
+    const logActivity = c.get('logActivity');
+    if (logActivity && oldData.length > 0) {
+      await logActivity({
+        actionType: 'content_update',
+        entityType: 'gallery_image',
+        entityId: id,
+        description: `Toggled mobile visibility for gallery image ID ${id}`,
+        oldValues: { mobileVisible: oldData[0].mobile_visible === 1 },
+        newValues: { mobileVisible: visible }
+      });
+    }
 
     return c.json({ success: true });
   } catch (error) {
@@ -224,6 +286,18 @@ gallery.delete('/:id', async (c) => {
     if (!isUsedElsewhere) {
       await deleteFromR2(c.env.BUCKET, image.r2_key);
       await db.prepare('DELETE FROM image_storage WHERE r2_key = ?').bind(image.r2_key).run();
+    }
+
+    // Log activity
+    const logActivity = c.get('logActivity');
+    if (logActivity) {
+      await logActivity({
+        actionType: 'content_delete',
+        entityType: 'gallery_image',
+        entityId: id,
+        description: `Deleted gallery image: ${image.filename}`,
+        oldValues: image
+      });
     }
 
     return c.json({ success: true });

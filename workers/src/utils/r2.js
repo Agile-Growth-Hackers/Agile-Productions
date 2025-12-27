@@ -8,7 +8,7 @@ export async function uploadToR2(bucket, key, file, contentType) {
     await bucket.put(key, file, {
       httpMetadata: {
         contentType: contentType || file.type || 'image/webp',
-        cacheControl: 'public, max-age=31536000, immutable', // Cache for 1 year
+        cacheControl: 'public, max-age=600, s-maxage=31536000, immutable', // Browser: 10 mins, CDN: 1 year
       },
     });
     console.log('bucket.put successful');

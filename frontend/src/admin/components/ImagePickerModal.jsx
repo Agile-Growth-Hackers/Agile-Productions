@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
-export default function ImagePickerModal({ isOpen, category, onSelect, onClose }) {
+export default function ImagePickerModal({ isOpen, category, onSelect, onClose, excludeR2Keys = [] }) {
   const { showToast } = useToast();
   const [storageImages, setStorageImages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -19,6 +19,9 @@ export default function ImagePickerModal({ isOpen, category, onSelect, onClose }
   const [confirmDelete, setConfirmDelete] = useState(null); // { type: 'single' | 'multiple', id?: number, message: string }
   const [isDeleting, setIsDeleting] = useState(false);
   const [webpQuality, setWebpQuality] = useState(90); // WebP quality: 0-100
+
+  // Filter out images that are already in use
+  const availableImages = storageImages.filter(img => !excludeR2Keys.includes(img.r2_key));
 
   useEffect(() => {
     if (isOpen && category) {
@@ -366,7 +369,7 @@ export default function ImagePickerModal({ isOpen, category, onSelect, onClose }
   const categoryLabels = {
     'slider': 'Slider Images',
     'gallery': 'Gallery Images',
-    'client-logo': 'Client Logos'
+    'logos/client': 'Client Logos'
   };
 
   return (
@@ -504,7 +507,7 @@ export default function ImagePickerModal({ isOpen, category, onSelect, onClose }
             </div>
           )}
 
-          {category === 'client-logo' && !uploading && (
+          {category === 'logos/client' && !uploading && (
             <p className="text-sm text-gray-500 text-center mt-2">
               Recommended: 400x400px or higher, square format
             </p>
@@ -527,28 +530,28 @@ export default function ImagePickerModal({ isOpen, category, onSelect, onClose }
                 <p className="mt-4 text-gray-600">Loading images...</p>
               </div>
             </div>
-          ) : storageImages.length === 0 ? (
+          ) : availableImages.length === 0 ? (
             <div className="flex items-center justify-center h-64">
               <div className="text-center">
                 <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <p className="text-gray-500">No images in storage yet</p>
-                <p className="text-sm text-gray-400 mt-1">Upload your first image to get started</p>
+                <p className="text-gray-500">{storageImages.length === 0 ? 'No images in storage yet' : 'All images are already in use'}</p>
+                <p className="text-sm text-gray-400 mt-1">{storageImages.length === 0 ? 'Upload your first image to get started' : 'Upload a new image or remove some logos from the list'}</p>
               </div>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {storageImages.map((image) => (
+              {availableImages.map((image) => (
                 <div
-                  key={image.id}
+                  key={image.r2_key}
                   className={`group relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                     selectedImageId === image.id
                       ? 'border-blue-600 ring-2 ring-blue-200'
                       : justUploadedIds.has(image.id)
                       ? 'border-green-500 ring-2 ring-green-200'
                       : 'border-gray-200 hover:border-gray-300'
-                  } ${category === 'client-logo' ? 'bg-white' : 'bg-gray-100'}`}
+                  } ${category === 'logos/client' ? 'bg-white' : 'bg-gray-100'}`}
                 >
                   {/* Image */}
                   <button
@@ -560,7 +563,7 @@ export default function ImagePickerModal({ isOpen, category, onSelect, onClose }
                       alt={image.filename}
                       loading="lazy"
                       className={`w-full h-full ${
-                        category === 'client-logo'
+                        category === 'logos/client'
                           ? 'object-contain p-2'
                           : 'object-cover'
                       }`}

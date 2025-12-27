@@ -9,21 +9,44 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem('admin_token');
-    if (token) {
-      setUser({ authenticated: true });
+    const userData = localStorage.getItem('admin_user');
+
+    if (token && userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (e) {
+        localStorage.removeItem('admin_user');
+        setUser({ authenticated: true });
+      }
     }
     setLoading(false);
   }, []);
 
   const login = async (username, password) => {
     const data = await api.login(username, password);
-    setUser({ authenticated: true, username: data.user.username });
+    const userData = {
+      authenticated: true,
+      id: data.user.id,
+      username: data.user.username,
+      fullName: data.user.fullName,
+      email: data.user.email,
+      isSuperAdmin: data.user.isSuperAdmin,
+      profilePictureUrl: data.user.profilePictureUrl
+    };
+    setUser(userData);
+    localStorage.setItem('admin_user', JSON.stringify(userData));
     return data;
   };
 
-  const logout = () => {
-    api.logout();
+  const logout = async () => {
+    try {
+      await api.logout();
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
+    api.clearAuth();
     setUser(null);
+    localStorage.removeItem('admin_user');
   };
 
   return (
