@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { uploadToR2, deleteFromR2, generateUniqueKey } from '../utils/r2.js';
+import { compressImage, getMobileDimensions } from '../utils/tinypng.js';
 
 const logos = new Hono();
 
@@ -47,8 +48,32 @@ logos.post('/', async (c) => {
 
       filename = file.name;
       r2Key = generateUniqueKey('logos/client', filename);
-      cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
       altText = altText || filename.replace(/\.(webp|png|jpg|jpeg)$/i, '');
+
+      // Compress with TinyPNG if available
+      let cdnUrlMobile = null;
+      if (c.env.TINYPNG_API_KEY) {
+        try {
+          const imageBuffer = await file.arrayBuffer();
+
+          // Compress desktop version
+          const desktopBuffer = await compressImage(imageBuffer, c.env.TINYPNG_API_KEY, {});
+          const desktopFile = new File([desktopBuffer], filename, { type: 'image/webp' });
+          cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, desktopFile, 'image/webp');
+
+          // Create mobile version
+          const mobileDims = getMobileDimensions('logos');
+          const mobileBuffer = await compressImage(imageBuffer, c.env.TINYPNG_API_KEY, mobileDims);
+          const mobileR2Key = r2Key.replace(/\.webp$/, '-mobile.webp');
+          const mobileFile = new File([mobileBuffer], filename.replace(/\.webp$/, '-mobile.webp'), { type: 'image/webp' });
+          cdnUrlMobile = await uploadToR2(c.env.BUCKET, mobileR2Key, mobileFile, 'image/webp');
+        } catch (error) {
+          console.error('TinyPNG failed, uploading original:', error);
+          cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
+        }
+      } else {
+        cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
+      }
     } else {
       return c.json({ error: 'Invalid content type' }, 400);
     }
@@ -72,8 +97,8 @@ logos.post('/', async (c) => {
       nextOrder = (orderResults[0]?.max_order || 0) + 1;
 
       result = await db.prepare(
-        'UPDATE client_logos SET filename = ?, cdn_url = ?, display_order = ?, alt_text = ?, is_active = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
-      ).bind(filename, cdnUrl, nextOrder, altText, existingId).run();
+        'UPDATE client_logos SET filename = ?, cdn_url = ?, cdn_url_mobile = ?, display_order = ?, alt_text = ?, is_active = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+      ).bind(filename, cdnUrl, cdnUrlMobile, nextOrder, altText, existingId).run();
 
       result.meta = { ...result.meta, last_row_id: existingId };
     } else if (existingResults.length === 0) {
@@ -85,8 +110,8 @@ logos.post('/', async (c) => {
       nextOrder = (orderResults[0]?.max_order || 0) + 1;
 
       result = await db.prepare(
-        'INSERT INTO client_logos (filename, r2_key, cdn_url, display_order, alt_text) VALUES (?, ?, ?, ?, ?)'
-      ).bind(filename, r2Key, cdnUrl, nextOrder, altText).run();
+        'INSERT INTO client_logos (filename, r2_key, cdn_url, cdn_url_mobile, display_order, alt_text) VALUES (?, ?, ?, ?, ?, ?)'
+      ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, nextOrder, altText).run();
     } else {
       // Active entry already exists
       return c.json({ error: 'Logo already exists in the list' }, 400);
@@ -94,8 +119,8 @@ logos.post('/', async (c) => {
 
     // Also add to image_storage if not already there
     await db.prepare(
-      'INSERT OR IGNORE INTO image_storage (filename, r2_key, cdn_url, category) VALUES (?, ?, ?, ?)'
-    ).bind(filename, r2Key, cdnUrl, 'logos/client').run();
+      'INSERT OR IGNORE INTO image_storage (filename, r2_key, cdn_url, cdn_url_mobile, category) VALUES (?, ?, ?, ?, ?)'
+    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, 'logos/client').run();
 
     // Log activity (non-blocking)
     try {

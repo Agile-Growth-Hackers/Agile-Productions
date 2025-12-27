@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { uploadToR2, deleteFromR2, generateUniqueKey } from '../utils/r2.js';
+import { compressImage, getMobileDimensions } from '../utils/tinypng.js';
 
 const gallery = new Hono();
 
@@ -60,8 +61,32 @@ gallery.post('/', async (c) => {
 
       filename = file.name;
       r2Key = generateUniqueKey('gallery', filename);
-      cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
       mobileVisible = 1;
+
+      // Compress with TinyPNG if available
+      let cdnUrlMobile = null;
+      if (c.env.TINYPNG_API_KEY) {
+        try {
+          const imageBuffer = await file.arrayBuffer();
+
+          // Compress desktop version
+          const desktopBuffer = await compressImage(imageBuffer, c.env.TINYPNG_API_KEY, {});
+          const desktopFile = new File([desktopBuffer], filename, { type: 'image/webp' });
+          cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, desktopFile, 'image/webp');
+
+          // Create mobile version
+          const mobileDims = getMobileDimensions('gallery');
+          const mobileBuffer = await compressImage(imageBuffer, c.env.TINYPNG_API_KEY, mobileDims);
+          const mobileR2Key = r2Key.replace(/\.webp$/, '-mobile.webp');
+          const mobileFile = new File([mobileBuffer], filename.replace(/\.webp$/, '-mobile.webp'), { type: 'image/webp' });
+          cdnUrlMobile = await uploadToR2(c.env.BUCKET, mobileR2Key, mobileFile, 'image/webp');
+        } catch (error) {
+          console.error('TinyPNG failed, uploading original:', error);
+          cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
+        }
+      } else {
+        cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
+      }
     } else {
       return c.json({ error: 'Invalid content type' }, 400);
     }
@@ -73,13 +98,13 @@ gallery.post('/', async (c) => {
     const nextOrder = (results[0]?.max_order || 0) + 1;
 
     const result = await db.prepare(
-      'INSERT INTO gallery_images (filename, r2_key, cdn_url, display_order, mobile_visible) VALUES (?, ?, ?, ?, ?)'
-    ).bind(filename, r2Key, cdnUrl, nextOrder, mobileVisible).run();
+      'INSERT INTO gallery_images (filename, r2_key, cdn_url, cdn_url_mobile, display_order, mobile_visible) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, nextOrder, mobileVisible).run();
 
     // Also add to image_storage if not already there
     await db.prepare(
-      'INSERT OR IGNORE INTO image_storage (filename, r2_key, cdn_url, category) VALUES (?, ?, ?, ?)'
-    ).bind(filename, r2Key, cdnUrl, 'gallery').run();
+      'INSERT OR IGNORE INTO image_storage (filename, r2_key, cdn_url, cdn_url_mobile, category) VALUES (?, ?, ?, ?, ?)'
+    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, 'gallery').run();
 
     // Log activity
     const logActivity = c.get('logActivity');
@@ -178,18 +203,45 @@ gallery.put('/:id', async (c) => {
 
       if (results.length > 0) {
         console.log('Deleting old image and uploading new one');
-        // Delete old image from R2
+        // Delete old images from R2 (both desktop and mobile)
         await deleteFromR2(c.env.BUCKET, results[0].r2_key);
+        if (results[0].cdn_url_mobile) {
+          const mobileKey = results[0].r2_key.replace(/\.webp$/, '-mobile.webp');
+          await deleteFromR2(c.env.BUCKET, mobileKey);
+        }
 
-        // Upload new image
+        // Upload new image with compression
         r2Key = generateUniqueKey('gallery', file.name || `upload-${Date.now()}.webp`);
-        cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
         filename = file.name || `upload-${Date.now()}.webp`;
+
+        let cdnUrlMobile = null;
+        if (c.env.TINYPNG_API_KEY) {
+          try {
+            const imageBuffer = await file.arrayBuffer();
+
+            // Compress desktop version
+            const desktopBuffer = await compressImage(imageBuffer, c.env.TINYPNG_API_KEY, {});
+            const desktopFile = new File([desktopBuffer], filename, { type: 'image/webp' });
+            cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, desktopFile, 'image/webp');
+
+            // Create mobile version
+            const mobileDims = getMobileDimensions('gallery');
+            const mobileBuffer = await compressImage(imageBuffer, c.env.TINYPNG_API_KEY, mobileDims);
+            const mobileR2Key = r2Key.replace(/\.webp$/, '-mobile.webp');
+            const mobileFile = new File([mobileBuffer], filename.replace(/\.webp$/, '-mobile.webp'), { type: 'image/webp' });
+            cdnUrlMobile = await uploadToR2(c.env.BUCKET, mobileR2Key, mobileFile, 'image/webp');
+          } catch (error) {
+            console.error('TinyPNG failed, uploading original:', error);
+            cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
+          }
+        } else {
+          cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
+        }
 
         // Update database
         await db.prepare(
-          'UPDATE gallery_images SET filename = ?, r2_key = ?, cdn_url = ? WHERE id = ?'
-        ).bind(filename, r2Key, cdnUrl, id).run();
+          'UPDATE gallery_images SET filename = ?, r2_key = ?, cdn_url = ?, cdn_url_mobile = ? WHERE id = ?'
+        ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, id).run();
 
         // Log activity
         const logActivity = c.get('logActivity');

@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { uploadToR2, deleteFromR2, generateUniqueKey } from '../utils/r2.js';
+import { compressImage, getMobileDimensions } from '../utils/tinypng.js';
 
 const slider = new Hono();
 
@@ -47,7 +48,31 @@ slider.post('/', async (c) => {
 
       filename = file.name;
       r2Key = generateUniqueKey('slider', filename);
-      cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
+
+      // Compress with TinyPNG if available
+      let cdnUrlMobile = null;
+      if (c.env.TINYPNG_API_KEY) {
+        try {
+          const imageBuffer = await file.arrayBuffer();
+
+          // Compress desktop version
+          const desktopBuffer = await compressImage(imageBuffer, c.env.TINYPNG_API_KEY, {});
+          const desktopFile = new File([desktopBuffer], filename, { type: 'image/webp' });
+          cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, desktopFile, 'image/webp');
+
+          // Create mobile version
+          const mobileDims = getMobileDimensions('slider');
+          const mobileBuffer = await compressImage(imageBuffer, c.env.TINYPNG_API_KEY, mobileDims);
+          const mobileR2Key = r2Key.replace(/\.webp$/, '-mobile.webp');
+          const mobileFile = new File([mobileBuffer], filename.replace(/\.webp$/, '-mobile.webp'), { type: 'image/webp' });
+          cdnUrlMobile = await uploadToR2(c.env.BUCKET, mobileR2Key, mobileFile, 'image/webp');
+        } catch (error) {
+          console.error('TinyPNG failed, uploading original:', error);
+          cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
+        }
+      } else {
+        cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
+      }
     } else {
       return c.json({ error: 'Invalid content type' }, 400);
     }
@@ -60,13 +85,13 @@ slider.post('/', async (c) => {
 
     // Insert into database
     const result = await db.prepare(
-      'INSERT INTO slider_images (filename, r2_key, cdn_url, display_order, object_position) VALUES (?, ?, ?, ?, ?)'
-    ).bind(filename, r2Key, cdnUrl, nextOrder, objectPosition).run();
+      'INSERT INTO slider_images (filename, r2_key, cdn_url, cdn_url_mobile, display_order, object_position) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, nextOrder, objectPosition).run();
 
     // Also add to image_storage if not already there
     await db.prepare(
-      'INSERT OR IGNORE INTO image_storage (filename, r2_key, cdn_url, category) VALUES (?, ?, ?, ?)'
-    ).bind(filename, r2Key, cdnUrl, 'slider').run();
+      'INSERT OR IGNORE INTO image_storage (filename, r2_key, cdn_url, cdn_url_mobile, category) VALUES (?, ?, ?, ?, ?)'
+    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, 'slider').run();
 
     // Log activity
     const logActivity = c.get('logActivity');
@@ -148,18 +173,45 @@ slider.put('/:id', async (c) => {
       ).bind(id).all();
 
       if (results.length > 0) {
-        // Delete old image from R2
+        // Delete old images from R2 (both desktop and mobile)
         await deleteFromR2(c.env.BUCKET, results[0].r2_key);
+        if (results[0].cdn_url_mobile) {
+          const mobileKey = results[0].r2_key.replace(/\.webp$/, '-mobile.webp');
+          await deleteFromR2(c.env.BUCKET, mobileKey);
+        }
 
-        // Upload new image
+        // Upload new image with compression
         r2Key = generateUniqueKey('slider', file.name);
-        cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
         filename = file.name;
+
+        let cdnUrlMobile = null;
+        if (c.env.TINYPNG_API_KEY) {
+          try {
+            const imageBuffer = await file.arrayBuffer();
+
+            // Compress desktop version
+            const desktopBuffer = await compressImage(imageBuffer, c.env.TINYPNG_API_KEY, {});
+            const desktopFile = new File([desktopBuffer], filename, { type: 'image/webp' });
+            cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, desktopFile, 'image/webp');
+
+            // Create mobile version
+            const mobileDims = getMobileDimensions('slider');
+            const mobileBuffer = await compressImage(imageBuffer, c.env.TINYPNG_API_KEY, mobileDims);
+            const mobileR2Key = r2Key.replace(/\.webp$/, '-mobile.webp');
+            const mobileFile = new File([mobileBuffer], filename.replace(/\.webp$/, '-mobile.webp'), { type: 'image/webp' });
+            cdnUrlMobile = await uploadToR2(c.env.BUCKET, mobileR2Key, mobileFile, 'image/webp');
+          } catch (error) {
+            console.error('TinyPNG failed, uploading original:', error);
+            cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
+          }
+        } else {
+          cdnUrl = await uploadToR2(c.env.BUCKET, r2Key, file, 'image/webp');
+        }
 
         // Update database
         await db.prepare(
-          'UPDATE slider_images SET filename = ?, r2_key = ?, cdn_url = ?, object_position = ? WHERE id = ?'
-        ).bind(filename, r2Key, cdnUrl, objectPosition, id).run();
+          'UPDATE slider_images SET filename = ?, r2_key = ?, cdn_url = ?, cdn_url_mobile = ?, object_position = ? WHERE id = ?'
+        ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, objectPosition, id).run();
 
         // Log activity
         const logActivity = c.get('logActivity');
