@@ -4,7 +4,7 @@
  * https://web.dev/vitals/
  */
 
-import { onCLS, onFID, onFCP, onLCP, onTTFB, onINP } from 'web-vitals';
+import { onCLS, onFCP, onLCP, onTTFB, onINP } from 'web-vitals';
 
 /**
  * Send vitals to analytics endpoint
@@ -51,13 +51,12 @@ function sendToAnalytics({ name, value, rating, delta, id }) {
 export function initWebVitals() {
   // Core Web Vitals
   onCLS(sendToAnalytics);  // Cumulative Layout Shift
-  onFID(sendToAnalytics);  // First Input Delay (deprecated, use INP)
+  onINP(sendToAnalytics);  // Interaction to Next Paint (replaces FID)
   onLCP(sendToAnalytics);  // Largest Contentful Paint
 
   // Other important metrics
   onFCP(sendToAnalytics);  // First Contentful Paint
   onTTFB(sendToAnalytics); // Time to First Byte
-  onINP(sendToAnalytics);  // Interaction to Next Paint (replaces FID)
 }
 
 /**

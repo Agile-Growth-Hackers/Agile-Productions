@@ -4,12 +4,16 @@ import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { initWebVitals } from './utils/webVitals'
 import { initSentry } from './utils/sentryConfig'
+import { initPWAInstallPrompt } from './utils/pwaUtils'
 
 // Initialize Sentry error tracking
 initSentry();
 
 // Initialize Web Vitals performance monitoring
 initWebVitals();
+
+// Initialize PWA install prompt listener
+initPWAInstallPrompt();
 
 // Remove console logs in production
 if (import.meta.env.PROD) {

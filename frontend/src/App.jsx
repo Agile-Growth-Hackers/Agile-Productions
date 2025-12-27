@@ -10,6 +10,8 @@ import Gallery from './components/Gallery';
 import Clients from './components/Clients';
 import Footer from './components/Footer';
 import ErrorTest from './components/ErrorTest';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import PWAUpdatePrompt from './components/PWAUpdatePrompt';
 
 // Lazy load admin pages
 const LoginPage = lazy(() => import('./admin/pages/LoginPage'));
@@ -58,6 +60,9 @@ function App() {
           </Routes>
           {/* Test button - only shows in development */}
           {import.meta.env.DEV && <ErrorTest />}
+          {/* PWA install and update prompts */}
+          <PWAInstallPrompt />
+          <PWAUpdatePrompt />
         </BrowserRouter>
       </ToastProvider>
     </AuthProvider>
