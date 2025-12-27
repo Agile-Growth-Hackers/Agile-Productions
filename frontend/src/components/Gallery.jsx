@@ -2,31 +2,31 @@ import { useState, useEffect } from 'react';
 import { useInView } from '../hooks/useInView';
 import api from '../services/api';
 
+// Fallback images (moved outside component to avoid recreation)
+const fallbackImages = [
+  'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=600',
+  'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=600',
+  'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?q=80&w=600',
+  'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=600',
+  'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=600',
+  'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=600',
+  'https://images.unsplash.com/photo-1580273916550-e323be2ae537?q=80&w=600',
+  'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?q=80&w=600',
+  'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=600',
+  'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=600',
+  'https://images.unsplash.com/photo-1563720360172-67b8f3dce741?q=80&w=600',
+  'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=600',
+];
+
 const Gallery = () => {
   const [activeImage, setActiveImage] = useState(null);
   const [galleryImages, setGalleryImages] = useState([]);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile] = useState(window.innerWidth < 768);
 
   // Animation refs
   const [titleRef, titleInView] = useInView({ threshold: 0.5 });
   const [mobileGalleryRef, mobileGalleryInView] = useInView({ threshold: 0.3 });
   const [desktopGalleryRef, desktopGalleryInView] = useInView({ threshold: 0.3 });
-
-  // Fallback images
-  const fallbackImages = [
-    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?q=80&w=600',
-    'https://images.unsplash.com/photo-1568772585407-9361f9bf3a87?q=80&w=600',
-    'https://images.unsplash.com/photo-1449426468159-d96dbf08f19f?q=80&w=600',
-    'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=600',
-    'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=600',
-    'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=600',
-    'https://images.unsplash.com/photo-1580273916550-e323be2ae537?q=80&w=600',
-    'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?q=80&w=600',
-    'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?q=80&w=600',
-    'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?q=80&w=600',
-    'https://images.unsplash.com/photo-1563720360172-67b8f3dce741?q=80&w=600',
-    'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?q=80&w=600',
-  ];
 
   // Fetch gallery images from API (with time-based caching to prevent reloads)
   useEffect(() => {

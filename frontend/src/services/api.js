@@ -47,7 +47,7 @@ class ApiService {
           if (errorData.error) {
             errorMessage = errorData.error;
           }
-        } catch (e) {
+        } catch {
           // If can't parse JSON, use status code
         }
 

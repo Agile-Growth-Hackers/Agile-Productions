@@ -4,7 +4,7 @@ import api from '../../services/api';
 import PasswordInput from '../../components/PasswordInput';
 import { validatePassword, getPasswordRequirements } from '../../utils/passwordValidation';
 
-export default function EditProfileModal({ onClose, onSaved }) {
+export default function EditProfileModal({ onClose, onSaved: _onSaved }) {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [loading, setLoading] = useState(false);
