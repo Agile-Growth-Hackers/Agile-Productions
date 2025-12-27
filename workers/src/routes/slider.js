@@ -270,7 +270,15 @@ slider.delete('/:id', async (c) => {
 
     // Only delete from R2 and image_storage if not used elsewhere
     if (!isUsedElsewhere) {
+      // Delete desktop version
       await deleteFromR2(c.env.BUCKET, slide.r2_key);
+
+      // Delete mobile version if it exists
+      if (slide.cdn_url_mobile) {
+        const mobileKey = slide.r2_key.replace(/\.webp$/, '-mobile.webp');
+        await deleteFromR2(c.env.BUCKET, mobileKey);
+      }
+
       await db.prepare('DELETE FROM image_storage WHERE r2_key = ?').bind(slide.r2_key).run();
     }
 

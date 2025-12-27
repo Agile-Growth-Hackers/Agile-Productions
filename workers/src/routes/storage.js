@@ -284,8 +284,14 @@ storage.delete('/:id', async (c) => {
       }, 409);
     }
 
-    // Delete from R2
+    // Delete from R2 (both desktop and mobile versions)
     await deleteFromR2(c.env.BUCKET, image.r2_key);
+
+    // Delete mobile version if it exists
+    if (image.cdn_url_mobile) {
+      const mobileKey = image.r2_key.replace(/\.webp$/, '-mobile.webp');
+      await deleteFromR2(c.env.BUCKET, mobileKey);
+    }
 
     // Delete from database
     await db.prepare('DELETE FROM image_storage WHERE id = ?').bind(id).run();
