@@ -87,12 +87,12 @@ export async function compressImage(imageBuffer, apiKey, options = {}) {
  */
 export function getMobileDimensions(category) {
   const dimensions = {
-    slider: { width: 800, height: 600, method: 'cover' },
-    gallery: { width: 600, height: 450, method: 'cover' },
-    logos: { width: 300, height: 200, method: 'fit' }, // 'fit' preserves logos better
+    slider: { width: 1200, height: 900, method: 'cover' },
+    gallery: { width: 900, height: 675, method: 'cover' },
+    logos: { width: 400, height: 300, method: 'fit' }, // 'fit' preserves logos better
   };
 
-  return dimensions[category] || { width: 800, height: 600, method: 'cover' };
+  return dimensions[category] || { width: 1200, height: 900, method: 'cover' };
 }
 
 /**
