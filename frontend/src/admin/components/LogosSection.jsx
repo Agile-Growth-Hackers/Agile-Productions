@@ -117,6 +117,7 @@ export default function LogosSection() {
       await api.addLogo({
         r2_key: selectedImage.r2_key,
         cdn_url: selectedImage.cdn_url,
+        cdn_url_mobile: selectedImage.cdn_url_mobile,
         filename: selectedImage.filename,
         alt_text: selectedImage.filename.replace(/\.(webp|png|jpg|jpeg)$/i, '')
       });

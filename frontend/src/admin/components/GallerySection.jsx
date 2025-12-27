@@ -86,6 +86,7 @@ export default function GallerySection() {
         await api.updateGalleryImage(editingImageId, {
           r2_key: selectedImage.r2_key,
           cdn_url: selectedImage.cdn_url,
+          cdn_url_mobile: selectedImage.cdn_url_mobile,
           filename: selectedImage.filename
         });
         showToast('Gallery image updated successfully!', 'success');
@@ -93,6 +94,7 @@ export default function GallerySection() {
         await api.addGalleryImage({
           r2_key: selectedImage.r2_key,
           cdn_url: selectedImage.cdn_url,
+          cdn_url_mobile: selectedImage.cdn_url_mobile,
           filename: selectedImage.filename
         });
         showToast('Gallery image added successfully!', 'success');

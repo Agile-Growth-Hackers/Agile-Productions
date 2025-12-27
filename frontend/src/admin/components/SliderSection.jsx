@@ -107,6 +107,7 @@ export default function SliderSection() {
         await api.updateSlider(editingSlideId, {
           r2_key: selectedImage.r2_key,
           cdn_url: selectedImage.cdn_url,
+          cdn_url_mobile: selectedImage.cdn_url_mobile,
           filename: selectedImage.filename
         });
       } else {
@@ -114,6 +115,7 @@ export default function SliderSection() {
         await api.addSlider({
           r2_key: selectedImage.r2_key,
           cdn_url: selectedImage.cdn_url,
+          cdn_url_mobile: selectedImage.cdn_url_mobile,
           filename: selectedImage.filename,
           object_position: 'center center'
         });
