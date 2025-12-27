@@ -143,7 +143,10 @@ const Gallery = () => {
               <img
                 src={galleryImages[0]}
                 alt="Gallery 1"
+                loading="lazy"
                 decoding="async"
+                width="600"
+                height="800"
                 onClick={() => handleImageClick(0)}
                 className={`w-full h-full object-cover rounded-tl-3xl transition-all duration-500 ease-in-out ${
                   activeImage === 0 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -171,7 +174,10 @@ const Gallery = () => {
               <img
                 src={galleryImages[1]}
                 alt="Gallery 2"
+                loading="lazy"
                 decoding="async"
+                width="600"
+                height="800"
                 onClick={() => handleImageClick(1)}
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                   activeImage === 1 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -199,7 +205,10 @@ const Gallery = () => {
               <img
                 src={galleryImages[2]}
                 alt="Gallery 3"
+                loading="lazy"
                 decoding="async"
+                width="600"
+                height="800"
                 onClick={() => handleImageClick(2)}
                 className={`w-full h-full object-cover rounded-tr-3xl transition-all duration-500 ease-in-out ${
                   activeImage === 2 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -227,7 +236,10 @@ const Gallery = () => {
               <img
                 src={galleryImages[3]}
                 alt="Gallery 4"
+                loading="lazy"
                 decoding="async"
+                width="600"
+                height="800"
                 onClick={() => handleImageClick(3)}
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                   activeImage === 3 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -255,7 +267,10 @@ const Gallery = () => {
               <img
                 src={galleryImages[4]}
                 alt="Gallery 5"
+                loading="lazy"
                 decoding="async"
+                width="600"
+                height="800"
                 onClick={() => handleImageClick(4)}
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                   activeImage === 4 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -283,7 +298,10 @@ const Gallery = () => {
               <img
                 src={galleryImages[5]}
                 alt="Gallery 6"
+                loading="lazy"
                 decoding="async"
+                width="600"
+                height="800"
                 onClick={() => handleImageClick(5)}
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                   activeImage === 5 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -311,7 +329,10 @@ const Gallery = () => {
               <img
                 src={galleryImages[6]}
                 alt="Gallery 7"
+                loading="lazy"
                 decoding="async"
+                width="600"
+                height="800"
                 onClick={() => handleImageClick(6)}
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                   activeImage === 6 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -339,7 +360,10 @@ const Gallery = () => {
               <img
                 src={galleryImages[7]}
                 alt="Gallery 8"
+                loading="lazy"
                 decoding="async"
+                width="600"
+                height="800"
                 onClick={() => handleImageClick(7)}
                 className={`w-full h-full object-cover rounded-bl-3xl transition-all duration-500 ease-in-out ${
                   activeImage === 7 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -367,7 +391,10 @@ const Gallery = () => {
               <img
                 src={galleryImages[8]}
                 alt="Gallery 9"
+                loading="lazy"
                 decoding="async"
+                width="600"
+                height="800"
                 onClick={() => handleImageClick(8)}
                 className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                   activeImage === 8 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -395,7 +422,10 @@ const Gallery = () => {
               <img
                 src={galleryImages[9]}
                 alt="Gallery 10"
+                loading="lazy"
                 decoding="async"
+                width="600"
+                height="800"
                 onClick={() => handleImageClick(9)}
                 className={`w-full h-full object-cover rounded-br-3xl transition-all duration-500 ease-in-out ${
                   activeImage === 9 ? 'scale-125 z-50' : 'grayscale brightness-75 z-0'
@@ -436,6 +466,8 @@ const Gallery = () => {
               src={galleryImages[0]}
               alt="Gallery 1"
               loading="lazy"
+              width="800"
+              height="600"
               onClick={() => handleImageClick(0)}
               className={`w-full h-full object-cover rounded-tl-3xl transition-all duration-500 ease-in-out ${
                 activeImage === 0
@@ -468,6 +500,8 @@ const Gallery = () => {
               src={galleryImages[1]}
               alt="Gallery 2"
               loading="lazy"
+              width="800"
+              height="600"
               onClick={() => handleImageClick(1)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 1
@@ -500,6 +534,8 @@ const Gallery = () => {
               src={galleryImages[2]}
               alt="Gallery 3"
               loading="lazy"
+              width="800"
+              height="600"
               onClick={() => handleImageClick(2)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 2
@@ -532,6 +568,8 @@ const Gallery = () => {
               src={galleryImages[3]}
               alt="Gallery 4"
               loading="lazy"
+              width="800"
+              height="600"
               onClick={() => handleImageClick(3)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 3
@@ -564,6 +602,8 @@ const Gallery = () => {
               src={galleryImages[4]}
               alt="Gallery 5"
               loading="lazy"
+              width="800"
+              height="600"
               onClick={() => handleImageClick(4)}
               className={`w-full h-full object-cover rounded-tr-3xl transition-all duration-500 ease-in-out ${
                 activeImage === 4
@@ -596,6 +636,8 @@ const Gallery = () => {
               src={galleryImages[5]}
               alt="Gallery 6"
               loading="lazy"
+              width="800"
+              height="600"
               onClick={() => handleImageClick(5)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 5
@@ -628,6 +670,8 @@ const Gallery = () => {
               src={galleryImages[6]}
               alt="Gallery 7"
               loading="lazy"
+              width="800"
+              height="600"
               onClick={() => handleImageClick(6)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 6
@@ -660,6 +704,8 @@ const Gallery = () => {
               src={galleryImages[7]}
               alt="Gallery 8"
               loading="lazy"
+              width="800"
+              height="600"
               onClick={() => handleImageClick(7)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 7
@@ -692,6 +738,8 @@ const Gallery = () => {
               src={galleryImages[8]}
               alt="Gallery 9"
               loading="lazy"
+              width="800"
+              height="600"
               onClick={() => handleImageClick(8)}
               className={`w-full h-full object-cover rounded-bl-3xl transition-all duration-500 ease-in-out ${
                 activeImage === 8
@@ -724,6 +772,8 @@ const Gallery = () => {
               src={galleryImages[9]}
               alt="Gallery 10"
               loading="lazy"
+              width="800"
+              height="600"
               onClick={() => handleImageClick(9)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 9
@@ -756,6 +806,8 @@ const Gallery = () => {
               src={galleryImages[10]}
               alt="Gallery 11"
               loading="lazy"
+              width="800"
+              height="600"
               onClick={() => handleImageClick(10)}
               className={`w-full h-full object-cover transition-all duration-500 ease-in-out ${
                 activeImage === 10
@@ -788,6 +840,8 @@ const Gallery = () => {
               src={galleryImages[11]}
               alt="Gallery 12"
               loading="lazy"
+              width="800"
+              height="600"
               onClick={() => handleImageClick(11)}
               className={`w-full h-full object-cover rounded-br-3xl transition-all duration-500 ease-in-out ${
                 activeImage === 11

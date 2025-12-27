@@ -26,6 +26,9 @@ const Footer = () => {
             <img
               src="https://r2.agileproductions.in/logos/site/white-logo.webp"
               alt="Agile Productions Logo"
+              loading="lazy"
+              width="200"
+              height="48"
               className="h-12 w-auto mb-4"
             />
             <p className="text-sm text-gray-300 mb-1" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
@@ -44,7 +47,7 @@ const Footer = () => {
             ref={rightRef}
             className={`text-center md:text-right mt-6 md:mt-0 animate-on-scroll will-animate md:${rightInView ? 'is-visible animate-fade-left animation-complete' : ''} ${rightInView ? 'is-visible animate-fade-up animation-complete' : ''} md:opacity-0`}
           >
-            <p className="text-sm text-gray-500" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
+            <p className="text-sm text-gray-400" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
               Copyright @ AgileGrowthHackers2025
             </p>
           </div>

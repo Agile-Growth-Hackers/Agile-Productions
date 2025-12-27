@@ -78,6 +78,9 @@ const Clients = () => {
               <img
                 src={client.logo}
                 alt={client.name}
+                loading="lazy"
+                width="200"
+                height="100"
                 className="max-w-full max-h-full object-contain"
               />
             </div>
@@ -95,6 +98,9 @@ const Clients = () => {
               <img
                 src={client.logo}
                 alt={client.name}
+                loading="lazy"
+                width="200"
+                height="100"
                 className="max-w-full max-h-full object-contain"
               />
             </div>
@@ -112,6 +118,9 @@ const Clients = () => {
               <img
                 src={client.logo}
                 alt={client.name}
+                loading="lazy"
+                width="200"
+                height="100"
                 className="max-w-full max-h-full object-contain"
               />
             </div>
