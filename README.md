@@ -1,5 +1,10 @@
 # Agile Productions
 
+[![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
+[![Cloudflare](https://img.shields.io/badge/Deployed%20on-Cloudflare-orange)](https://www.cloudflare.com/)
+[![React](https://img.shields.io/badge/React-19.2-blue)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-7.2-646CFF)](https://vitejs.dev/)
+
 Official website for **Agile Productions** - A modern, full-stack web application for managing and showcasing visual content. Built with React, Cloudflare Workers, and deployed on Cloudflare's edge network for optimal performance.
 
 **Built by**: [Agile Growth Hackers](https://agilegrowthhackers.com)<br>
