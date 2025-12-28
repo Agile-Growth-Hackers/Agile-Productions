@@ -9,7 +9,7 @@ test.describe('Admin Authentication', () => {
     await expect(page).toHaveURL(/\/admin\/login/);
 
     // Check for login form elements
-    await expect(page.locator('input[type="text"], input[type="email"], input[name*="username"i]')).toBeVisible();
+    await expect(page.locator('input[type="text"], input[type="email"], input[name*="username"]')).toBeVisible();
     await expect(page.locator('input[type="password"]')).toBeVisible();
     await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible();
   });
@@ -27,7 +27,7 @@ test.describe('Admin Authentication', () => {
 
   test('should show error for invalid credentials', async ({ page }) => {
     // Fill in invalid credentials
-    const usernameInput = page.locator('input[type="text"], input[type="email"], input[name*="username"i]').first();
+    const usernameInput = page.locator('input[type="text"], input[type="email"], input[name*="username"]').first();
     const passwordInput = page.locator('input[type="password"]').first();
 
     await usernameInput.fill('invalid@example.com');
@@ -98,7 +98,7 @@ test.describe('Admin Authentication', () => {
     // Note: This test needs actual valid credentials
     // In a real scenario, you'd use environment variables or test credentials
 
-    const usernameInput = page.locator('input[type="text"], input[type="email"], input[name*="username"i]').first();
+    const usernameInput = page.locator('input[type="text"], input[type="email"], input[name*="username"]').first();
     const passwordInput = page.locator('input[type="password"]').first();
 
     // Try with placeholder credentials (will fail without real creds)
@@ -121,7 +121,7 @@ test.describe('Admin Authentication', () => {
 
   test('should handle network errors gracefully', async ({ page, context }) => {
     // Load page first, then simulate offline mode
-    const usernameInput = page.locator('input[type="text"], input[type="email"], input[name*="username"i]').first();
+    const usernameInput = page.locator('input[type="text"], input[type="email"], input[name*="username"]').first();
     const passwordInput = page.locator('input[type="password"]').first();
 
     await usernameInput.fill('test@example.com');
@@ -151,7 +151,7 @@ test.describe('Admin Authentication', () => {
     }
 
     // Login
-    const usernameInput = page.locator('input[type="text"], input[type="email"], input[name*="username"i]').first();
+    const usernameInput = page.locator('input[type="text"], input[type="email"], input[name*="username"]').first();
     const passwordInput = page.locator('input[type="password"]').first();
 
     await usernameInput.fill(process.env.TEST_ADMIN_USERNAME);

@@ -4,13 +4,13 @@ import { test, expect } from '@playwright/test';
 async function loginAsAdmin(page) {
   await page.goto('/admin/login');
 
-  const usernameInput = page.locator('input[type="text"], input[type="email"], input[name*="username" i]').first();
+  const usernameInput = page.locator('input[type="text"], input[type="email"], input[name*="username"]').first();
   const passwordInput = page.locator('input[type="password"]').first();
 
   await usernameInput.fill(process.env.TEST_ADMIN_USERNAME || 'admin');
   await passwordInput.fill(process.env.TEST_ADMIN_PASSWORD || 'password');
 
-  const submitButton = page.locator('button[type="submit"], button:has-text("login" i)').first();
+  const submitButton = page.locator('button[type="submit"]').first();
   await submitButton.click();
 
   // Wait for navigation
@@ -203,13 +203,13 @@ test.describe('Admin Dashboard - Super Admin Features', () => {
 
     await page.goto('/admin/login');
 
-    const usernameInput = page.locator('input[type="text"], input[type="email"], input[name*="username" i]').first();
+    const usernameInput = page.locator('input[type="text"], input[type="email"], input[name*="username"]').first();
     const passwordInput = page.locator('input[type="password"]').first();
 
     await usernameInput.fill(process.env.TEST_SUPER_ADMIN_USERNAME);
     await passwordInput.fill(process.env.TEST_SUPER_ADMIN_PASSWORD);
 
-    const submitButton = page.locator('button[type="submit"], button:has-text("login" i)').first();
+    const submitButton = page.locator('button[type="submit"]').first();
     await submitButton.click();
 
     await page.waitForTimeout(3000);
