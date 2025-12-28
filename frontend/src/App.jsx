@@ -22,11 +22,13 @@ function PublicSite() {
   return (
     <div className="min-h-screen">
       <Navbar />
-      <Hero />
-      <About />
-      <Services />
-      <Gallery />
-      <Clients />
+      <main>
+        <Hero />
+        <About />
+        <Services />
+        <Gallery />
+        <Clients />
+      </main>
       <Footer />
     </div>
   );

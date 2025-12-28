@@ -29,7 +29,7 @@ const Navbar = () => {
             <div className="relative z-10 h-full flex items-center justify-between px-10">
               {/* Logo on the left */}
               <div className="flex items-center">
-                <a href="#home" className="cursor-pointer">
+                <a href="#home" className="cursor-pointer" aria-label="Agile Productions Home">
                   <img
                     src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
                     alt="Agile Productions Logo"
@@ -88,7 +88,7 @@ const Navbar = () => {
             <div className="flex items-center justify-between h-full">
               {/* Logo on the left - constrained width */}
               <div className="flex items-center flex-shrink-0 pr-8">
-                <a href="#home" className="cursor-pointer">
+                <a href="#home" className="cursor-pointer" aria-label="Agile Productions Home">
                   <img
                     src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
                     alt="Agile Productions Logo"
@@ -149,7 +149,7 @@ const Navbar = () => {
         <div className="relative z-10 h-full flex justify-between items-center px-4">
           {/* Logo */}
           <div className="flex items-center">
-            <a href="#home" className="cursor-pointer">
+            <a href="#home" className="cursor-pointer" aria-label="Agile Productions Home">
               <img
                 src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
                 alt="Agile Productions Logo"
@@ -237,7 +237,7 @@ const Navbar = () => {
         <div className="relative z-10 h-full flex justify-between items-center px-4">
           {/* Logo */}
           <div className="flex items-center pl-4">
-            <a href="#home" className="cursor-pointer">
+            <a href="#home" className="cursor-pointer" aria-label="Agile Productions Home">
               <img
                 src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
                 alt="Agile Productions Logo"
