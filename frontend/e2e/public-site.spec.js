@@ -117,9 +117,7 @@ test.describe('Public Website', () => {
       !error.includes('net::ERR') && // General network errors
       !error.includes('webkit-masked-url') && // WebKit internal URLs
       !error.includes('chrome-extension') && // Browser extensions
-      !error.includes('moz-extension') && // Firefox extensions
-      !error.includes('CORS policy') && // CORS errors in test environments
-      !error.includes('Access to fetch') // Fetch errors related to CORS
+      !error.includes('moz-extension') // Firefox extensions
     );
 
     // Log errors for debugging if any remain

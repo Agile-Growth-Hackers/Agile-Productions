@@ -1,6 +1,9 @@
 export function corsMiddleware(c, next) {
   const origin = c.req.header('Origin');
-  const allowedOrigins = c.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173'];
+  const allowedOrigins = c.env.ALLOWED_ORIGINS?.split(',') || [
+    'http://localhost:5173', // Vite dev server
+    'http://localhost:4173'  // Vite preview server (E2E tests)
+  ];
 
   // Check if origin is allowed
   if (allowedOrigins.includes(origin)) {
