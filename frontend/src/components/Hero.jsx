@@ -81,8 +81,10 @@ const Hero = () => {
               className="w-full h-full object-cover"
               width="1920"
               height="1080"
+              loading={index === 0 ? 'eager' : 'lazy'}
+              fetchPriority={index === 0 ? 'high' : 'auto'}
               style={{
-                objectPosition: image.object_position || (index === 0 ? '72% center' : 'center center')
+                objectPosition: index === 0 ? '72% center' : (image.object_position || 'center center')
               }}
             />
           </div>
