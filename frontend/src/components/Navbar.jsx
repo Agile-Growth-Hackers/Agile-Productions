@@ -43,10 +43,10 @@ const Navbar = () => {
               {/* Menu on the right */}
               <ul className="flex items-center gap-10">
                 {menuItems.map((item) => (
-                  <li key={item} className="group relative cursor-pointer">
+                  <li key={item} className="group relative">
                     <a
                       href={`#${item.toLowerCase().replace(' ', '-')}`}
-                      className="text-sm font-bold uppercase tracking-wider text-gray-800 hover:text-gray-600 transition-colors"
+                      className="block py-2 text-sm font-bold uppercase tracking-wider text-gray-800 hover:text-gray-600 transition-colors cursor-pointer"
                     >
                       {item}
                     </a>
@@ -103,10 +103,10 @@ const Navbar = () => {
               {/* Menu on the right */}
               <ul className="flex items-center gap-10 flex-shrink-0">
                 {menuItems.map((item) => (
-                  <li key={item} className="group relative cursor-pointer">
+                  <li key={item} className="group relative">
                     <a
                       href={`#${item.toLowerCase().replace(' ', '-')}`}
-                      className="text-sm font-bold uppercase tracking-wider text-white hover:text-gray-200 transition-colors"
+                      className="block py-2 text-sm font-bold uppercase tracking-wider text-white hover:text-gray-200 transition-colors cursor-pointer"
                     >
                       {item}
                     </a>
