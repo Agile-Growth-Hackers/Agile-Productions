@@ -39,3 +39,7 @@ HOW-TO-ADD-LOGOS.md
 # Windows reserved names
 nul
 NUL
+
+# Playwright test artifacts
+playwright-report/
+test-results/
