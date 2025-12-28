@@ -84,7 +84,7 @@ const Hero = () => {
               loading={index === 0 ? 'eager' : 'lazy'}
               fetchPriority={index === 0 ? 'high' : 'auto'}
               style={{
-                objectPosition: index === 0 ? '72% center' : (image.object_position || 'center center')
+                objectPosition: image.object_position || 'center center'
               }}
             />
           </div>

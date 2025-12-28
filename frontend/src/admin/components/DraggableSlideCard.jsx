@@ -1,10 +1,29 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
+import api from '../../services/api';
+import { useToast } from '../../context/ToastContext';
 
 const ITEM_TYPE = 'SLIDE';
 
-export default function DraggableSlideCard({ slide, index, moveSlide, onEdit, onDelete }) {
+const POSITION_PRESETS = [
+  { label: 'Center', value: 'center center' },
+  { label: 'Top Center', value: 'center top' },
+  { label: 'Bottom Center', value: 'center bottom' },
+  { label: 'Left Center', value: 'left center' },
+  { label: 'Right Center', value: 'right center' },
+  { label: 'Top Left', value: 'left top' },
+  { label: 'Top Right', value: 'right top' },
+  { label: 'Bottom Left', value: 'left bottom' },
+  { label: 'Bottom Right', value: 'right bottom' },
+];
+
+export default function DraggableSlideCard({ slide, index, moveSlide, onEdit, onDelete, onUpdate }) {
   const ref = useRef(null);
+  const { showToast } = useToast();
+  const [isEditingPosition, setIsEditingPosition] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState('preset');
+  const [customPosition, setCustomPosition] = useState(slide.object_position || 'center center');
+  const [isSaving, setIsSaving] = useState(false);
 
   const [{ handlerId }, drop] = useDrop({
     accept: ITEM_TYPE,
@@ -66,6 +85,28 @@ export default function DraggableSlideCard({ slide, index, moveSlide, onEdit, on
 
   drag(drop(ref));
 
+  const handleSavePosition = async () => {
+    setIsSaving(true);
+    try {
+      const newPosition = selectedPreset === 'custom' ? customPosition : selectedPreset;
+      await api.updateSliderPosition(slide.id, newPosition);
+      showToast('Position updated successfully!', 'success');
+      if (onUpdate) onUpdate();
+      setIsEditingPosition(false);
+    } catch (err) {
+      showToast('Failed to update position', 'error');
+      console.error('Failed to update position:', err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingPosition(false);
+    setSelectedPreset('preset');
+    setCustomPosition(slide.object_position || 'center center');
+  };
+
   return (
     <div
       ref={ref}
@@ -106,10 +147,89 @@ export default function DraggableSlideCard({ slide, index, moveSlide, onEdit, on
       </div>
 
       <div className="mt-2">
-        <label className="text-xs text-gray-600 block mb-1">Object Position:</label>
-        <p className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
-          {slide.object_position || 'center center'}
-        </p>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-xs text-gray-600">Object Position:</label>
+          {!isEditingPosition && (
+            <button
+              onClick={() => setIsEditingPosition(true)}
+              className="text-xs text-blue-600 hover:text-blue-700"
+            >
+              Edit
+            </button>
+          )}
+        </div>
+
+        {!isEditingPosition ? (
+          <p className="text-xs text-gray-500 bg-gray-50 px-2 py-1 rounded">
+            {slide.object_position || 'center center'}
+          </p>
+        ) : (
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name={`position-type-${slide.id}`}
+                  value="preset"
+                  checked={selectedPreset === 'preset'}
+                  onChange={(e) => setSelectedPreset(e.target.value)}
+                  className="mr-1"
+                />
+                <span className="text-xs">Preset</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name={`position-type-${slide.id}`}
+                  value="custom"
+                  checked={selectedPreset === 'custom'}
+                  onChange={(e) => setSelectedPreset(e.target.value)}
+                  className="mr-1"
+                />
+                <span className="text-xs">Custom</span>
+              </label>
+            </div>
+
+            {selectedPreset === 'preset' ? (
+              <select
+                value={customPosition}
+                onChange={(e) => setCustomPosition(e.target.value)}
+                className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {POSITION_PRESETS.map((preset) => (
+                  <option key={preset.value} value={preset.value}>
+                    {preset.label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={customPosition}
+                onChange={(e) => setCustomPosition(e.target.value)}
+                placeholder="e.g., 72% center"
+                className="w-full text-xs px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            )}
+
+            <div className="flex gap-2">
+              <button
+                onClick={handleSavePosition}
+                disabled={isSaving}
+                className="flex-1 px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                {isSaving ? 'Saving...' : 'Save'}
+              </button>
+              <button
+                onClick={handleCancelEdit}
+                disabled={isSaving}
+                className="flex-1 px-2 py-1 text-xs bg-gray-400 text-white rounded hover:bg-gray-500 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

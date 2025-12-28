@@ -121,6 +121,51 @@ slider.post('/', async (c) => {
   }
 });
 
+// PATCH object position only (lightweight update)
+slider.patch('/:id', async (c) => {
+  try {
+    const id = c.req.param('id');
+    const db = c.env.DB;
+    const body = await c.req.json();
+
+    if (!body.object_position) {
+      return c.json({ error: 'object_position required' }, 400);
+    }
+
+    // Get old value for logging
+    const { results: oldData } = await db.prepare(
+      'SELECT object_position FROM slider_images WHERE id = ?'
+    ).bind(id).all();
+
+    if (oldData.length === 0) {
+      return c.json({ error: 'Slide not found' }, 404);
+    }
+
+    // Update only object_position
+    await db.prepare(
+      'UPDATE slider_images SET object_position = ? WHERE id = ?'
+    ).bind(body.object_position, id).run();
+
+    // Log activity
+    const logActivity = c.get('logActivity');
+    if (logActivity) {
+      await logActivity({
+        actionType: 'content_update',
+        entityType: 'slider_image',
+        entityId: id,
+        description: `Updated slider image ${id} position: ${oldData[0].object_position} → ${body.object_position}`,
+        oldValues: { object_position: oldData[0].object_position },
+        newValues: { object_position: body.object_position }
+      });
+    }
+
+    return c.json({ success: true, object_position: body.object_position });
+  } catch (error) {
+    console.error('Update position error:', error);
+    return c.json({ error: 'Update failed' }, 500);
+  }
+});
+
 // Update slider image
 slider.put('/:id', async (c) => {
   try {

@@ -211,6 +211,13 @@ class ApiService {
     }
   }
 
+  async updateSliderPosition(id, objectPosition) {
+    return this.request(`/api/admin/slider/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ object_position: objectPosition }),
+    });
+  }
+
   async deleteSliderImage(id) {
     return this.request(`/api/admin/slider/${id}`, {
       method: 'DELETE',
