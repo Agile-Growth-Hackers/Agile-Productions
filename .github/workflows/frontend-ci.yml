@@ -132,6 +132,10 @@ jobs:
         run: npm run test:e2e
         env:
           CI: true
+          TEST_ADMIN_USERNAME: ${{ secrets.TEST_ADMIN_USERNAME }}
+          TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
+          TEST_SUPER_ADMIN_USERNAME: ${{ secrets.TEST_SUPER_ADMIN_USERNAME }}
+          TEST_SUPER_ADMIN_PASSWORD: ${{ secrets.TEST_SUPER_ADMIN_PASSWORD }}
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
