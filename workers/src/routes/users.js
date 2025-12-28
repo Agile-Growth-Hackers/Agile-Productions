@@ -15,6 +15,7 @@ users.get('/', async (c) => {
         id, username, email, full_name, is_active, is_super_admin,
         created_at, last_login, updated_at
       FROM admins
+      WHERE is_test_account = 0 OR is_test_account IS NULL
       ORDER BY created_at DESC
     `).all();
 
@@ -94,6 +95,15 @@ users.put('/:id', async (c) => {
     const user = c.get('user');
     const targetUserId = parseInt(c.req.param('id'));
     const { email, fullName, isActive, isSuperAdmin, password } = await c.req.json();
+
+    // Check if target is a test account
+    const { results: testCheck } = await db.prepare(
+      'SELECT is_test_account FROM admins WHERE id = ?'
+    ).bind(targetUserId).all();
+
+    if (testCheck.length > 0 && testCheck[0].is_test_account === 1) {
+      return c.json({ error: 'Cannot modify test accounts' }, 403);
+    }
 
     // Prevent self-demotion
     if (targetUserId === user.userId && isSuperAdmin === false) {
@@ -183,6 +193,15 @@ users.delete('/:id', async (c) => {
     const db = c.env.DB;
     const user = c.get('user');
     const targetUserId = parseInt(c.req.param('id'));
+
+    // Check if target is a test account
+    const { results: testCheck } = await db.prepare(
+      'SELECT is_test_account FROM admins WHERE id = ?'
+    ).bind(targetUserId).all();
+
+    if (testCheck.length > 0 && testCheck[0].is_test_account === 1) {
+      return c.json({ error: 'Cannot delete test accounts' }, 403);
+    }
 
     // Prevent self-deletion
     if (targetUserId === user.userId) {

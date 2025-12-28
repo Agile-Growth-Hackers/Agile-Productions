@@ -32,8 +32,8 @@ async function generateSQL() {
     const passwordHash = await hashPassword(user.password);
 
     console.log(`-- ${user.fullName} (${user.username})`);
-    console.log(`INSERT INTO admins (username, email, full_name, password_hash, is_super_admin, is_active)`);
-    console.log(`VALUES ('${user.username}', '${user.email}', '${user.fullName}', '${passwordHash}', ${user.isSuperAdmin ? 1 : 0}, 1);`);
+    console.log(`INSERT INTO admins (username, email, full_name, password_hash, is_super_admin, is_active, is_test_account)`);
+    console.log(`VALUES ('${user.username}', '${user.email}', '${user.fullName}', '${passwordHash}', ${user.isSuperAdmin ? 1 : 0}, 1, 1);`);
     console.log();
   }
 
