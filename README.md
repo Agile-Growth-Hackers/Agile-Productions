@@ -2,7 +2,8 @@
 
 Official website for **Agile Productions** - A modern, full-stack web application for managing and showcasing visual content. Built with React, Cloudflare Workers, and deployed on Cloudflare's edge network for optimal performance.
 
-**Built by**: [Agile Growth Hackers](https://agilegrowthhackers.com)
+**Built by**: [Agile Growth Hackers](https://agilegrowthhackers.com)<br>
+**Lead Developer**: [Cliffin Cletus](https://github.com/CliffinCletus)
 
 ## Table of Contents
 
@@ -481,8 +482,7 @@ Copyright © 2025 Agile Productions. All rights reserved.
 
 ---
 
-**Built & Maintained by**: [Agile Growth Hackers](https://agilegrowthhackers.com)<br>
-**Lead Developer**: [Cliffin Cletus](https://github.com/CliffinCletus)<br>
+**Maintained by**: [Agile Growth Hackers](https://agilegrowthhackers.com)<br>
 **Repository**: https://github.com/Agile-Growth-Hackers/Agile-Productions
 
 For inquiries, visit [agilegrowthhackers.com](https://agilegrowthhackers.com)
