@@ -481,8 +481,8 @@ Copyright © 2025 Agile Productions. All rights reserved.
 
 ---
 
-**Built & Maintained by**: [Agile Growth Hackers](https://agilegrowthhackers.com)
-**Lead Developer**: [Cliffin Cletus](https://github.com/CliffinCletus)
+**Built & Maintained by**: [Agile Growth Hackers](https://agilegrowthhackers.com)<br>
+**Lead Developer**: [Cliffin Cletus](https://github.com/CliffinCletus)<br>
 **Repository**: https://github.com/Agile-Growth-Hackers/Agile-Productions
 
 For inquiries, visit [agilegrowthhackers.com](https://agilegrowthhackers.com)
