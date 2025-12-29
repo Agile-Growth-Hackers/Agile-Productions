@@ -10,7 +10,7 @@ const Footer = () => {
       <div className="w-full overflow-hidden leading-[0] -mb-1 bg-black">
         <svg className="relative block w-full h-[65px] md:h-[85px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 85" preserveAspectRatio="none">
           {/* Grey top section - extends beyond top */}
-          <path d="M0,-5 L720,-5 L720,0 C730,0 745,8 755,20 C765,32 775,42 785,48 C790,50 792,50 795,50 L1200,50 L1200,-5 Z" fill="#ECEDF0"></path>
+          <path d="M0,-5 L720,-5 L720,0 C730,0 745,8 755,20 C765,32 775,42 785,48 C790,50 792,50 795,50 L1200,50 L1200,-5 Z" fill="#f3f4f6"></path>
           {/* Black footer section with step down */}
           <path d="M0,15 L720,15 C730,15 745,25 755,40 C765,55 775,70 785,78 C790,82 792,85 795,85 L1200,85 L1200,85 L0,85 Z" className="fill-black"></path>
         </svg>
