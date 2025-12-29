@@ -1,5 +1,32 @@
+# Block AI training bots first
+User-agent: CCBot
+Disallow: /
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+# Allow all other bots (including Google Search, Bing, etc.)
 User-agent: *
 Allow: /
 
+# Sitemaps
 Sitemap: https://agileproductions.in/sitemap.xml
 Sitemap: https://agileproductions.ae/sitemap.xml
