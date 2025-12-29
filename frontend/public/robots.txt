@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://agileproductions.in/sitemap.xml
+Sitemap: https://agileproductions.ae/sitemap.xml
