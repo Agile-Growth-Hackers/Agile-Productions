@@ -38,7 +38,7 @@ async function hashToken(token) {
 export async function setCsrfCookie(c, token) {
   const hashedToken = await hashToken(token);
 
-  c.header('Set-Cookie', `${CSRF_COOKIE_NAME}=${hashedToken}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`);
+  c.header('Set-Cookie', `${CSRF_COOKIE_NAME}=${hashedToken}; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=86400`);
 
   return token; // Return unhashed token for client to use
 }
