@@ -80,10 +80,23 @@ app.get('/api/slider', async (c) => {
     const db = c.env.DB;
     const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
-    const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, object_position, display_order FROM slider_images WHERE is_active = 1 AND (region_code = ? OR region_code IS NULL) ORDER BY display_order'
+
+    // First, check if region-specific slides exist
+    const { results: regionSpecific } = await db.prepare(
+      'SELECT id, cdn_url, cdn_url_mobile, object_position, display_order FROM slider_images WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
     ).bind(region).all();
-    const transformedResults = transformForDevice(results, isMobile);
+
+    // If region-specific slides exist, return only those
+    if (regionSpecific.length > 0) {
+      const transformedResults = transformForDevice(regionSpecific, isMobile);
+      return c.json(transformedResults);
+    }
+
+    // Otherwise, fallback to shared (NULL) slides
+    const { results: shared } = await db.prepare(
+      'SELECT id, cdn_url, cdn_url_mobile, object_position, display_order FROM slider_images WHERE is_active = 1 AND region_code IS NULL ORDER BY display_order'
+    ).all();
+    const transformedResults = transformForDevice(shared, isMobile);
     return c.json(transformedResults);
   } catch (error) {
     return c.json({ error: 'Failed to fetch slides' }, 500);
@@ -96,10 +109,23 @@ app.get('/api/v1/gallery', async (c) => {
     const db = c.env.DB;
     const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
-    const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND (region_code = ? OR region_code IS NULL) ORDER BY display_order'
+
+    // First, check if region-specific images exist
+    const { results: regionSpecific } = await db.prepare(
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
     ).bind(region).all();
-    const transformedResults = transformForDevice(results, isMobile);
+
+    // If region-specific images exist, return only those
+    if (regionSpecific.length > 0) {
+      const transformedResults = transformForDevice(regionSpecific, isMobile);
+      return c.json(transformedResults);
+    }
+
+    // Otherwise, fallback to shared (NULL) images
+    const { results: shared } = await db.prepare(
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND region_code IS NULL ORDER BY display_order'
+    ).all();
+    const transformedResults = transformForDevice(shared, isMobile);
     return c.json(transformedResults);
   } catch (error) {
     return c.json({ error: 'Failed to fetch gallery' }, 500);
@@ -112,10 +138,23 @@ app.get('/api/gallery', async (c) => {
     const db = c.env.DB;
     const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
-    const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND (region_code = ? OR region_code IS NULL) ORDER BY display_order'
+
+    // First, check if region-specific images exist
+    const { results: regionSpecific } = await db.prepare(
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
     ).bind(region).all();
-    const transformedResults = transformForDevice(results, isMobile);
+
+    // If region-specific images exist, return only those
+    if (regionSpecific.length > 0) {
+      const transformedResults = transformForDevice(regionSpecific, isMobile);
+      return c.json(transformedResults);
+    }
+
+    // Otherwise, fallback to shared (NULL) images
+    const { results: shared } = await db.prepare(
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND region_code IS NULL ORDER BY display_order'
+    ).all();
+    const transformedResults = transformForDevice(shared, isMobile);
     return c.json(transformedResults);
   } catch (error) {
     return c.json({ error: 'Failed to fetch gallery' }, 500);
@@ -127,10 +166,23 @@ app.get('/api/gallery/mobile', async (c) => {
     const db = c.env.DB;
     const region = c.get('region');
     const isMobile = true; // This endpoint is specifically for mobile
-    const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND (region_code = ? OR region_code IS NULL) AND mobile_visible = 1 ORDER BY display_order LIMIT 10'
+
+    // First, check if region-specific images exist
+    const { results: regionSpecific } = await db.prepare(
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND region_code = ? AND mobile_visible = 1 ORDER BY display_order LIMIT 10'
     ).bind(region).all();
-    const transformedResults = transformForDevice(results, isMobile);
+
+    // If region-specific images exist, return only those
+    if (regionSpecific.length > 0) {
+      const transformedResults = transformForDevice(regionSpecific, isMobile);
+      return c.json(transformedResults);
+    }
+
+    // Otherwise, fallback to shared (NULL) images
+    const { results: shared } = await db.prepare(
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND region_code IS NULL AND mobile_visible = 1 ORDER BY display_order LIMIT 10'
+    ).all();
+    const transformedResults = transformForDevice(shared, isMobile);
     return c.json(transformedResults);
   } catch (error) {
     return c.json({ error: 'Failed to fetch gallery' }, 500);
@@ -142,10 +194,23 @@ app.get('/api/logos', async (c) => {
     const db = c.env.DB;
     const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
-    const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, alt_text, display_order FROM client_logos WHERE is_active = 1 AND (region_code = ? OR region_code IS NULL) ORDER BY display_order'
+
+    // First, check if region-specific logos exist
+    const { results: regionSpecific } = await db.prepare(
+      'SELECT id, cdn_url, cdn_url_mobile, alt_text, display_order FROM client_logos WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
     ).bind(region).all();
-    const transformedResults = transformForDevice(results, isMobile);
+
+    // If region-specific logos exist, return only those
+    if (regionSpecific.length > 0) {
+      const transformedResults = transformForDevice(regionSpecific, isMobile);
+      return c.json(transformedResults);
+    }
+
+    // Otherwise, fallback to shared (NULL) logos
+    const { results: shared } = await db.prepare(
+      'SELECT id, cdn_url, cdn_url_mobile, alt_text, display_order FROM client_logos WHERE is_active = 1 AND region_code IS NULL ORDER BY display_order'
+    ).all();
+    const transformedResults = transformForDevice(shared, isMobile);
     return c.json(transformedResults);
   } catch (error) {
     return c.json({ error: 'Failed to fetch logos' }, 500);

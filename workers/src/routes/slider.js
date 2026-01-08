@@ -18,10 +18,21 @@ slider.get('/', async (c) => {
       return c.json({ error: `No access to region ${region}` }, 403);
     }
 
-    const { results } = await db.prepare(
-      'SELECT * FROM slider_images WHERE (region_code = ? OR region_code IS NULL) AND is_active = 1 ORDER BY display_order'
+    // First, check if region-specific slides exist
+    const { results: regionSpecific } = await db.prepare(
+      'SELECT * FROM slider_images WHERE region_code = ? AND is_active = 1 ORDER BY display_order'
     ).bind(region).all();
-    return c.json(results);
+
+    // If region-specific slides exist, return only those
+    if (regionSpecific.length > 0) {
+      return c.json(regionSpecific);
+    }
+
+    // Otherwise, fallback to shared (NULL) slides
+    const { results: shared } = await db.prepare(
+      'SELECT * FROM slider_images WHERE region_code IS NULL AND is_active = 1 ORDER BY display_order'
+    ).all();
+    return c.json(shared);
   } catch (error) {
     return c.json({ error: 'Failed to fetch slides' }, 500);
   }

@@ -18,10 +18,21 @@ logos.get('/', async (c) => {
       return c.json({ error: `No access to region ${region}` }, 403);
     }
 
-    const { results } = await db.prepare(
-      'SELECT * FROM client_logos WHERE (region_code = ? OR region_code IS NULL) ORDER BY display_order'
+    // First, check if region-specific logos exist
+    const { results: regionSpecific } = await db.prepare(
+      'SELECT * FROM client_logos WHERE region_code = ? ORDER BY display_order'
     ).bind(region).all();
-    return c.json(results);
+
+    // If region-specific logos exist, return only those
+    if (regionSpecific.length > 0) {
+      return c.json(regionSpecific);
+    }
+
+    // Otherwise, fallback to shared (NULL) logos
+    const { results: shared } = await db.prepare(
+      'SELECT * FROM client_logos WHERE region_code IS NULL ORDER BY display_order'
+    ).all();
+    return c.json(shared);
   } catch (error) {
     return c.json({ error: 'Failed to fetch logos' }, 500);
   }
