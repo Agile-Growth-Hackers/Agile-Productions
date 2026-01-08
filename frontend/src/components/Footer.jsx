@@ -8,7 +8,18 @@ const Footer = () => {
   const [rightRef, rightInView] = useInView({ threshold: 0.2, delay: 100 });
 
   return (
-    <footer id="contact" className="bg-black text-white relative -mt-[1px]">
+    <>
+      <style>{`
+        .footer-content a {
+          color: inherit;
+          text-decoration: none;
+        }
+        .footer-content a:hover {
+          color: #ffffff;
+          text-decoration: none;
+        }
+      `}</style>
+      <footer id="contact" className="bg-black text-white relative -mt-[1px]">
       {/* Curved Step Down Transition */}
       <div className="w-full overflow-hidden leading-[0] -mb-1 bg-black">
         <svg className="relative block w-full h-[65px] md:h-[85px]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 85" preserveAspectRatio="none">
@@ -45,7 +56,7 @@ const Footer = () => {
               </a>
             </p>
             <div
-              className="text-sm text-gray-300"
+              className="text-sm text-gray-300 footer-content"
               style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content?.footer_address || '213, 2nd Floor, Ramnashree Arcade, MG Road, Bangalore - 560001') }}
             />
@@ -57,7 +68,7 @@ const Footer = () => {
             className={`text-center md:text-right mt-6 md:mt-0 animate-on-scroll will-animate md:${rightInView ? 'is-visible animate-fade-left animation-complete' : ''} ${rightInView ? 'is-visible animate-fade-up animation-complete' : ''} md:opacity-0`}
           >
             <div
-              className="text-sm text-gray-400"
+              className="text-sm text-gray-400 footer-content"
               style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content?.footer_copyright || 'Copyright @ AgileGrowthHackers2025') }}
             />
@@ -66,6 +77,7 @@ const Footer = () => {
       </div>
       </div>
     </footer>
+    </>
   );
 };
 
