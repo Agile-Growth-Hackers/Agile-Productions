@@ -50,6 +50,7 @@ class ApiService {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
         headers,
+        credentials: 'include', // Required for cross-origin cookies (CSRF)
       });
 
       if (!response.ok) {
