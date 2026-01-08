@@ -1,5 +1,6 @@
 import { useInView } from '../hooks/useInView';
 import { usePageContent } from '../hooks/usePageContent';
+import DOMPurify from 'dompurify';
 
 const Footer = () => {
   const { content } = usePageContent();
@@ -43,9 +44,11 @@ const Footer = () => {
                 {content?.footer_email || 'hello@agilegrowthhackers.in'}
               </a>
             </p>
-            <p className="text-sm text-gray-300" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
-              {content?.footer_address || '213, 2nd Floor, Ramnashree Arcade, MG Road, Bangalore - 560001'}
-            </p>
+            <div
+              className="text-sm text-gray-300"
+              style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content?.footer_address || '213, 2nd Floor, Ramnashree Arcade, MG Road, Bangalore - 560001') }}
+            />
           </div>
 
           {/* Right - Copyright */}
@@ -53,9 +56,11 @@ const Footer = () => {
             ref={rightRef}
             className={`text-center md:text-right mt-6 md:mt-0 animate-on-scroll will-animate md:${rightInView ? 'is-visible animate-fade-left animation-complete' : ''} ${rightInView ? 'is-visible animate-fade-up animation-complete' : ''} md:opacity-0`}
           >
-            <p className="text-sm text-gray-400" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
-              {content?.footer_copyright || 'Copyright @ AgileGrowthHackers2025'}
-            </p>
+            <div
+              className="text-sm text-gray-400"
+              style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content?.footer_copyright || 'Copyright @ AgileGrowthHackers2025') }}
+            />
           </div>
         </div>
       </div>
