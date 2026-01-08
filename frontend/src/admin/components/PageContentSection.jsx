@@ -118,6 +118,14 @@ export default function PageContentSection() {
 
   const handleSaveSection = async (sectionKey) => {
     const section = CONTENT_SECTIONS[sectionKey];
+
+    // Show confirmation dialog
+    const confirmed = confirm(`Are you sure you want to save changes to ${section.title}?\n\nThis will update the content on the public website for the ${selectedRegion} region.`);
+
+    if (!confirmed) {
+      return;
+    }
+
     setSavingSection(sectionKey);
 
     try {
