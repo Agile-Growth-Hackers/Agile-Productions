@@ -1,20 +1,27 @@
 # Dependencies
 node_modules/
 package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
-# Environment variables
+# Environment variables - NEVER commit these
 .env
-.env.local
-.env.production
+.env.*
+!.env.example
 .dev.vars
+*.vars
 
 # Build outputs
 dist/
 build/
-.wrangler/
+.wrangler/tmp/
+.wrangler/state/v3/kv/
+.wrangler/state/v3/cache/
+.wrangler/state/v3/d1/
 .output/
 
 # Logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -25,24 +32,61 @@ lerna-debug.log*
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*.swp
 
 # AI Assistant files
 .claude/
 .cursor/
 .aider/
+.copilot/
+
+# Security sensitive files - NEVER commit
+*.key
+*.pem
+*.p12
+*.pfx
+*.cer
+*.crt
+*.der
+credentials.json
+service-account.json
+google-credentials.json
+*-credentials.json
+secrets.json
+auth.json
 
 # Testing
 coverage/
 .nyc_output/
+test-results/
+playwright-report/
 
 # Temporary files
 *.tmp
 *.temp
 .cache/
+temp-*
+*.bak
+*.backup
+
+# Database files - NEVER commit (files stay on your machine for local development)
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+dump-*
+backup-*
+.wrangler/state/
+
+# OS files
+Thumbs.db
+Desktop.ini
+.Spotlight-V100
+.Trashes

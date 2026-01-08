@@ -1,6 +1,8 @@
 import { useInView } from '../hooks/useInView';
+import { usePageContent } from '../hooks/usePageContent';
 
 const Footer = () => {
+  const { content } = usePageContent();
   const [leftRef, leftInView] = useInView({ threshold: 0.2 });
   const [rightRef, rightInView] = useInView({ threshold: 0.2, delay: 100 });
 
@@ -32,13 +34,17 @@ const Footer = () => {
               className="h-12 w-auto mb-4"
             />
             <p className="text-sm text-gray-300 mb-1" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
-              <a href="tel:+918608686286" className="hover:text-white transition-colors">+91 86086 86286</a>
+              <a href={`tel:${(content?.footer_phone || '+91 86086 86286').replace(/\s/g, '')}`} className="hover:text-white transition-colors">
+                {content?.footer_phone || '+91 86086 86286'}
+              </a>
             </p>
             <p className="text-sm text-gray-300 mb-1" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
-              <a href="mailto:hello@agilegrowthhackers.in" className="hover:text-white transition-colors">hello@agilegrowthhackers.in</a>
+              <a href={`mailto:${content?.footer_email || 'hello@agilegrowthhackers.in'}`} className="hover:text-white transition-colors">
+                {content?.footer_email || 'hello@agilegrowthhackers.in'}
+              </a>
             </p>
             <p className="text-sm text-gray-300" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
-              213, 2nd Floor, Ramnashree Arcade, MG Road, Bangalore - 560001
+              {content?.footer_address || '213, 2nd Floor, Ramnashree Arcade, MG Road, Bangalore - 560001'}
             </p>
           </div>
 
@@ -48,7 +54,7 @@ const Footer = () => {
             className={`text-center md:text-right mt-6 md:mt-0 animate-on-scroll will-animate md:${rightInView ? 'is-visible animate-fade-left animation-complete' : ''} ${rightInView ? 'is-visible animate-fade-up animation-complete' : ''} md:opacity-0`}
           >
             <p className="text-sm text-gray-400" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
-              Copyright @ AgileGrowthHackers2025
+              {content?.footer_copyright || 'Copyright @ AgileGrowthHackers2025'}
             </p>
           </div>
         </div>

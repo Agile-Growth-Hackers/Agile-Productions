@@ -10,9 +10,17 @@ const gallery = new Hono();
 gallery.get('/', async (c) => {
   try {
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
+
     const { results } = await db.prepare(
-      'SELECT * FROM gallery_images WHERE is_active = 1 ORDER BY display_order'
-    ).all();
+      'SELECT * FROM gallery_images WHERE region_code = ? AND is_active = 1 ORDER BY display_order'
+    ).bind(region).all();
     return c.json(results);
   } catch (error) {
     return c.json({ error: 'Failed to fetch gallery' }, 500);
@@ -23,9 +31,17 @@ gallery.get('/', async (c) => {
 gallery.get('/mobile', async (c) => {
   try {
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
+
     const { results } = await db.prepare(
-      'SELECT * FROM gallery_images WHERE is_active = 1 AND mobile_visible = 1 ORDER BY display_order LIMIT 10'
-    ).all();
+      'SELECT * FROM gallery_images WHERE region_code = ? AND is_active = 1 AND mobile_visible = 1 ORDER BY display_order LIMIT 10'
+    ).bind(region).all();
     return c.json(results);
   } catch (error) {
     return c.json({ error: 'Failed to fetch gallery' }, 500);
@@ -37,6 +53,14 @@ gallery.post('/', async (c) => {
   try {
     const contentType = c.req.header('content-type') || '';
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
+
     let r2Key, cdnUrl, cdnUrlMobile, filename, mobileVisible;
 
     // Handle both FormData (file upload) and JSON (from storage)
@@ -100,20 +124,20 @@ gallery.post('/', async (c) => {
       return c.json({ error: 'Invalid content type' }, 400);
     }
 
-    // Get next display order
+    // Get next display order for this region
     const { results } = await db.prepare(
-      'SELECT MAX(display_order) as max_order FROM gallery_images'
-    ).all();
+      'SELECT MAX(display_order) as max_order FROM gallery_images WHERE region_code = ?'
+    ).bind(region).all();
     const nextOrder = (results[0]?.max_order || 0) + 1;
 
     const result = await db.prepare(
-      'INSERT INTO gallery_images (filename, r2_key, cdn_url, cdn_url_mobile, display_order, mobile_visible) VALUES (?, ?, ?, ?, ?, ?)'
-    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, nextOrder, mobileVisible).run();
+      'INSERT INTO gallery_images (filename, r2_key, cdn_url, cdn_url_mobile, display_order, mobile_visible, region_code) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, nextOrder, mobileVisible, region).run();
 
     // Also add to image_storage if not already there
     await db.prepare(
-      'INSERT OR IGNORE INTO image_storage (filename, r2_key, cdn_url, cdn_url_mobile, category) VALUES (?, ?, ?, ?, ?)'
-    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, 'gallery').run();
+      'INSERT OR IGNORE INTO image_storage (filename, r2_key, cdn_url, cdn_url_mobile, category, region_code) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, 'gallery', region).run();
 
     // Log activity
     const logActivity = c.get('logActivity');
@@ -141,6 +165,14 @@ gallery.put('/:id', async (c) => {
     const contentType = c.req.header('content-type') || '';
     console.log('Gallery update - ID:', id, 'Content-Type:', contentType);
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
+
     let r2Key, cdnUrl, cdnUrlMobile, filename;
 
     // Handle both FormData (file upload) and JSON (from storage)
@@ -158,8 +190,8 @@ gallery.put('/:id', async (c) => {
       if ((r2Key === null || r2Key === '') && (cdnUrl === null || cdnUrl === '') && (filename === null || filename === '')) {
         console.log('Clearing image from position');
         await db.prepare(
-          'UPDATE gallery_images SET filename = NULL, r2_key = NULL, cdn_url = NULL WHERE id = ?'
-        ).bind(id).run();
+          'UPDATE gallery_images SET filename = NULL, r2_key = NULL, cdn_url = NULL WHERE id = ? AND region_code = ?'
+        ).bind(id, region).run();
         console.log('Gallery cleared successfully');
         return c.json({ success: true, cleared: true });
       }
@@ -173,13 +205,13 @@ gallery.put('/:id', async (c) => {
 
       // Get old values before update
       const { results: oldData } = await db.prepare(
-        'SELECT filename, r2_key, cdn_url FROM gallery_images WHERE id = ?'
-      ).bind(id).all();
+        'SELECT filename, r2_key, cdn_url FROM gallery_images WHERE id = ? AND region_code = ?'
+      ).bind(id, region).all();
 
       // Update database (don't delete old R2 file since it might be in use elsewhere)
       await db.prepare(
-        'UPDATE gallery_images SET filename = ?, r2_key = ?, cdn_url = ?, cdn_url_mobile = ? WHERE id = ?'
-      ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, id).run();
+        'UPDATE gallery_images SET filename = ?, r2_key = ?, cdn_url = ?, cdn_url_mobile = ? WHERE id = ? AND region_code = ?'
+      ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, id, region).run();
 
       // Log activity
       const logActivity = c.get('logActivity');
@@ -214,8 +246,8 @@ gallery.put('/:id', async (c) => {
 
       // Get old image
       const { results } = await db.prepare(
-        'SELECT * FROM gallery_images WHERE id = ?'
-      ).bind(id).all();
+        'SELECT * FROM gallery_images WHERE id = ? AND region_code = ?'
+      ).bind(id, region).all();
 
       if (results.length > 0) {
         console.log('Deleting old image and uploading new one');
@@ -256,8 +288,8 @@ gallery.put('/:id', async (c) => {
 
         // Update database
         await db.prepare(
-          'UPDATE gallery_images SET filename = ?, r2_key = ?, cdn_url = ?, cdn_url_mobile = ? WHERE id = ?'
-        ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, id).run();
+          'UPDATE gallery_images SET filename = ?, r2_key = ?, cdn_url = ?, cdn_url_mobile = ? WHERE id = ? AND region_code = ?'
+        ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, id, region).run();
 
         // Log activity
         const logActivity = c.get('logActivity');
@@ -293,15 +325,22 @@ gallery.put('/:id/mobile-visibility', async (c) => {
     const id = c.req.param('id');
     const { visible } = await c.req.json();
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
 
     // Get old value
     const { results: oldData } = await db.prepare(
-      'SELECT mobile_visible FROM gallery_images WHERE id = ?'
-    ).bind(id).all();
+      'SELECT mobile_visible FROM gallery_images WHERE id = ? AND region_code = ?'
+    ).bind(id, region).all();
 
     await db.prepare(
-      'UPDATE gallery_images SET mobile_visible = ? WHERE id = ?'
-    ).bind(visible ? 1 : 0, id).run();
+      'UPDATE gallery_images SET mobile_visible = ? WHERE id = ? AND region_code = ?'
+    ).bind(visible ? 1 : 0, id, region).run();
 
     // Log activity
     const logActivity = c.get('logActivity');
@@ -327,10 +366,17 @@ gallery.delete('/:id', async (c) => {
   try {
     const id = c.req.param('id');
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
 
     const { results } = await db.prepare(
-      'SELECT * FROM gallery_images WHERE id = ?'
-    ).bind(id).all();
+      'SELECT * FROM gallery_images WHERE id = ? AND region_code = ?'
+    ).bind(id, region).all();
 
     if (results.length === 0) {
       return c.json({ error: 'Image not found' }, 404);
@@ -348,7 +394,7 @@ gallery.delete('/:id', async (c) => {
     const isUsedElsewhere = sliderResults.length > 0 || logoResults.length > 0;
 
     // Delete from gallery_images
-    await db.prepare('DELETE FROM gallery_images WHERE id = ?').bind(id).run();
+    await db.prepare('DELETE FROM gallery_images WHERE id = ? AND region_code = ?').bind(id, region).run();
 
     // Only delete from R2 and image_storage if not used elsewhere
     if (!isUsedElsewhere) {

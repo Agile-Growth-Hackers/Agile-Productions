@@ -1,5 +1,9 @@
+# Dependencies
+node_modules/
+package-lock.json
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,31 +11,52 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Build outputs
+dist/
+dist-ssr/
+build/
+.output/
 *.local
-.wrangler
 
-# Environment variables
+# Environment variables - NEVER commit these
 .env
-.env.local
-.env.production
-.env.production.local
+.env.*
+!.env.example
+.wrangler/
 
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
-.claude
 
-# Image conversion scripts and documentation
+# AI Assistant files
+.claude/
+.cursor/
+.aider/
+
+# Security sensitive files - NEVER commit
+*.key
+*.pem
+*.p12
+*.pfx
+*.cer
+*.crt
+credentials.json
+service-account.json
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+temp-*
+
+# Image conversion scripts (temporary utility scripts)
 convert-logos.js
 convert-all-images.js
 HOW-TO-ADD-LOGOS.md
@@ -40,6 +65,16 @@ HOW-TO-ADD-LOGOS.md
 nul
 NUL
 
-# Playwright test artifacts
+# Test artifacts
 playwright-report/
 test-results/
+coverage/
+.nyc_output/
+
+# PWA
+*.sw.js
+sw.js
+workbox-*.js
+
+# Source maps (optional - uncomment to exclude)
+# *.map

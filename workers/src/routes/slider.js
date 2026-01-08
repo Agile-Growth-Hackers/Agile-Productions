@@ -10,9 +10,17 @@ const slider = new Hono();
 slider.get('/', async (c) => {
   try {
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
+
     const { results } = await db.prepare(
-      'SELECT * FROM slider_images WHERE is_active = 1 ORDER BY display_order'
-    ).all();
+      'SELECT * FROM slider_images WHERE region_code = ? AND is_active = 1 ORDER BY display_order'
+    ).bind(region).all();
     return c.json(results);
   } catch (error) {
     return c.json({ error: 'Failed to fetch slides' }, 500);
@@ -24,6 +32,14 @@ slider.post('/', async (c) => {
   try {
     const contentType = c.req.header('content-type') || '';
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
+
     let r2Key, cdnUrl, cdnUrlMobile, filename, objectPosition;
 
     // Handle both FormData (file upload) and JSON (from storage)
@@ -86,21 +102,21 @@ slider.post('/', async (c) => {
       return c.json({ error: 'Invalid content type' }, 400);
     }
 
-    // Get next display order
+    // Get next display order for this region
     const { results } = await db.prepare(
-      'SELECT MAX(display_order) as max_order FROM slider_images'
-    ).all();
+      'SELECT MAX(display_order) as max_order FROM slider_images WHERE region_code = ?'
+    ).bind(region).all();
     const nextOrder = (results[0]?.max_order || 0) + 1;
 
     // Insert into database
     const result = await db.prepare(
-      'INSERT INTO slider_images (filename, r2_key, cdn_url, cdn_url_mobile, display_order, object_position) VALUES (?, ?, ?, ?, ?, ?)'
-    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, nextOrder, objectPosition).run();
+      'INSERT INTO slider_images (filename, r2_key, cdn_url, cdn_url_mobile, display_order, object_position, region_code) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, nextOrder, objectPosition, region).run();
 
     // Also add to image_storage if not already there
     await db.prepare(
-      'INSERT OR IGNORE INTO image_storage (filename, r2_key, cdn_url, cdn_url_mobile, category) VALUES (?, ?, ?, ?, ?)'
-    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, 'slider').run();
+      'INSERT OR IGNORE INTO image_storage (filename, r2_key, cdn_url, cdn_url_mobile, category, region_code) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, 'slider', region).run();
 
     // Log activity
     const logActivity = c.get('logActivity');
@@ -127,6 +143,13 @@ slider.patch('/:id', async (c) => {
     const id = c.req.param('id');
     const db = c.env.DB;
     const body = await c.req.json();
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
 
     if (!body.object_position) {
       return c.json({ error: 'object_position required' }, 400);
@@ -134,8 +157,8 @@ slider.patch('/:id', async (c) => {
 
     // Get old value for logging
     const { results: oldData } = await db.prepare(
-      'SELECT object_position FROM slider_images WHERE id = ?'
-    ).bind(id).all();
+      'SELECT object_position FROM slider_images WHERE id = ? AND region_code = ?'
+    ).bind(id, region).all();
 
     if (oldData.length === 0) {
       return c.json({ error: 'Slide not found' }, 404);
@@ -143,8 +166,8 @@ slider.patch('/:id', async (c) => {
 
     // Update only object_position
     await db.prepare(
-      'UPDATE slider_images SET object_position = ? WHERE id = ?'
-    ).bind(body.object_position, id).run();
+      'UPDATE slider_images SET object_position = ? WHERE id = ? AND region_code = ?'
+    ).bind(body.object_position, id, region).run();
 
     // Log activity
     const logActivity = c.get('logActivity');
@@ -172,6 +195,14 @@ slider.put('/:id', async (c) => {
     const id = c.req.param('id');
     const contentType = c.req.header('content-type') || '';
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
+
     let r2Key, cdnUrl, cdnUrlMobile, filename, objectPosition;
 
     // Handle both FormData (file upload) and JSON (from storage)
@@ -190,13 +221,13 @@ slider.put('/:id', async (c) => {
 
       // Get old values before update
       const { results: oldData } = await db.prepare(
-        'SELECT filename, r2_key, cdn_url, object_position FROM slider_images WHERE id = ?'
-      ).bind(id).all();
+        'SELECT filename, r2_key, cdn_url, object_position FROM slider_images WHERE id = ? AND region_code = ?'
+      ).bind(id, region).all();
 
       // Update database (don't delete old R2 file since it might be in use elsewhere)
       await db.prepare(
-        'UPDATE slider_images SET filename = ?, r2_key = ?, cdn_url = ?, cdn_url_mobile = ?, object_position = ? WHERE id = ?'
-      ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, objectPosition, id).run();
+        'UPDATE slider_images SET filename = ?, r2_key = ?, cdn_url = ?, cdn_url_mobile = ?, object_position = ? WHERE id = ? AND region_code = ?'
+      ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, objectPosition, id, region).run();
 
       // Log activity
       const logActivity = c.get('logActivity');
@@ -230,8 +261,8 @@ slider.put('/:id', async (c) => {
 
       // Get old image
       const { results } = await db.prepare(
-        'SELECT id, r2_key, cdn_url_mobile FROM slider_images WHERE id = ?'
-      ).bind(id).all();
+        'SELECT id, r2_key, cdn_url_mobile FROM slider_images WHERE id = ? AND region_code = ?'
+      ).bind(id, region).all();
 
       if (results.length > 0) {
         // Delete old images from R2 (both desktop and mobile)
@@ -271,8 +302,8 @@ slider.put('/:id', async (c) => {
 
         // Update database
         await db.prepare(
-          'UPDATE slider_images SET filename = ?, r2_key = ?, cdn_url = ?, cdn_url_mobile = ?, object_position = ? WHERE id = ?'
-        ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, objectPosition, id).run();
+          'UPDATE slider_images SET filename = ?, r2_key = ?, cdn_url = ?, cdn_url_mobile = ?, object_position = ? WHERE id = ? AND region_code = ?'
+        ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, objectPosition, id, region).run();
 
         // Log activity
         const logActivity = c.get('logActivity');
@@ -303,11 +334,18 @@ slider.delete('/:id', async (c) => {
   try {
     const id = c.req.param('id');
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
 
     // Get slide info
     const { results } = await db.prepare(
-      'SELECT id, r2_key, cdn_url_mobile, display_order, filename FROM slider_images WHERE id = ?'
-    ).bind(id).all();
+      'SELECT id, r2_key, cdn_url_mobile, display_order, filename FROM slider_images WHERE id = ? AND region_code = ?'
+    ).bind(id, region).all();
 
     if (results.length === 0) {
       return c.json({ error: 'Slide not found' }, 404);
@@ -325,7 +363,7 @@ slider.delete('/:id', async (c) => {
     const isUsedElsewhere = galleryResults.length > 0 || logoResults.length > 0;
 
     // Delete from slider_images
-    await db.prepare('DELETE FROM slider_images WHERE id = ?').bind(id).run();
+    await db.prepare('DELETE FROM slider_images WHERE id = ? AND region_code = ?').bind(id, region).run();
 
     // Only delete from R2 and image_storage if not used elsewhere
     if (!isUsedElsewhere) {
@@ -341,10 +379,10 @@ slider.delete('/:id', async (c) => {
       await db.prepare('DELETE FROM image_storage WHERE r2_key = ?').bind(slide.r2_key).run();
     }
 
-    // Renumber remaining slides
+    // Renumber remaining slides in this region
     await db.prepare(
-      'UPDATE slider_images SET display_order = display_order - 1 WHERE display_order > ?'
-    ).bind(slide.display_order).run();
+      'UPDATE slider_images SET display_order = display_order - 1 WHERE region_code = ? AND display_order > ?'
+    ).bind(region, slide.display_order).run();
 
     // Log activity
     const logActivity = c.get('logActivity');
@@ -370,11 +408,18 @@ slider.post('/reorder', async (c) => {
   try {
     const { order } = await c.req.json();
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
 
-    // Fetch slider filenames and current order for logging
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
+
+    // Fetch slider filenames and current order for logging (only for this region)
     const { results: slides } = await db.prepare(
-      `SELECT id, filename, display_order FROM slider_images WHERE id IN (${order.map(() => '?').join(',')}) ORDER BY display_order`
-    ).bind(...order).all();
+      `SELECT id, filename, display_order FROM slider_images WHERE region_code = ? AND id IN (${order.map(() => '?').join(',')}) ORDER BY display_order`
+    ).bind(region, ...order).all();
 
     // Create a map of id to filename
     const slideMap = {};
@@ -385,11 +430,11 @@ slider.post('/reorder', async (c) => {
     // Capture old order (before reordering)
     const oldOrder = slides.map(slide => ({ id: slide.id, filename: slideMap[slide.id] }));
 
-    // Update display order for each slide
+    // Update display order for each slide (only within this region)
     for (let i = 0; i < order.length; i++) {
       await db.prepare(
-        'UPDATE slider_images SET display_order = ? WHERE id = ?'
-      ).bind(i + 1, order[i]).run();
+        'UPDATE slider_images SET display_order = ? WHERE id = ? AND region_code = ?'
+      ).bind(i + 1, order[i], region).run();
     }
 
     // Log activity with meaningful description

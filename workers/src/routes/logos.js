@@ -10,9 +10,17 @@ const logos = new Hono();
 logos.get('/', async (c) => {
   try {
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
+
     const { results } = await db.prepare(
-      'SELECT * FROM client_logos ORDER BY display_order'
-    ).all();
+      'SELECT * FROM client_logos WHERE region_code = ? ORDER BY display_order'
+    ).bind(region).all();
     return c.json(results);
   } catch (error) {
     return c.json({ error: 'Failed to fetch logos' }, 500);
@@ -24,6 +32,14 @@ logos.post('/', async (c) => {
   try {
     const contentType = c.req.header('content-type') || '';
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
+
     let r2Key, cdnUrl, cdnUrlMobile, filename, altText;
 
     // Handle both FormData (file upload) and JSON (from storage)
@@ -87,10 +103,10 @@ logos.post('/', async (c) => {
       return c.json({ error: 'Invalid content type' }, 400);
     }
 
-    // Check if an inactive entry exists with this r2_key
+    // Check if an inactive entry exists with this r2_key in this region
     const { results: existingResults } = await db.prepare(
-      'SELECT id, is_active FROM client_logos WHERE r2_key = ?'
-    ).bind(r2Key).all();
+      'SELECT id, is_active FROM client_logos WHERE r2_key = ? AND region_code = ?'
+    ).bind(r2Key, region).all();
 
     let result;
     let nextOrder;
@@ -99,28 +115,28 @@ logos.post('/', async (c) => {
       // Reactivate existing inactive entry
       const existingId = existingResults[0].id;
 
-      // Get next display order
+      // Get next display order for this region
       const { results: orderResults } = await db.prepare(
-        'SELECT MAX(display_order) as max_order FROM client_logos WHERE is_active = 1'
-      ).all();
+        'SELECT MAX(display_order) as max_order FROM client_logos WHERE region_code = ? AND is_active = 1'
+      ).bind(region).all();
       nextOrder = (orderResults[0]?.max_order || 0) + 1;
 
       result = await db.prepare(
-        'UPDATE client_logos SET filename = ?, cdn_url = ?, cdn_url_mobile = ?, display_order = ?, alt_text = ?, is_active = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
-      ).bind(filename, cdnUrl, cdnUrlMobile, nextOrder, altText, existingId).run();
+        'UPDATE client_logos SET filename = ?, cdn_url = ?, cdn_url_mobile = ?, display_order = ?, alt_text = ?, is_active = 1, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND region_code = ?'
+      ).bind(filename, cdnUrl, cdnUrlMobile, nextOrder, altText, existingId, region).run();
 
       result.meta = { ...result.meta, last_row_id: existingId };
     } else if (existingResults.length === 0) {
       // Insert new entry
-      // Get next display order
+      // Get next display order for this region
       const { results: orderResults } = await db.prepare(
-        'SELECT MAX(display_order) as max_order FROM client_logos'
-      ).all();
+        'SELECT MAX(display_order) as max_order FROM client_logos WHERE region_code = ?'
+      ).bind(region).all();
       nextOrder = (orderResults[0]?.max_order || 0) + 1;
 
       result = await db.prepare(
-        'INSERT INTO client_logos (filename, r2_key, cdn_url, cdn_url_mobile, display_order, alt_text) VALUES (?, ?, ?, ?, ?, ?)'
-      ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, nextOrder, altText).run();
+        'INSERT INTO client_logos (filename, r2_key, cdn_url, cdn_url_mobile, display_order, alt_text, region_code) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, nextOrder, altText, region).run();
     } else {
       // Active entry already exists
       return c.json({ error: 'Logo already exists in the list' }, 400);
@@ -128,8 +144,8 @@ logos.post('/', async (c) => {
 
     // Also add to image_storage if not already there
     await db.prepare(
-      'INSERT OR IGNORE INTO image_storage (filename, r2_key, cdn_url, cdn_url_mobile, category) VALUES (?, ?, ?, ?, ?)'
-    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, 'logos/client').run();
+      'INSERT OR IGNORE INTO image_storage (filename, r2_key, cdn_url, cdn_url_mobile, category, region_code) VALUES (?, ?, ?, ?, ?, ?)'
+    ).bind(filename, r2Key, cdnUrl, cdnUrlMobile, 'logos/client', region).run();
 
     // Log activity (non-blocking)
     try {
@@ -161,10 +177,17 @@ logos.delete('/:id', async (c) => {
   try {
     const id = c.req.param('id');
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
 
     const { results } = await db.prepare(
-      'SELECT * FROM client_logos WHERE id = ?'
-    ).bind(id).all();
+      'SELECT * FROM client_logos WHERE id = ? AND region_code = ?'
+    ).bind(id, region).all();
 
     if (results.length === 0) {
       return c.json({ error: 'Logo not found' }, 404);
@@ -182,7 +205,7 @@ logos.delete('/:id', async (c) => {
     const isUsedElsewhere = sliderResults.length > 0 || galleryResults.length > 0;
 
     // Delete from client_logos
-    await db.prepare('DELETE FROM client_logos WHERE id = ?').bind(id).run();
+    await db.prepare('DELETE FROM client_logos WHERE id = ? AND region_code = ?').bind(id, region).run();
 
     // Only delete from R2 and image_storage if not used elsewhere
     if (!isUsedElsewhere) {
@@ -222,11 +245,18 @@ logos.post('/deactivate', async (c) => {
   try {
     const { ids } = await c.req.json();
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
 
     for (const id of ids) {
       await db.prepare(
-        'UPDATE client_logos SET is_active = 0 WHERE id = ?'
-      ).bind(id).run();
+        'UPDATE client_logos SET is_active = 0 WHERE id = ? AND region_code = ?'
+      ).bind(id, region).run();
     }
 
     return c.json({ success: true });
@@ -240,11 +270,18 @@ logos.post('/activate', async (c) => {
   try {
     const { ids } = await c.req.json();
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
 
     for (const id of ids) {
       await db.prepare(
-        'UPDATE client_logos SET is_active = 1 WHERE id = ?'
-      ).bind(id).run();
+        'UPDATE client_logos SET is_active = 1 WHERE id = ? AND region_code = ?'
+      ).bind(id, region).run();
     }
 
     return c.json({ success: true });
@@ -258,11 +295,18 @@ logos.post('/reorder', async (c) => {
   try {
     const { order } = await c.req.json();
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
 
-    // Fetch logo names and current order for logging
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
+
+    // Fetch logo names and current order for logging (only for this region)
     const { results: logos } = await db.prepare(
-      `SELECT id, filename, alt_text, display_order FROM client_logos WHERE id IN (${order.map(() => '?').join(',')}) ORDER BY display_order`
-    ).bind(...order).all();
+      `SELECT id, filename, alt_text, display_order FROM client_logos WHERE region_code = ? AND id IN (${order.map(() => '?').join(',')}) ORDER BY display_order`
+    ).bind(region, ...order).all();
 
     // Create a map of id to name
     const logoMap = {};
@@ -273,11 +317,11 @@ logos.post('/reorder', async (c) => {
     // Capture old order (before reordering)
     const oldOrder = logos.map(logo => ({ id: logo.id, name: logoMap[logo.id] }));
 
-    // Update to new order
+    // Update to new order (only within this region)
     for (let i = 0; i < order.length; i++) {
       await db.prepare(
-        'UPDATE client_logos SET display_order = ? WHERE id = ?'
-      ).bind(i + 1, order[i]).run();
+        'UPDATE client_logos SET display_order = ? WHERE id = ? AND region_code = ?'
+      ).bind(i + 1, order[i], region).run();
     }
 
     // Log activity with meaningful description
@@ -337,11 +381,18 @@ logos.post('/delete-multiple', async (c) => {
   try {
     const { ids } = await c.req.json();
     const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
 
     for (const id of ids) {
       const { results } = await db.prepare(
-        'SELECT * FROM client_logos WHERE id = ?'
-      ).bind(id).all();
+        'SELECT * FROM client_logos WHERE id = ? AND region_code = ?'
+      ).bind(id, region).all();
 
       if (results.length > 0) {
         const logo = results[0];
@@ -356,7 +407,7 @@ logos.post('/delete-multiple', async (c) => {
         const isUsedElsewhere = sliderResults.length > 0 || galleryResults.length > 0;
 
         // Delete from client_logos
-        await db.prepare('DELETE FROM client_logos WHERE id = ?').bind(id).run();
+        await db.prepare('DELETE FROM client_logos WHERE id = ? AND region_code = ?').bind(id, region).run();
 
         // Only delete from R2 and image_storage if not used elsewhere
         if (!isUsedElsewhere) {

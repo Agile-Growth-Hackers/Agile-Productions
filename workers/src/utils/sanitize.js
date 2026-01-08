@@ -82,3 +82,12 @@ export function sanitizeFilename(filename) {
 export function sanitizeAltText(altText) {
   return sanitizeText(altText);
 }
+
+/**
+ * Generic sanitize function (alias for sanitizeText)
+ * @param {string} input - User input to sanitize
+ * @returns {string} - Sanitized input
+ */
+export function sanitize(input) {
+  return sanitizeText(input);
+}

@@ -10,6 +10,7 @@ import { httpsEnforcementMiddleware } from './middleware/https-enforcement.js';
 import { requestSizeLimitMiddleware } from './middleware/request-size-limit.js';
 import { sentryInitMiddleware } from './middleware/sentry-init.js';
 import { csrfProtection } from './middleware/csrf.js';
+import { regionMiddleware } from './middleware/region.js';
 import authRoutes from './routes/auth.js';
 import storageRoutes from './routes/storage.js';
 import sliderRoutes from './routes/slider.js';
@@ -19,6 +20,11 @@ import usageRoutes from './routes/usage.js';
 import usersRoutes from './routes/users.js';
 import activityLogsRoutes from './routes/activity-logs.js';
 import profileRoutes from './routes/profile.js';
+import regionRoutes from './routes/regions.js';
+import pageContentRoutes from './routes/page-content.js';
+import servicesRoutes from './routes/services.js';
+import teamRoutes from './routes/team.js';
+import sectionImagesRoutes from './routes/section-images.js';
 
 const app = new Hono();
 
@@ -33,6 +39,9 @@ app.use('*', securityHeadersMiddleware);
 
 // Apply CORS to all routes
 app.use('*', corsMiddleware);
+
+// Apply region detection to all routes (must be after CORS to access Origin header)
+app.use('*', regionMiddleware);
 
 // Apply request size limits to all routes
 app.use('*', requestSizeLimitMiddleware);
@@ -49,14 +58,15 @@ app.use('/api/*', (c, next) => {
 });
 
 // Public routes - no authentication required
-// v1 API (versioned)
+// v1 API (versioned) - with region filtering
 app.get('/api/v1/slider', async (c) => {
   try {
     const db = c.env.DB;
+    const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, object_position, display_order FROM slider_images WHERE is_active = 1 ORDER BY display_order'
-    ).all();
+      'SELECT id, cdn_url, cdn_url_mobile, object_position, display_order FROM slider_images WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
+    ).bind(region).all();
     const transformedResults = transformForDevice(results, isMobile);
     return c.json(transformedResults);
   } catch (error) {
@@ -64,14 +74,15 @@ app.get('/api/v1/slider', async (c) => {
   }
 });
 
-// Legacy route (backwards compatibility) - redirects to v1
+// Legacy route (backwards compatibility) - with region filtering
 app.get('/api/slider', async (c) => {
   try {
     const db = c.env.DB;
+    const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, object_position, display_order FROM slider_images WHERE is_active = 1 ORDER BY display_order'
-    ).all();
+      'SELECT id, cdn_url, cdn_url_mobile, object_position, display_order FROM slider_images WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
+    ).bind(region).all();
     const transformedResults = transformForDevice(results, isMobile);
     return c.json(transformedResults);
   } catch (error) {
@@ -79,14 +90,15 @@ app.get('/api/slider', async (c) => {
   }
 });
 
-// v1 Gallery endpoint
+// v1 Gallery endpoint - with region filtering
 app.get('/api/v1/gallery', async (c) => {
   try {
     const db = c.env.DB;
+    const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 ORDER BY display_order'
-    ).all();
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
+    ).bind(region).all();
     const transformedResults = transformForDevice(results, isMobile);
     return c.json(transformedResults);
   } catch (error) {
@@ -94,14 +106,15 @@ app.get('/api/v1/gallery', async (c) => {
   }
 });
 
-// Legacy gallery route
+// Legacy gallery route - with region filtering
 app.get('/api/gallery', async (c) => {
   try {
     const db = c.env.DB;
+    const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 ORDER BY display_order'
-    ).all();
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
+    ).bind(region).all();
     const transformedResults = transformForDevice(results, isMobile);
     return c.json(transformedResults);
   } catch (error) {
@@ -112,10 +125,11 @@ app.get('/api/gallery', async (c) => {
 app.get('/api/gallery/mobile', async (c) => {
   try {
     const db = c.env.DB;
+    const region = c.get('region');
     const isMobile = true; // This endpoint is specifically for mobile
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND mobile_visible = 1 ORDER BY display_order LIMIT 10'
-    ).all();
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND region_code = ? AND mobile_visible = 1 ORDER BY display_order LIMIT 10'
+    ).bind(region).all();
     const transformedResults = transformForDevice(results, isMobile);
     return c.json(transformedResults);
   } catch (error) {
@@ -126,14 +140,95 @@ app.get('/api/gallery/mobile', async (c) => {
 app.get('/api/logos', async (c) => {
   try {
     const db = c.env.DB;
+    const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, alt_text, display_order FROM client_logos WHERE is_active = 1 ORDER BY display_order'
-    ).all();
+      'SELECT id, cdn_url, cdn_url_mobile, alt_text, display_order FROM client_logos WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
+    ).bind(region).all();
     const transformedResults = transformForDevice(results, isMobile);
     return c.json(transformedResults);
   } catch (error) {
     return c.json({ error: 'Failed to fetch logos' }, 500);
+  }
+});
+
+// New public content endpoints - region-filtered
+app.get('/api/page-content', async (c) => {
+  try {
+    const db = c.env.DB;
+    const region = c.get('region');
+    const { results } = await db.prepare(
+      'SELECT content_key, content_text FROM page_content WHERE region_code = ? AND is_active = 1'
+    ).bind(region).all();
+
+    // Transform to object: { hero_tagline: "...", about_text: "...", ... }
+    const content = results.reduce((acc, row) => {
+      acc[row.content_key] = row.content_text;
+      return acc;
+    }, {});
+
+    return c.json(content);
+  } catch (error) {
+    return c.json({ error: 'Failed to fetch page content' }, 500);
+  }
+});
+
+app.get('/api/services', async (c) => {
+  try {
+    const db = c.env.DB;
+    const region = c.get('region');
+    const isMobile = isMobileDevice(c.req.raw);
+    const { results } = await db.prepare(
+      'SELECT id, title, description, icon_cdn_url, icon_cdn_url_mobile, display_order ' +
+      'FROM services WHERE region_code = ? AND is_active = 1 ORDER BY display_order'
+    ).bind(region).all();
+
+    const transformedResults = transformForDevice(results, isMobile);
+    return c.json(transformedResults);
+  } catch (error) {
+    return c.json({ error: 'Failed to fetch services' }, 500);
+  }
+});
+
+app.get('/api/team', async (c) => {
+  try {
+    const db = c.env.DB;
+    const region = c.get('region');
+    const isMobile = isMobileDevice(c.req.raw);
+    const { results } = await db.prepare(
+      'SELECT id, name, position, bio, photo_cdn_url, photo_cdn_url_mobile, display_order ' +
+      'FROM team_members WHERE region_code = ? AND is_active = 1 ORDER BY display_order'
+    ).bind(region).all();
+
+    const transformedResults = transformForDevice(results, isMobile);
+    return c.json(transformedResults);
+  } catch (error) {
+    return c.json({ error: 'Failed to fetch team members' }, 500);
+  }
+});
+
+app.get('/api/section-images', async (c) => {
+  try {
+    const db = c.env.DB;
+    const region = c.get('region');
+    const isMobile = isMobileDevice(c.req.raw);
+    const { results } = await db.prepare(
+      'SELECT section_key, cdn_url, cdn_url_mobile, alt_text FROM section_images ' +
+      'WHERE region_code = ? AND is_active = 1'
+    ).bind(region).all();
+
+    // Transform to object: { about_background: { url: "...", alt: "..." }, ... }
+    const images = results.reduce((acc, row) => {
+      acc[row.section_key] = {
+        url: isMobile && row.cdn_url_mobile ? row.cdn_url_mobile : row.cdn_url,
+        alt: row.alt_text
+      };
+      return acc;
+    }, {});
+
+    return c.json(images);
+  } catch (error) {
+    return c.json({ error: 'Failed to fetch section images' }, 500);
   }
 });
 
@@ -159,6 +254,11 @@ app.route('/api/v1/admin/slider', sliderRoutes);
 app.route('/api/v1/admin/gallery', galleryRoutes);
 app.route('/api/v1/admin/logos', logosRoutes);
 app.route('/api/v1/admin/usage', usageRoutes);
+app.route('/api/v1/admin/page-content', pageContentRoutes);
+app.route('/api/v1/admin/services', servicesRoutes);
+app.route('/api/v1/admin/team', teamRoutes);
+app.route('/api/v1/admin/section-images', sectionImagesRoutes);
+app.route('/api/v1/admin/regions', regionRoutes);
 
 // Legacy admin routes (backwards compatibility)
 app.route('/api/admin/users', usersRoutes);
@@ -169,6 +269,11 @@ app.route('/api/admin/slider', sliderRoutes);
 app.route('/api/admin/gallery', galleryRoutes);
 app.route('/api/admin/logos', logosRoutes);
 app.route('/api/admin/usage', usageRoutes);
+app.route('/api/admin/page-content', pageContentRoutes);
+app.route('/api/admin/services', servicesRoutes);
+app.route('/api/admin/team', teamRoutes);
+app.route('/api/admin/section-images', sectionImagesRoutes);
+app.route('/api/admin/regions', regionRoutes);
 
 // Health check
 app.get('/', (c) => {

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { AuthProvider } from './context/AuthContext';
+import { RegionProvider } from './context/RegionContext';
 import { ToastProvider } from './context/ToastContext';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
@@ -52,7 +53,9 @@ function App() {
               element={
                 <Suspense fallback={<div className="flex items-center justify-center min-h-screen">Loading...</div>}>
                   <ProtectedRoute>
-                    <DashboardPage />
+                    <RegionProvider>
+                      <DashboardPage />
+                    </RegionProvider>
                   </ProtectedRoute>
                 </Suspense>
               }

@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useRegion } from '../../context/RegionContext';
 import ImagePickerModal from './ImagePickerModal';
 import DraggableLogoCard from './DraggableLogoCard';
+import * as FlagIcons from 'country-flag-icons/react/3x2';
 
 export default function LogosSection() {
   const { showToast } = useToast();
+  const { selectedRegion } = useRegion();
   const [logos, setLogos] = useState([]);
   const [originalOrder, setOriginalOrder] = useState([]);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -18,9 +21,30 @@ export default function LogosSection() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const fetchLogos = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await api.getAdminLogos(selectedRegion);
+      // Only show active logos
+      const activeLogos = data.filter(logo => logo.is_active);
+      setLogos(activeLogos);
+      setOriginalOrder(activeLogos.map(logo => logo.id));
+      setHasUnsavedChanges(false);
+      setSelectedIds([]);
+    } catch (err) {
+      setError('Failed to load logos');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedRegion]);
+
   useEffect(() => {
-    fetchLogos();
-  }, []);
+    if (selectedRegion) {
+      fetchLogos();
+    }
+  }, [selectedRegion, fetchLogos]);
 
   // Warn user about unsaved changes on page reload
   useEffect(() => {
@@ -35,25 +59,6 @@ export default function LogosSection() {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
-
-  const fetchLogos = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const data = await api.getAdminLogos();
-      // Only show active logos
-      const activeLogos = data.filter(logo => logo.is_active);
-      setLogos(activeLogos);
-      setOriginalOrder(activeLogos.map(logo => logo.id));
-      setHasUnsavedChanges(false);
-      setSelectedIds([]);
-    } catch (err) {
-      setError('Failed to load logos');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const moveLogo = useCallback((dragIndex, hoverIndex) => {
     setLogos((prevLogos) => {
@@ -78,7 +83,7 @@ export default function LogosSection() {
     setIsSaving(true);
     try {
       const logoIds = logos.map(logo => logo.id);
-      await api.reorderLogos(logoIds);
+      await api.reorderLogos(logoIds, selectedRegion);
       setError('');
       await fetchLogos();
       showToast('Logo order saved successfully!', 'success');
@@ -120,7 +125,7 @@ export default function LogosSection() {
         cdn_url_mobile: selectedImage.cdn_url_mobile,
         filename: selectedImage.filename,
         alt_text: selectedImage.filename.replace(/\.(webp|png|jpg|jpeg)$/i, '')
-      });
+      }, selectedRegion);
       setShowPicker(false);
       await fetchLogos();
       setError('');
@@ -166,15 +171,15 @@ export default function LogosSection() {
     try {
       switch (confirmDelete.action) {
         case 'delete-selected':
-          await api.deleteMultipleLogos(confirmDelete.ids);
+          await api.deleteMultipleLogos(confirmDelete.ids, selectedRegion);
           showToast(`${confirmDelete.ids.length} logo(s) deleted successfully!`, 'error');
           break;
         case 'remove-from-list':
-          await api.deactivateLogos(confirmDelete.ids);
+          await api.deactivateLogos(confirmDelete.ids, selectedRegion);
           showToast(`${confirmDelete.ids.length} logo(s) removed from list!`, 'error');
           break;
         case 'delete-single':
-          await api.deleteLogo(confirmDelete.ids[0]);
+          await api.deleteLogo(confirmDelete.ids[0], selectedRegion);
           showToast('Logo deleted successfully!', 'error');
           break;
       }
@@ -203,11 +208,16 @@ export default function LogosSection() {
     );
   }
 
+  const FlagIcon = FlagIcons[selectedRegion];
+
   return (
       <section className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Client Logos</h2>
+            <div className="flex items-center space-x-2">
+              <h2 className="text-xl font-bold text-gray-900">Client Logos</h2>
+              {FlagIcon && <FlagIcon className="w-6 h-4" title={selectedRegion} />}
+            </div>
             <p className="text-sm text-gray-500 mt-1">
               Drag and drop to reorder • {selectedIds.length} selected
             </p>

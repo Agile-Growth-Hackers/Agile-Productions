@@ -2,13 +2,17 @@ import { useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useAuth } from '../../context/AuthContext';
+import PageContentSection from '../components/PageContentSection';
+import SectionImagesSection from '../components/SectionImagesSection';
 import SliderSection from '../components/SliderSection';
 import GallerySection from '../components/GallerySection';
 import LogosSection from '../components/LogosSection';
 import UsageSection from '../components/UsageSection';
 import UsersSection from '../components/UsersSection';
 import ActivityLogSection from '../components/ActivityLogSection';
+import RegionManagementSection from '../components/RegionManagementSection';
 import ProfileDropdown from '../components/ProfileDropdown';
+import RegionSwitcher from '../components/RegionSwitcher';
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -26,7 +30,10 @@ export default function DashboardPage() {
               <span className="text-gray-400">|</span>
               <span className="text-sm text-gray-600">Agile Productions</span>
             </div>
-            <ProfileDropdown />
+            <div className="flex items-center space-x-4">
+              <RegionSwitcher />
+              <ProfileDropdown />
+            </div>
           </div>
         </div>
       </header>
@@ -67,6 +74,16 @@ export default function DashboardPage() {
                 >
                   Activity Log
                 </button>
+                <button
+                  onClick={() => setActiveTab('regions')}
+                  className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                    activeTab === 'regions'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  Regions
+                </button>
               </>
             )}
             <button
@@ -96,12 +113,20 @@ export default function DashboardPage() {
 
               {/* Client Logos Section */}
               <LogosSection />
+
+              {/* Page Content Section */}
+              <PageContentSection />
+
+              {/* Section Images Section */}
+              <SectionImagesSection />
             </div>
           )}
 
           {activeTab === 'users' && isSuperAdmin && <UsersSection />}
 
           {activeTab === 'activity-log' && isSuperAdmin && <ActivityLogSection />}
+
+          {activeTab === 'regions' && isSuperAdmin && <RegionManagementSection />}
 
           {activeTab === 'usage' && <UsageSection />}
         </main>

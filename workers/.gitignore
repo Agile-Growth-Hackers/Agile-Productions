@@ -1,37 +1,75 @@
-# Wrangler
-.wrangler/
+# Wrangler temporary files and local databases - NEVER commit
+.wrangler/tmp/
+.wrangler/state/v3/kv/
+.wrangler/state/v3/cache/
+.wrangler/state/v3/d1/
+.wrangler/state/
 .dev.vars
 wrangler.toml.backup
 
 # Dependencies
 node_modules/
+package-lock.json
 
 # Logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
 
-# Environment variables
+# Environment variables - NEVER commit these
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+*.vars
 
 # Temporary files
 *.tmp
+*.temp
 temp-*
 test-*
 
-# Editor
+# Editor directories
 .vscode/
 .idea/
 .DS_Store
-.claude
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Migration scripts (keep in repo for reference but don't run in production)
-migrate-*.js
-update-*.js
-create-admin*.js
-sync-*.js
+# AI Assistant files
+.claude/
+.cursor/
+.aider/
 
-# Database dumps
+# Security sensitive files - NEVER commit
+*.key
+*.pem
+*.p12
+*.pfx
+*.cer
+*.crt
+*.der
+credentials.json
+service-account.json
+google-credentials.json
+
+# Database files - NEVER commit (files stay on your machine for local development)
 *.sql
+*.sqlite
+*.sqlite3
 *.db
+dump-*
+backup-*
+
+# Test and coverage
+coverage/
+.nyc_output/
+test-results/
+
+# Build artifacts
+dist/
+build/
+*.tsbuildinfo

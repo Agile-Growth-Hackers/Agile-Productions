@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useRegion } from '../../context/RegionContext';
 import ImagePickerModal from './ImagePickerModal';
 import DraggableSlideCard from './DraggableSlideCard';
+import * as FlagIcons from 'country-flag-icons/react/3x2';
 
 export default function SliderSection() {
   const { showToast } = useToast();
+  const { selectedRegion } = useRegion();
   const [slides, setSlides] = useState([]);
   const [originalOrder, setOriginalOrder] = useState([]); // Track original order
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -18,9 +21,27 @@ export default function SliderSection() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const fetchSlides = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const data = await api.getAdminSlider(selectedRegion);
+      setSlides(data);
+      setOriginalOrder(data.map(slide => slide.id));
+      setHasUnsavedChanges(false);
+    } catch (err) {
+      setError('Failed to load slider images');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedRegion]);
+
   useEffect(() => {
-    fetchSlides();
-  }, []);
+    if (selectedRegion) {
+      fetchSlides();
+    }
+  }, [selectedRegion, fetchSlides]);
 
   // Warn user about unsaved changes on page reload
   useEffect(() => {
@@ -35,22 +56,6 @@ export default function SliderSection() {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
-
-  const fetchSlides = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const data = await api.getAdminSlider();
-      setSlides(data);
-      setOriginalOrder(data.map(slide => slide.id));
-      setHasUnsavedChanges(false);
-    } catch (err) {
-      setError('Failed to load slider images');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const moveSlide = useCallback((dragIndex, hoverIndex) => {
     setSlides((prevSlides) => {
@@ -75,7 +80,7 @@ export default function SliderSection() {
     setIsSaving(true);
     try {
       const slideIds = slides.map(slide => slide.id);
-      await api.reorderSlider(slideIds);
+      await api.reorderSlider(slideIds, selectedRegion);
       setError('');
       // Refresh to get updated display_order from server
       await fetchSlides();
@@ -109,7 +114,7 @@ export default function SliderSection() {
           cdn_url: selectedImage.cdn_url,
           cdn_url_mobile: selectedImage.cdn_url_mobile,
           filename: selectedImage.filename
-        });
+        }, selectedRegion);
       } else {
         // Add new slide
         await api.addSlider({
@@ -118,7 +123,7 @@ export default function SliderSection() {
           cdn_url_mobile: selectedImage.cdn_url_mobile,
           filename: selectedImage.filename,
           object_position: 'center center'
-        });
+        }, selectedRegion);
       }
       await fetchSlides();
       setError('');
@@ -138,7 +143,7 @@ export default function SliderSection() {
   const confirmDeleteAction = async () => {
     setIsDeleting(true);
     try {
-      await api.deleteSlider(confirmDelete.id);
+      await api.deleteSlider(confirmDelete.id, selectedRegion);
       await fetchSlides();
       showToast('Slide deleted successfully!', 'error');
       setConfirmDelete(null);
@@ -165,11 +170,16 @@ export default function SliderSection() {
     );
   }
 
+  const FlagIcon = FlagIcons[selectedRegion];
+
   return (
       <section className="bg-white rounded-lg shadow-sm p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold text-gray-900">Hero Slider</h2>
+            <div className="flex items-center space-x-2">
+              <h2 className="text-xl font-bold text-gray-900">Hero Slider</h2>
+              {FlagIcon && <FlagIcon className="w-6 h-4" title={selectedRegion} />}
+            </div>
             <p className="text-sm text-gray-500 mt-1">
               Drag and drop to reorder slides
             </p>

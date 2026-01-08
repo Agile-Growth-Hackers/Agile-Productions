@@ -31,7 +31,7 @@ users.post('/', validateRequest(schemas.createUser), async (c) => {
   try {
     const db = c.env.DB;
     const user = c.get('user');
-    const { username, email, fullName, password, isSuperAdmin } = c.get('validatedBody');
+    const { username, email, fullName, password, isSuperAdmin, assignedRegions } = c.get('validatedBody');
 
     // Validation
     if (!username || !email || !password) {
@@ -42,6 +42,20 @@ users.post('/', validateRequest(schemas.createUser), async (c) => {
     const validation = validatePasswordStrength(password);
     if (!validation.isValid) {
       return c.json({ error: validation.errors.join('. ') }, 400);
+    }
+
+    // Validate assigned regions for non-super admins
+    const regions = assignedRegions || ['IN'];
+    if (!isSuperAdmin && regions.length > 0) {
+      // Validate regions exist in database
+      const placeholders = regions.map(() => '?').join(',');
+      const { results: validRegions } = await db.prepare(
+        `SELECT code FROM regions WHERE code IN (${placeholders}) AND is_active = 1`
+      ).bind(...regions).all();
+
+      if (validRegions.length !== regions.length) {
+        return c.json({ error: 'One or more invalid or inactive region codes' }, 400);
+      }
     }
 
     // Check for duplicate username/email
@@ -56,12 +70,19 @@ users.post('/', validateRequest(schemas.createUser), async (c) => {
     // Hash password
     const passwordHash = await hashPassword(password);
 
-    // Insert user
+    // Insert user with assigned regions
     const result = await db.prepare(`
       INSERT INTO admins (
-        username, email, full_name, password_hash, is_super_admin, is_active
-      ) VALUES (?, ?, ?, ?, ?, 1)
-    `).bind(username, email, fullName, passwordHash, isSuperAdmin ? 1 : 0).run();
+        username, email, full_name, password_hash, is_super_admin, is_active, assigned_regions
+      ) VALUES (?, ?, ?, ?, ?, 1, ?)
+    `).bind(
+      username,
+      email,
+      fullName,
+      passwordHash,
+      isSuperAdmin ? 1 : 0,
+      isSuperAdmin ? null : JSON.stringify(regions)
+    ).run();
 
     const newUserId = result.meta.last_row_id;
 

@@ -161,13 +161,14 @@ auth.post('/login', validateRequest(schemas.login), async (c) => {
       userAgent
     ).run();
 
-    // Create JWT with role and active status
+    // Create JWT with role, active status, and assigned regions
     const token = await createJWT(
       {
         userId: user.id,
         username: user.username,
         isSuperAdmin: user.is_super_admin === 1,
-        isActive: user.is_active === 1
+        isActive: user.is_active === 1,
+        assignedRegions: user.assigned_regions ? JSON.parse(user.assigned_regions) : null
       },
       c.env.JWT_SECRET
     );

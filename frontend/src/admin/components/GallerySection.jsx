@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
+import { useRegion } from '../../context/RegionContext';
 import ImagePickerModal from './ImagePickerModal';
 import ConfirmModal from './ConfirmModal';
+import * as FlagIcons from 'country-flag-icons/react/3x2';
 
 export default function GallerySection() {
   const { showToast } = useToast();
+  const { selectedRegion } = useRegion();
   const [galleryImages, setGalleryImages] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -16,15 +19,11 @@ export default function GallerySection() {
   const [imageIdToRemove, setImageIdToRemove] = useState(null);
   const [isRemoving, setIsRemoving] = useState(false);
 
-  useEffect(() => {
-    fetchGalleryImages();
-  }, []);
-
-  const fetchGalleryImages = async () => {
+  const fetchGalleryImages = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const data = await api.getAdminGallery();
+      const data = await api.getAdminGallery(selectedRegion);
       setGalleryImages(data);
     } catch (err) {
       setError('Failed to load gallery images');
@@ -32,7 +31,13 @@ export default function GallerySection() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedRegion]);
+
+  useEffect(() => {
+    if (selectedRegion) {
+      fetchGalleryImages();
+    }
+  }, [selectedRegion, fetchGalleryImages]);
 
   const handleEditImage = (imageId) => {
     setEditingImageId(imageId);
@@ -54,7 +59,7 @@ export default function GallerySection() {
         r2_key: '',
         cdn_url: '',
         filename: ''
-      });
+      }, selectedRegion);
       await fetchGalleryImages();
 
       // Clear public website cache so changes show immediately
@@ -88,7 +93,7 @@ export default function GallerySection() {
           cdn_url: selectedImage.cdn_url,
           cdn_url_mobile: selectedImage.cdn_url_mobile,
           filename: selectedImage.filename
-        });
+        }, selectedRegion);
         showToast('Gallery image updated successfully!', 'success');
       } else {
         await api.addGalleryImage({
@@ -96,7 +101,7 @@ export default function GallerySection() {
           cdn_url: selectedImage.cdn_url,
           cdn_url_mobile: selectedImage.cdn_url_mobile,
           filename: selectedImage.filename
-        });
+        }, selectedRegion);
         showToast('Gallery image added successfully!', 'success');
       }
       await fetchGalleryImages();
@@ -127,7 +132,7 @@ export default function GallerySection() {
 
     try {
       // Toggle the visibility (if currently visible, make it hidden, and vice versa)
-      await api.toggleGalleryMobileVisibility(imageId, !currentlyVisible);
+      await api.toggleGalleryMobileVisibility(imageId, !currentlyVisible, selectedRegion);
       await fetchGalleryImages();
       setError('');
       showToast(currentlyVisible ? 'Image hidden on mobile' : 'Image will show on mobile', 'success');
@@ -236,11 +241,16 @@ export default function GallerySection() {
     );
   };
 
+  const FlagIcon = FlagIcons[selectedRegion];
+
   return (
     <section className="bg-white rounded-lg shadow-sm p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">Gallery</h2>
+          <div className="flex items-center space-x-2">
+            <h2 className="text-xl font-bold text-gray-900">Gallery</h2>
+            {FlagIcon && <FlagIcon className="w-6 h-4" title={selectedRegion} />}
+          </div>
           <p className="text-sm text-gray-500 mt-1">
             {galleryImages.length} total • {visibleMobileCount} visible on mobile • {hiddenMobileCount} hidden
           </p>
