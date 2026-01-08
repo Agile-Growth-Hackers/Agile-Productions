@@ -373,8 +373,8 @@ slider.delete('/:id', async (c) => {
     ).bind(slide.r2_key).all();
     const isUsedElsewhere = galleryResults.length > 0 || logoResults.length > 0;
 
-    // Delete from slider_images
-    await db.prepare('DELETE FROM slider_images WHERE id = ? AND region_code = ?').bind(id, region).run();
+    // Delete from slider_images (handle both NULL and region-specific)
+    await db.prepare('DELETE FROM slider_images WHERE id = ? AND (region_code = ? OR region_code IS NULL)').bind(id, region).run();
 
     // Only delete from R2 and image_storage if not used elsewhere
     if (!isUsedElsewhere) {

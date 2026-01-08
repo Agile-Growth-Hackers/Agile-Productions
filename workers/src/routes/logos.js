@@ -215,8 +215,8 @@ logos.delete('/:id', async (c) => {
     ).bind(logo.r2_key).all();
     const isUsedElsewhere = sliderResults.length > 0 || galleryResults.length > 0;
 
-    // Delete from client_logos
-    await db.prepare('DELETE FROM client_logos WHERE id = ? AND region_code = ?').bind(id, region).run();
+    // Delete from client_logos (handle both NULL and region-specific)
+    await db.prepare('DELETE FROM client_logos WHERE id = ? AND (region_code = ? OR region_code IS NULL)').bind(id, region).run();
 
     // Only delete from R2 and image_storage if not used elsewhere
     if (!isUsedElsewhere) {
@@ -417,8 +417,8 @@ logos.post('/delete-multiple', async (c) => {
         ).bind(logo.r2_key).all();
         const isUsedElsewhere = sliderResults.length > 0 || galleryResults.length > 0;
 
-        // Delete from client_logos
-        await db.prepare('DELETE FROM client_logos WHERE id = ? AND region_code = ?').bind(id, region).run();
+        // Delete from client_logos (handle both NULL and region-specific)
+        await db.prepare('DELETE FROM client_logos WHERE id = ? AND (region_code = ? OR region_code IS NULL)').bind(id, region).run();
 
         // Only delete from R2 and image_storage if not used elsewhere
         if (!isUsedElsewhere) {
