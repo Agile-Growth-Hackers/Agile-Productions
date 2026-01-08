@@ -8,6 +8,7 @@ export function corsMiddleware(c, next) {
   // Check if origin is allowed
   if (allowedOrigins.includes(origin)) {
     c.header('Access-Control-Allow-Origin', origin);
+    c.header('Access-Control-Allow-Credentials', 'true');
   }
 
   c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
