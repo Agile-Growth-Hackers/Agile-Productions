@@ -36,6 +36,8 @@ export default function SectionImagesSection() {
   const [error, setError] = useState('');
   const [showPicker, setShowPicker] = useState(false);
   const [editingSection, setEditingSection] = useState(null);
+  const [editingAltText, setEditingAltText] = useState(null);
+  const [altTextValue, setAltTextValue] = useState('');
 
   const fetchImages = useCallback(async () => {
     setLoading(true);
@@ -97,6 +99,29 @@ export default function SectionImagesSection() {
     }
   };
 
+  const handleEditAltText = (sectionKey, currentAltText) => {
+    setEditingAltText(sectionKey);
+    setAltTextValue(currentAltText || '');
+  };
+
+  const handleSaveAltText = async (sectionKey) => {
+    try {
+      await api.updateSectionImageAltText(sectionKey, altTextValue, selectedRegion);
+      await fetchImages();
+      setEditingAltText(null);
+      setAltTextValue('');
+      showToast('Alt text updated successfully!', 'success');
+    } catch (err) {
+      showToast(err.message || 'Failed to update alt text', 'error');
+      console.error(err);
+    }
+  };
+
+  const handleCancelAltText = () => {
+    setEditingAltText(null);
+    setAltTextValue('');
+  };
+
   if (loading) {
     return (
       <section className="bg-white rounded-lg shadow-sm p-6">
@@ -155,10 +180,48 @@ export default function SectionImagesSection() {
 
                   {/* Image Info */}
                   <div className="mt-3 space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-500">Alt Text:</span>
-                      <span className="text-gray-700 font-medium">{image.alt_text || 'None'}</span>
-                    </div>
+                    {editingAltText === section.key ? (
+                      <div className="space-y-2">
+                        <label className="block text-xs text-gray-500">Alt Text:</label>
+                        <input
+                          type="text"
+                          value={altTextValue}
+                          onChange={(e) => setAltTextValue(e.target.value)}
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          placeholder="Enter alt text..."
+                        />
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleSaveAltText(section.key)}
+                            className="px-3 py-1 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition-colors"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={handleCancelAltText}
+                            className="px-3 py-1 bg-gray-300 text-gray-700 text-xs font-medium rounded hover:bg-gray-400 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-500">Alt Text:</span>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-gray-700 font-medium">{image.alt_text || 'None'}</span>
+                          <button
+                            onClick={() => handleEditAltText(section.key, image.alt_text)}
+                            className="text-blue-600 hover:text-blue-700"
+                            title="Edit alt text"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     {image.cdn_url_mobile && (
                       <div className="flex items-center space-x-1 text-xs text-green-600">
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

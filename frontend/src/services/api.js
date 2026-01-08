@@ -668,6 +668,14 @@ class ApiService {
       method: 'DELETE',
     });
   }
+
+  async updateSectionImageAltText(sectionKey, altText, region) {
+    const query = region ? `?region=${region}` : '';
+    return this.request(`/api/admin/section-images/${sectionKey}/alt-text${query}`, {
+      method: 'PUT',
+      body: JSON.stringify({ alt_text: altText }),
+    });
+  }
 }
 
 export default new ApiService();

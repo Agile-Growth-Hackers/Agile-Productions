@@ -175,4 +175,34 @@ sectionImages.delete('/:sectionKey', async (c) => {
   }
 });
 
+// Update alt text only
+sectionImages.put('/:sectionKey/alt-text', async (c) => {
+  try {
+    const db = c.env.DB;
+    const user = c.get('user');
+    const region = c.req.query('region') || c.get('region');
+    const sectionKey = c.req.param('sectionKey');
+    const { alt_text } = await c.req.json();
+
+    // Validate region access
+    if (!user.isSuperAdmin && (!user.assignedRegions || !user.assignedRegions.includes(region))) {
+      return c.json({ error: `No access to region ${region}` }, 403);
+    }
+
+    // Update alt text
+    const result = await db.prepare(
+      'UPDATE section_images SET alt_text = ?, updated_at = CURRENT_TIMESTAMP WHERE region_code = ? AND section_key = ?'
+    ).bind(sanitize(alt_text), region, sectionKey).run();
+
+    if (result.meta.changes === 0) {
+      return c.json({ error: 'Section image not found' }, 404);
+    }
+
+    return c.json({ success: true, message: 'Alt text updated', alt_text });
+  } catch (error) {
+    console.error('Failed to update alt text:', error);
+    return c.json({ error: 'Failed to update alt text' }, 500);
+  }
+});
+
 export default sectionImages;
