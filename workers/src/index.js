@@ -65,7 +65,7 @@ app.get('/api/v1/slider', async (c) => {
     const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, object_position, display_order FROM slider_images WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
+      'SELECT id, cdn_url, cdn_url_mobile, object_position, display_order FROM slider_images WHERE is_active = 1 AND (region_code = ? OR region_code IS NULL) ORDER BY display_order'
     ).bind(region).all();
     const transformedResults = transformForDevice(results, isMobile);
     return c.json(transformedResults);
@@ -81,7 +81,7 @@ app.get('/api/slider', async (c) => {
     const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, object_position, display_order FROM slider_images WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
+      'SELECT id, cdn_url, cdn_url_mobile, object_position, display_order FROM slider_images WHERE is_active = 1 AND (region_code = ? OR region_code IS NULL) ORDER BY display_order'
     ).bind(region).all();
     const transformedResults = transformForDevice(results, isMobile);
     return c.json(transformedResults);
@@ -97,7 +97,7 @@ app.get('/api/v1/gallery', async (c) => {
     const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND (region_code = ? OR region_code IS NULL) ORDER BY display_order'
     ).bind(region).all();
     const transformedResults = transformForDevice(results, isMobile);
     return c.json(transformedResults);
@@ -113,7 +113,7 @@ app.get('/api/gallery', async (c) => {
     const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND (region_code = ? OR region_code IS NULL) ORDER BY display_order'
     ).bind(region).all();
     const transformedResults = transformForDevice(results, isMobile);
     return c.json(transformedResults);
@@ -128,7 +128,7 @@ app.get('/api/gallery/mobile', async (c) => {
     const region = c.get('region');
     const isMobile = true; // This endpoint is specifically for mobile
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND region_code = ? AND mobile_visible = 1 ORDER BY display_order LIMIT 10'
+      'SELECT id, cdn_url, cdn_url_mobile, display_order FROM gallery_images WHERE is_active = 1 AND (region_code = ? OR region_code IS NULL) AND mobile_visible = 1 ORDER BY display_order LIMIT 10'
     ).bind(region).all();
     const transformedResults = transformForDevice(results, isMobile);
     return c.json(transformedResults);
@@ -143,7 +143,7 @@ app.get('/api/logos', async (c) => {
     const region = c.get('region');
     const isMobile = isMobileDevice(c.req.raw);
     const { results } = await db.prepare(
-      'SELECT id, cdn_url, cdn_url_mobile, alt_text, display_order FROM client_logos WHERE is_active = 1 AND region_code = ? ORDER BY display_order'
+      'SELECT id, cdn_url, cdn_url_mobile, alt_text, display_order FROM client_logos WHERE is_active = 1 AND (region_code = ? OR region_code IS NULL) ORDER BY display_order'
     ).bind(region).all();
     const transformedResults = transformForDevice(results, isMobile);
     return c.json(transformedResults);
