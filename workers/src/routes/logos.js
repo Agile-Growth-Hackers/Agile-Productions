@@ -19,7 +19,7 @@ logos.get('/', async (c) => {
     }
 
     const { results } = await db.prepare(
-      'SELECT * FROM client_logos WHERE region_code = ? ORDER BY display_order'
+      'SELECT * FROM client_logos WHERE (region_code = ? OR region_code IS NULL) ORDER BY display_order'
     ).bind(region).all();
     return c.json(results);
   } catch (error) {

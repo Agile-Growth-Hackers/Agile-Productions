@@ -19,7 +19,7 @@ gallery.get('/', async (c) => {
     }
 
     const { results } = await db.prepare(
-      'SELECT * FROM gallery_images WHERE region_code = ? AND is_active = 1 ORDER BY display_order'
+      'SELECT * FROM gallery_images WHERE (region_code = ? OR region_code IS NULL) AND is_active = 1 ORDER BY display_order'
     ).bind(region).all();
     return c.json(results);
   } catch (error) {
