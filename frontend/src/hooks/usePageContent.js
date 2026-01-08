@@ -31,15 +31,12 @@ export function usePageContent() {
       // Fetch from API (public endpoint, no auth required)
       const data = await api.getPublicPageContent();
 
-      // Transform array to object keyed by content_key
-      const contentMap = {};
-      data.forEach(item => {
-        contentMap[item.content_key] = item.content_text;
-      });
+      // Backend already returns as object { hero_title: "...", about_title: "...", ... }
+      // No need to transform
 
       // Update state and cache
-      setContent(contentMap);
-      sessionStorage.setItem('page_content', JSON.stringify(contentMap));
+      setContent(data);
+      sessionStorage.setItem('page_content', JSON.stringify(data));
       sessionStorage.setItem('page_content_time', Date.now().toString());
     } catch (err) {
       console.error('Error fetching page content:', err);
