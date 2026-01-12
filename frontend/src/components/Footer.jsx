@@ -1,6 +1,6 @@
 import { useInView } from '../hooks/useInView';
 import { usePageContent } from '../hooks/usePageContent';
-import DOMPurify from 'dompurify';
+import { prepareHtml, stripHtmlTags } from '../utils/htmlUtils';
 
 const Footer = () => {
   const { content } = usePageContent();
@@ -46,19 +46,19 @@ const Footer = () => {
               className="h-12 w-auto mb-4"
             />
             <p className="text-sm text-gray-300 mb-1" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
-              <a href={`tel:${(content?.footer_phone || '+91 86086 86286').replace(/\s/g, '')}`} className="hover:text-white transition-colors">
-                {content?.footer_phone || '+91 86086 86286'}
+              <a href={`tel:${stripHtmlTags(content?.footer_phone, '+91 86086 86286').replace(/\s/g, '')}`} className="hover:text-white transition-colors">
+                {stripHtmlTags(content?.footer_phone, '+91 86086 86286')}
               </a>
             </p>
             <p className="text-sm text-gray-300 mb-1" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
-              <a href={`mailto:${content?.footer_email || 'hello@agilegrowthhackers.in'}`} className="hover:text-white transition-colors">
-                {content?.footer_email || 'hello@agilegrowthhackers.in'}
+              <a href={`mailto:${stripHtmlTags(content?.footer_email, 'hello@agilegrowthhackers.in')}`} className="hover:text-white transition-colors">
+                {stripHtmlTags(content?.footer_email, 'hello@agilegrowthhackers.in')}
               </a>
             </p>
             <div
               className="text-sm text-gray-300 footer-content"
               style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content?.footer_address || '213, 2nd Floor, Ramnashree Arcade, MG Road, Bangalore - 560001') }}
+              dangerouslySetInnerHTML={prepareHtml(content?.footer_address, '213, 2nd Floor, Ramnashree Arcade, MG Road, Bangalore - 560001')}
             />
           </div>
 
@@ -70,7 +70,7 @@ const Footer = () => {
             <div
               className="text-sm text-gray-400 footer-content"
               style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
-              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content?.footer_copyright || 'Copyright @ AgileGrowthHackers2025') }}
+              dangerouslySetInnerHTML={prepareHtml(content?.footer_copyright, 'Copyright @ AgileGrowthHackers2025')}
             />
           </div>
         </div>

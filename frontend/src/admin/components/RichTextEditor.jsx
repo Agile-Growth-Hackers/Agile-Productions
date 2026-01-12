@@ -21,7 +21,9 @@ export default function RichTextEditor({ value, onChange, placeholder }) {
     content: value || '',
     onUpdate: ({ editor }) => {
       const html = editor.getHTML();
-      onChange(html);
+      // Don't save empty paragraphs - treat them as empty content
+      const cleanedHtml = html === '<p></p>' ? '' : html;
+      onChange(cleanedHtml);
     },
     editorProps: {
       attributes: {
@@ -33,8 +35,14 @@ export default function RichTextEditor({ value, onChange, placeholder }) {
 
   // Update editor content when value prop changes
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value || '');
+    if (!editor) return;
+
+    const currentContent = editor.getHTML();
+    const newValue = value || '';
+
+    // Only update if content actually changed to prevent cursor jumping
+    if (currentContent !== newValue) {
+      editor.commands.setContent(newValue);
     }
   }, [value, editor]);
 

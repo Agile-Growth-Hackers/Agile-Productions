@@ -1,7 +1,7 @@
-import DOMPurify from 'dompurify';
 import { useInView } from '../hooks/useInView';
 import { usePageContent } from '../hooks/usePageContent';
 import { useSectionImages } from '../hooks/useSectionImages';
+import { prepareHtml } from '../utils/htmlUtils';
 
 const Services = () => {
   const { content } = usePageContent();
@@ -35,16 +35,12 @@ const Services = () => {
             >
               <h2
                 className="text-5xl md:text-6xl font-bold mb-8 text-center lg:text-left"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(content?.services_known_for_title || 'WE ARE<br/>KNOWN FOR')
-                }}
+                dangerouslySetInnerHTML={prepareHtml(content?.services_known_for_title, 'WE ARE<br/>KNOWN FOR')}
               />
               <div
                 className="text-base md:text-lg lg:text-xl font-medium mx-auto lg:mx-0 max-w-2xl lg:max-w-none"
                 style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(content?.services_known_for_items || '<ul><li>Motorsports Coverage: Track days, Championships, Behind-The-Scenes</li><li>Automotive Events: Product launches, Community Rides, Dealership Experiences</li><li>Ad Films & Commercials: High-quality promotional videos designed for engagement</li></ul>')
-                }}
+                dangerouslySetInnerHTML={prepareHtml(content?.services_known_for_items, '<ul><li>Motorsports Coverage: Track days, Championships, Behind-The-Scenes</li><li>Automotive Events: Product launches, Community Rides, Dealership Experiences</li><li>Ad Films & Commercials: High-quality promotional videos designed for engagement</li></ul>')}
               />
             </div>
 
@@ -73,9 +69,7 @@ const Services = () => {
           <h2
             ref={eventTitleRef}
             className={`text-5xl md:text-6xl font-bold mb-6 text-center lg:hidden will-animate ${eventTitleInView ? 'animate-fade-up animation-complete' : ''}`}
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(content?.services_event_coverage_title || 'EVENT<br/>COVERAGE')
-            }}
+            dangerouslySetInnerHTML={prepareHtml(content?.services_event_coverage_title, 'EVENT<br/>COVERAGE')}
           />
 
           {/* Desktop: Image with overlaid title shown first */}
@@ -93,9 +87,7 @@ const Services = () => {
             />
             <h2
               className="absolute top-[35%] left-[85%] -translate-y-1/2 text-5xl md:text-6xl font-bold text-black"
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(content?.services_event_coverage_title || 'EVENT<br/>COVERAGE')
-              }}
+              dangerouslySetInnerHTML={prepareHtml(content?.services_event_coverage_title, 'EVENT<br/>COVERAGE')}
             />
           </div>
 
@@ -107,9 +99,7 @@ const Services = () => {
             <p
               className="text-base md:text-lg text-black leading-relaxed mb-8 font-medium"
               style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(content?.services_event_coverage_description || 'We specialize in bringing automotive events to life with vibrant footage and emotional resonance. Rolls-Royce Private Dinner, Malaysian Harley Davidson Gathering, Dosas With Ducati, BMW 1000RR Ride, Malaysian Auto Expo, Rynox Store Launch, Sip A Cofftee With 6kiom')
-              }}
+              dangerouslySetInnerHTML={prepareHtml(content?.services_event_coverage_description, 'We specialize in bringing automotive events to life with vibrant footage and emotional resonance. Rolls-Royce Private Dinner, Malaysian Harley Davidson Gathering, Dosas With Ducati, BMW 1000RR Ride, Malaysian Auto Expo, Rynox Store Launch, Sip A Cofftee With 6kiom')}
             />
           </div>
 
@@ -142,16 +132,12 @@ const Services = () => {
             >
               <h2
                 className="text-5xl md:text-6xl font-bold mb-6 text-center lg:text-left"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(content?.services_ad_films_title || 'AD & PROMO FILMS')
-                }}
+                dangerouslySetInnerHTML={prepareHtml(content?.services_ad_films_title, 'AD & PROMO FILMS')}
               />
               <div
                 className="text-base md:text-lg text-black leading-relaxed mb-8 max-w-3xl mx-auto lg:mx-0 md:pl-16 lg:pl-0 font-medium text-left"
                 style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(content?.services_ad_films_description || '<p>We craft ad films that fuel your brand\'s presence</p><ul><li>Instagram Reels, Shorts & YouTube Ads</li><li>Dealer Testimonials with cinematic visuals</li><li>Campaigns for automotive brands and gear companies</li></ul>')
-                }}
+                dangerouslySetInnerHTML={prepareHtml(content?.services_ad_films_description, '<p>We craft ad films that fuel your brand\'s presence</p><ul><li>Instagram Reels, Shorts & YouTube Ads</li><li>Dealer Testimonials with cinematic visuals</li><li>Campaigns for automotive brands and gear companies</li></ul>')}
               />
             </div>
 
@@ -181,16 +167,12 @@ const Services = () => {
             >
               <h2
                 className="text-5xl md:text-6xl font-bold mb-4 text-center lg:text-right"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(content?.services_brand_coverage_title || 'BRAND COVERAGE')
-                }}
+                dangerouslySetInnerHTML={prepareHtml(content?.services_brand_coverage_title, 'BRAND COVERAGE')}
               />
               <p
                 className="text-base md:text-lg text-black leading-relaxed mb-6 lg:mb-10 max-w-3xl mx-auto lg:ml-auto lg:mr-0 font-medium text-center lg:text-right"
                 style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(content?.services_brand_coverage_description || 'We create powerful visuals for automotive brands like Rolls-Royce, Bentley, Lexus, Ultraviolette, Ducati and more capturing their identity, performance, and lifestyle with impact.')
-                }}
+                dangerouslySetInnerHTML={prepareHtml(content?.services_brand_coverage_description, 'We create powerful visuals for automotive brands like Rolls-Royce, Bentley, Lexus, Ultraviolette, Ducati and more capturing their identity, performance, and lifestyle with impact.')}
               />
             </div>
 

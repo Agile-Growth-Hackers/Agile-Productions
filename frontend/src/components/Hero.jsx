@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import DOMPurify from 'dompurify';
 import { useOnLoad } from '../hooks/useOnLoad';
 import { usePageContent } from '../hooks/usePageContent';
+import { prepareHtml } from '../utils/htmlUtils';
 import api from '../services/api';
 
 const Hero = () => {
@@ -101,9 +101,7 @@ const Hero = () => {
           <div className="max-w-3xl text-center md:text-left mx-auto md:mx-0">
             <h1
               className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-3 animate-on-load will-animate ${hasLoaded ? 'has-loaded animate-fade-up animation-complete' : ''}`}
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(content?.hero_title || 'HOME OF<br />VISUAL CONTENT<br />BUILT TO RACE.')
-              }}
+              dangerouslySetInnerHTML={prepareHtml(content?.hero_title, 'HOME OF<br />VISUAL CONTENT<br />BUILT TO RACE.')}
             ></h1>
             {/* Animated Progress Bar */}
             <div key={key} className={`w-20 h-2.5 bg-white/30 rounded-full overflow-hidden mx-auto md:mx-0 animate-on-load ${hasLoaded ? 'has-loaded animate-fade-up' : ''}`} style={{ animationDelay: '0.2s' }}>
