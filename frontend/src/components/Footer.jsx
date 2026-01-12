@@ -46,19 +46,19 @@ const Footer = () => {
               className="h-12 w-auto mb-4"
             />
             <p className="text-sm text-gray-300 mb-1" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
-              <a href={`tel:${stripHtmlTags(content?.footer_phone, '+91 86086 86286').replace(/\s/g, '')}`} className="hover:text-white transition-colors">
-                {stripHtmlTags(content?.footer_phone, '+91 86086 86286')}
+              <a href={`tel:${stripHtmlTags(content?.footer_phone).replace(/\s/g, '')}`} className="hover:text-white transition-colors">
+                {stripHtmlTags(content?.footer_phone)}
               </a>
             </p>
             <p className="text-sm text-gray-300 mb-1" style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}>
-              <a href={`mailto:${stripHtmlTags(content?.footer_email, 'hello@agilegrowthhackers.in')}`} className="hover:text-white transition-colors">
-                {stripHtmlTags(content?.footer_email, 'hello@agilegrowthhackers.in')}
+              <a href={`mailto:${stripHtmlTags(content?.footer_email)}`} className="hover:text-white transition-colors">
+                {stripHtmlTags(content?.footer_email)}
               </a>
             </p>
             <div
               className="text-sm text-gray-300 footer-content"
               style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
-              dangerouslySetInnerHTML={prepareHtml(content?.footer_address, '213, 2nd Floor, Ramnashree Arcade, MG Road, Bangalore - 560001')}
+              dangerouslySetInnerHTML={prepareHtml(content?.footer_address)}
             />
           </div>
 
@@ -70,7 +70,7 @@ const Footer = () => {
             <div
               className="text-sm text-gray-400 footer-content"
               style={{ fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
-              dangerouslySetInnerHTML={prepareHtml(content?.footer_copyright, 'Copyright @ AgileGrowthHackers2025')}
+              dangerouslySetInnerHTML={prepareHtml(content?.footer_copyright)}
             />
           </div>
         </div>

@@ -40,9 +40,18 @@ export default function RichTextEditor({ value, onChange, placeholder }) {
     const currentContent = editor.getHTML();
     const newValue = value || '';
 
+    // Normalize empty content for comparison
+    const isCurrentEmpty = currentContent === '<p></p>' || currentContent === '';
+    const isNewEmpty = newValue === '<p></p>' || newValue === '';
+
     // Only update if content actually changed to prevent cursor jumping
+    if (isCurrentEmpty && isNewEmpty) {
+      // Both empty, no need to update
+      return;
+    }
+
     if (currentContent !== newValue) {
-      editor.commands.setContent(newValue);
+      editor.commands.setContent(newValue, false); // false = don't emit update event
     }
   }, [value, editor]);
 

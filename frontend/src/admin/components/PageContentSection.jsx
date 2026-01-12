@@ -223,6 +223,7 @@ export default function PageContentSection() {
                 {field.label}
               </label>
               <RichTextEditor
+                key={`${selectedRegion}-${field.key}`}
                 value={content[field.key] || ''}
                 onChange={(value) => handleFieldChange(field.key, value)}
                 placeholder={field.placeholder}
