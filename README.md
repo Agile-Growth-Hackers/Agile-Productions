@@ -28,11 +28,30 @@ Official website for **Agile Productions** - A modern, full-stack web applicatio
 
 ## Overview
 
-Agile Productions is a professional platform designed to showcase visual content through customizable sliders, galleries, and client logos. The application features a comprehensive admin dashboard for content management, user administration, and activity tracking.
+Agile Productions is a professional platform designed to showcase visual content through customizable sliders, galleries, and client logos. The application features a comprehensive admin dashboard for content management, user administration, and activity tracking with multi-region support.
 
 **Live Sites:**
 - Production: https://agileproductions.in
 - Alternative: https://agileproductions.ae
+
+### Recent Updates
+
+**Content Management System (v2.0)**
+- Multi-region content support (India, UAE, and expandable)
+- Rich text editor for page content (Hero, About, Services, Footer)
+- Services management with icons and descriptions
+- Team members management with profiles
+- Section images management for different page areas
+- Custom save confirmation modals for better UX
+- HTML sanitization for secure content rendering
+- Bullet point and alignment fixes for better typography
+
+**UI/UX Improvements**
+- Region switcher with flag icons in admin dashboard
+- Improved dropdown alignment and visual consistency
+- Better list formatting with proper bullet alignment
+- Enhanced content editor with TipTap rich text support
+- Custom modal confirmations replacing browser alerts
 
 ## Features
 
@@ -50,6 +69,11 @@ Agile Productions is a professional platform designed to showcase visual content
   - Gallery image management with mobile visibility controls
   - Client logo management with batch operations
   - Image storage library with reusable assets
+  - Page content editor with rich text support (Hero, About, Services, Footer)
+  - Services management with icons and descriptions
+  - Team members management with photos and bios
+  - Section images management for different page sections
+  - Region-specific content customization (India, UAE, etc.)
 
 - **User Management** (Super Admin)
   - Create, edit, and delete admin users
@@ -71,6 +95,11 @@ Agile Productions is a professional platform designed to showcase visual content
   - CSRF protection
   - Password complexity validation
   - Secure session management
+  - HTML sanitization with DOMPurify
+  - Content Security Policy (CSP)
+  - HTTPS enforcement with automatic redirects
+  - Request size limiting
+  - Rate limiting on public and admin endpoints
 
 ## Tech Stack
 
@@ -81,6 +110,9 @@ Agile Productions is a professional platform designed to showcase visual content
 - **Router**: React Router 7.11
 - **State Management**: React Context API
 - **Drag & Drop**: react-dnd 16.0
+- **Rich Text Editor**: TipTap 2.x with StarterKit and Link extensions
+- **HTML Sanitization**: DOMPurify 3.x
+- **UI Components**: country-flag-icons for region flags
 - **Monitoring**: Sentry 10.32
 - **Hosting**: Cloudflare Pages
 
@@ -126,7 +158,13 @@ agile-productions/
 │   │   │   ├── logos.js     # Logo management
 │   │   │   ├── storage.js   # Image storage
 │   │   │   ├── users.js     # User management
-│   │   │   └── activity.js  # Activity logs
+│   │   │   ├── activity-logs.js  # Activity logs
+│   │   │   ├── page-content.js   # Page content management
+│   │   │   ├── services.js       # Services management
+│   │   │   ├── team.js           # Team members management
+│   │   │   ├── section-images.js # Section images management
+│   │   │   ├── regions.js        # Region management
+│   │   │   └── profile.js        # Profile management
 │   │   ├── middleware/      # Express-style middleware
 │   │   ├── utils/           # Utility functions
 │   │   └── index.js         # Worker entry point
@@ -303,6 +341,11 @@ npx wrangler d1 execute agile-productions-db --remote --file=migrations/0001_ini
 - **client_logos**: Client logos with display order
 - **image_storage**: Centralized storage for reusable images
 - **activity_logs**: Audit trail of all admin actions
+- **page_content**: Editable page content (Hero, About, Services, Footer) with region support
+- **services**: Services offerings with icons, titles, and descriptions per region
+- **team_members**: Team member profiles with photos and bios per region
+- **section_images**: Background and section images for different page sections per region
+- **regions**: Available regions with domain mappings and active status
 
 ### Backup & Restore
 
@@ -334,6 +377,11 @@ All admin endpoints require JWT authentication via `Authorization: Bearer <token
 | GET | `/api/gallery` | Get active gallery images (desktop) |
 | GET | `/api/gallery/mobile` | Get active gallery images (mobile) |
 | GET | `/api/logos` | Get active client logos |
+| GET | `/api/page-content/:region` | Get page content for region |
+| GET | `/api/services/:region` | Get services for region |
+| GET | `/api/team/:region` | Get team members for region |
+| GET | `/api/section-images/:region/:section` | Get section image for region |
+| GET | `/api/regions` | Get available regions |
 
 ### Admin Endpoints
 
@@ -403,6 +451,47 @@ All admin endpoints require JWT authentication via `Authorization: Bearer <token
 | PUT | `/api/admin/profile/password` | Change password |
 | POST | `/api/admin/profile/picture` | Upload profile picture |
 | DELETE | `/api/admin/profile/picture` | Delete profile picture |
+
+#### Page Content Management
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/admin/page-content/:region` | Get page content for region |
+| POST | `/api/admin/page-content` | Create new page content |
+| PUT | `/api/admin/page-content/:key` | Update page content |
+
+#### Services Management
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/admin/services/:region` | Get services for region |
+| POST | `/api/admin/services` | Create new service |
+| PUT | `/api/admin/services/:id` | Update service |
+| DELETE | `/api/admin/services/:id` | Delete service |
+| POST | `/api/admin/services/reorder` | Reorder services |
+
+#### Team Management
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/admin/team/:region` | Get team members for region |
+| POST | `/api/admin/team` | Create new team member |
+| PUT | `/api/admin/team/:id` | Update team member |
+| DELETE | `/api/admin/team/:id` | Delete team member |
+| POST | `/api/admin/team/reorder` | Reorder team members |
+
+#### Section Images Management
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/admin/section-images/:region/:section` | Get section image |
+| POST | `/api/admin/section-images` | Upload section image |
+| PUT | `/api/admin/section-images/:id` | Update section image |
+| DELETE | `/api/admin/section-images/:id` | Delete section image |
+
+#### Region Management
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/admin/regions` | Get all regions |
+| POST | `/api/admin/regions` | Create new region |
+| PUT | `/api/admin/regions/:code` | Update region |
+| DELETE | `/api/admin/regions/:code` | Delete region |
 
 ## Testing
 
