@@ -39,7 +39,7 @@ function App() {
       <ToastProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<PublicSite />} />
+            {/* Admin routes - must be defined before catch-all */}
             <Route
               path="/admin/login"
               element={
@@ -60,6 +60,10 @@ function App() {
                 </Suspense>
               }
             />
+
+            {/* Public site - both root and any regional routes */}
+            <Route path="/" element={<PublicSite />} />
+            <Route path="*" element={<PublicSite />} />
           </Routes>
           {/* Test button - only shows in development */}
           {import.meta.env.DEV && <ErrorTest />}
