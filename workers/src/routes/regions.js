@@ -123,8 +123,23 @@ regions.post('/', async (c) => {
         'SELECT ?, section_key, filename, r2_key, cdn_url, cdn_url_mobile, alt_text, is_active FROM section_images WHERE region_code = ?'
       ).bind(code, copyFromRegion).run();
 
-      // Note: We intentionally don't copy slider_images, gallery_images, or client_logos
-      // as these are typically region-specific and should be added manually
+      // Copy slider_images
+      await db.prepare(
+        'INSERT INTO slider_images (region_code, filename, r2_key, cdn_url, cdn_url_mobile, object_position, display_order, is_active) ' +
+        'SELECT ?, filename, r2_key, cdn_url, cdn_url_mobile, object_position, display_order, is_active FROM slider_images WHERE region_code = ?'
+      ).bind(code, copyFromRegion).run();
+
+      // Copy gallery_images
+      await db.prepare(
+        'INSERT INTO gallery_images (region_code, filename, r2_key, cdn_url, cdn_url_mobile, show_on_mobile, is_active) ' +
+        'SELECT ?, filename, r2_key, cdn_url, cdn_url_mobile, show_on_mobile, is_active FROM gallery_images WHERE region_code = ?'
+      ).bind(code, copyFromRegion).run();
+
+      // Copy client_logos
+      await db.prepare(
+        'INSERT INTO client_logos (region_code, name, filename, r2_key, cdn_url, cdn_url_mobile, display_order, is_active) ' +
+        'SELECT ?, name, filename, r2_key, cdn_url, cdn_url_mobile, display_order, is_active FROM client_logos WHERE region_code = ?'
+      ).bind(code, copyFromRegion).run();
     }
 
     // Log activity

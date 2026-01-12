@@ -355,7 +355,7 @@ export default function RegionManagementSection() {
                     ))}
                   </select>
                   <p className="mt-1 text-xs text-gray-500">
-                    Duplicates page content, services, and team members
+                    Duplicates all content: page text, services, team, slider, gallery, and logos
                   </p>
                 </div>
 
