@@ -9,7 +9,20 @@ const About = () => {
   const [content2Ref, content2InView] = useInView({ threshold: 0.5, delay: 200 });
 
   return (
-    <section id="about-us" className="py-16 md:py-24 bg-[#ECEDF0]">
+    <>
+      <style>{`
+        .about-content p {
+          margin: 1.5rem 0;
+          line-height: 1.75;
+        }
+        .about-content p:first-child {
+          margin-top: 0;
+        }
+        .about-content p:last-child {
+          margin-bottom: 0;
+        }
+      `}</style>
+      <section id="about-us" className="py-16 md:py-24 bg-[#ECEDF0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2
           ref={titleRef}
@@ -28,13 +41,14 @@ const About = () => {
 
           <div
             ref={content2Ref}
-            className={`text-base md:text-lg text-black leading-relaxed font-medium will-animate ${content2InView ? 'animate-fade-up animation-complete' : ''}`}
+            className={`text-base md:text-lg text-black leading-relaxed font-medium will-animate about-content ${content2InView ? 'animate-fade-up animation-complete' : ''}`}
             style={{ textTransform: 'none', fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif' }}
             dangerouslySetInnerHTML={prepareHtml(content?.about_content)}
           />
         </div>
       </div>
-    </section>
+      </section>
+    </>
   );
 };
 

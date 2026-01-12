@@ -28,18 +28,26 @@ const Services = () => {
         .services-content ul {
           list-style-type: disc;
           padding-left: 1.5rem;
-          margin: 0.5rem 0;
+          margin: 1rem 0;
         }
         .services-content ol {
           list-style-type: decimal;
           padding-left: 1.5rem;
-          margin: 0.5rem 0;
+          margin: 1rem 0;
         }
         .services-content li {
-          margin: 0.25rem 0;
+          margin: 0.75rem 0;
+          line-height: 1.75;
+        }
+        .services-content li::marker {
+          font-size: 1.5rem;
         }
         .services-content p {
-          margin: 0.5rem 0;
+          margin: 1.5rem 0;
+          line-height: 1.75;
+        }
+        .services-content p:first-child {
+          margin-top: 0;
         }
       `}</style>
       <section id="services" className="">
