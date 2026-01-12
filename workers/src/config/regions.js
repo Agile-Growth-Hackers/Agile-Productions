@@ -102,10 +102,25 @@ export async function getRegionFromRequest(request, db) {
     const regions = await getRegionsFromDB(db);
     const pathname = new URL(request.url).pathname;
 
-    // Try path-based detection first
+    // Try path-based detection first (for direct page loads)
     const pathRegion = detectRegionFromPath(pathname, regions);
     if (pathRegion) {
       return pathRegion;
+    }
+
+    // Try to detect from Referer header (for API calls from regional routes)
+    const referer = request.headers.get('Referer');
+    if (referer) {
+      try {
+        const refererUrl = new URL(referer);
+        const refererPath = refererUrl.pathname;
+        const refererPathRegion = detectRegionFromPath(refererPath, regions);
+        if (refererPathRegion) {
+          return refererPathRegion;
+        }
+      } catch (e) {
+        // Invalid referer URL, continue to domain detection
+      }
     }
 
     // Try domain-based detection
