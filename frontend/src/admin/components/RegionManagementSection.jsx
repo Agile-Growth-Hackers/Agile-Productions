@@ -37,6 +37,8 @@ export default function RegionManagementSection() {
   const [regions, setRegions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingRegion, setEditingRegion] = useState(null);
   const [newRegion, setNewRegion] = useState({
     code: '',
     name: '',
@@ -87,6 +89,41 @@ export default function RegionManagementSection() {
     } catch (err) {
       console.error('Error creating region:', err);
       showToast(err.message || 'Failed to create region', 'error');
+    }
+  };
+
+  const handleEditClick = (region) => {
+    setEditingRegion({
+      code: region.code,
+      name: region.name,
+      domain: region.domain || '',
+      route: region.route || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateRegion = async (e) => {
+    e.preventDefault();
+
+    // Ensure at least domain or route is provided
+    if (!editingRegion.domain && !editingRegion.route) {
+      showToast('Please provide either a domain or a route', 'error');
+      return;
+    }
+
+    try {
+      await api.updateRegion(editingRegion.code, {
+        name: editingRegion.name,
+        domain: editingRegion.domain,
+        route: editingRegion.route
+      });
+      showToast(`Region ${editingRegion.code} updated successfully!`, 'success');
+      setShowEditModal(false);
+      setEditingRegion(null);
+      await fetchRegions();
+    } catch (err) {
+      console.error('Error updating region:', err);
+      showToast(err.message || 'Failed to update region', 'error');
     }
   };
 
@@ -233,16 +270,27 @@ export default function RegionManagementSection() {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button
-                    onClick={() => handleDeleteRegion(region.code)}
-                    className="text-red-600 hover:text-red-900 disabled:opacity-40 disabled:cursor-not-allowed"
-                    disabled={region.is_default === 1}
-                    title={region.is_default === 1 ? 'Cannot delete the default region' : 'Delete region'}
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
+                  <div className="flex items-center justify-end gap-3">
+                    <button
+                      onClick={() => handleEditClick(region)}
+                      className="text-blue-600 hover:text-blue-900"
+                      title="Edit region"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteRegion(region.code)}
+                      className="text-red-600 hover:text-red-900 disabled:opacity-40 disabled:cursor-not-allowed"
+                      disabled={region.is_default === 1}
+                      title={region.is_default === 1 ? 'Cannot delete the default region' : 'Delete region'}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -372,6 +420,111 @@ export default function RegionManagementSection() {
                     className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Create Region
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Region Modal */}
+      {showEditModal && editingRegion && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">Edit Region</h3>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingRegion(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <form onSubmit={handleUpdateRegion} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Region Code
+                  </label>
+                  <input
+                    type="text"
+                    value={editingRegion.code}
+                    disabled
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Region code cannot be changed</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Region Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editingRegion.name}
+                    onChange={(e) => setEditingRegion({ ...editingRegion, name: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Domain (optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="example.us"
+                    value={editingRegion.domain}
+                    onChange={(e) => setEditingRegion({ ...editingRegion, domain: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">Leave empty for route-based regions</p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Route (optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="/en-us"
+                    value={editingRegion.route}
+                    onChange={(e) => setEditingRegion({ ...editingRegion, route: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">For single-domain multi-region sites</p>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+                  <p className="text-sm text-blue-800">
+                    <strong>Note:</strong> At least one of domain or route must be provided. Changes take effect immediately.
+                  </p>
+                </div>
+
+                <div className="flex space-x-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowEditModal(false);
+                      setEditingRegion(null);
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Update Region
                   </button>
                 </div>
               </form>

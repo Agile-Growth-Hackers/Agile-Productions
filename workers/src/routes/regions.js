@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { clearRegionsCache } from '../config/regions.js';
 
 const regions = new Hono();
 
@@ -153,6 +154,9 @@ regions.post('/', async (c) => {
       });
     }
 
+    // Clear regions cache
+    clearRegionsCache();
+
     return c.json({
       success: true,
       message: `Region ${code} created successfully and is now active.`,
@@ -227,6 +231,9 @@ regions.delete('/:code', async (c) => {
       });
     }
 
+    // Clear regions cache
+    clearRegionsCache();
+
     return c.json({
       success: true,
       message: `Region ${regionCode} has been deactivated successfully.`
@@ -295,6 +302,9 @@ regions.put('/:code/status', async (c) => {
       });
     }
 
+    // Clear regions cache
+    clearRegionsCache();
+
     return c.json({
       success: true,
       message: `Region ${regionCode} has been ${is_active === 1 ? 'activated' : 'deactivated'} successfully.`
@@ -302,6 +312,72 @@ regions.put('/:code/status', async (c) => {
   } catch (error) {
     console.error('Failed to toggle region status:', error);
     return c.json({ error: 'Failed to update region status: ' + error.message }, 500);
+  }
+});
+
+// Update region details (super admin only)
+regions.put('/:code', async (c) => {
+  const user = c.get('user');
+
+  // Only super admins can update regions
+  if (!user.isSuperAdmin) {
+    return c.json({ error: 'Access denied' }, 403);
+  }
+
+  try {
+    const regionCode = c.req.param('code');
+    const { name, domain, route } = await c.req.json();
+    const db = c.env.DB;
+
+    // Validate region exists
+    const { results: existingRegions } = await db.prepare(
+      'SELECT code, name, domain, route FROM regions WHERE code = ?'
+    ).bind(regionCode).all();
+
+    if (existingRegions.length === 0) {
+      return c.json({ error: 'Region not found' }, 404);
+    }
+
+    const oldRegion = existingRegions[0];
+
+    // Validate inputs
+    if (!name) {
+      return c.json({ error: 'name is required' }, 400);
+    }
+
+    // Ensure at least domain or route is provided
+    if (!domain && !route) {
+      return c.json({ error: 'Either domain or route must be provided' }, 400);
+    }
+
+    // Update region
+    await db.prepare(
+      'UPDATE regions SET name = ?, domain = ?, route = ?, updated_at = CURRENT_TIMESTAMP WHERE code = ?'
+    ).bind(name, domain || null, route || null, regionCode).run();
+
+    // Log activity
+    const logActivity = c.get('logActivity');
+    if (logActivity) {
+      await logActivity({
+        actionType: 'region_update',
+        entityType: 'region',
+        description: `Updated region: ${regionCode}`,
+        oldValues: { name: oldRegion.name, domain: oldRegion.domain, route: oldRegion.route },
+        newValues: { name, domain, route }
+      });
+    }
+
+    // Clear regions cache
+    clearRegionsCache();
+
+    return c.json({
+      success: true,
+      message: `Region ${regionCode} updated successfully.`,
+      region: { code: regionCode, name, domain, route }
+    });
+  } catch (error) {
+    console.error('Failed to update region:', error);
+    return c.json({ error: 'Failed to update region: ' + error.message }, 500);
   }
 });
 

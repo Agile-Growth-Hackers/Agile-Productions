@@ -142,6 +142,13 @@ class ApiService {
     });
   }
 
+  async updateRegion(code, regionData) {
+    return this.request(`/api/admin/regions/${code}`, {
+      method: 'PUT',
+      body: JSON.stringify(regionData),
+    });
+  }
+
   async toggleRegionStatus(code, isActive) {
     return this.request(`/api/admin/regions/${code}/status`, {
       method: 'PUT',

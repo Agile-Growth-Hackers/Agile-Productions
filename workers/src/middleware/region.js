@@ -4,8 +4,9 @@ import { getRegionFromRequest } from '../config/regions.js';
  * Middleware to detect and set region in context
  * Sets c.get('region') for use in route handlers
  */
-export function regionMiddleware(c, next) {
-  const region = getRegionFromRequest(c.req.raw);
+export async function regionMiddleware(c, next) {
+  const db = c.env.DB;
+  const region = await getRegionFromRequest(c.req.raw, db);
   c.set('region', region);
   return next();
 }
