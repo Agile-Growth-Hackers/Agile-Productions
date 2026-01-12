@@ -26,8 +26,8 @@ const Services = () => {
     <>
       <style>{`
         .services-content ul {
-          list-style-type: disc;
-          padding-left: 1.5rem;
+          list-style-type: none;
+          padding-left: 0;
           margin: 1rem 0;
         }
         .services-content ol {
@@ -38,9 +38,20 @@ const Services = () => {
         .services-content li {
           margin: 0.75rem 0;
           line-height: 1.75;
+          display: flex;
+          align-items: center;
+          position: relative;
+          padding-left: 1.5rem;
         }
-        .services-content li::marker {
+        .services-content li::before {
+          content: "•";
+          position: absolute;
+          left: 0;
           font-size: 1.5rem;
+          line-height: 1;
+          display: flex;
+          align-items: center;
+          height: 100%;
         }
         .services-content p {
           margin: 1.5rem 0;

@@ -3,6 +3,7 @@ import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useRegion } from '../../context/RegionContext';
 import RichTextEditor from './RichTextEditor';
+import SaveConfirmModal from './SaveConfirmModal';
 import * as FlagIcons from 'country-flag-icons/react/3x2';
 
 // Define content structure by section
@@ -59,6 +60,8 @@ export default function PageContentSection() {
   const [activeSection, setActiveSection] = useState('hero'); // Tab state
   const [savingSection, setSavingSection] = useState(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState({});
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [sectionToSave, setSectionToSave] = useState(null);
 
   const fetchContent = useCallback(async () => {
     setLoading(true);
@@ -116,17 +119,18 @@ export default function PageContentSection() {
     });
   };
 
-  const handleSaveSection = async (sectionKey) => {
-    const section = CONTENT_SECTIONS[sectionKey];
+  const handleSaveSection = (sectionKey) => {
+    // Open modal for confirmation
+    setSectionToSave(sectionKey);
+    setShowSaveModal(true);
+  };
 
-    // Show confirmation dialog
-    const confirmed = confirm(`Are you sure you want to save changes to ${section.title}?\n\nThis will update the content on the public website for the ${selectedRegion} region.`);
+  const confirmSave = async () => {
+    if (!sectionToSave) return;
 
-    if (!confirmed) {
-      return;
-    }
-
-    setSavingSection(sectionKey);
+    const section = CONTENT_SECTIONS[sectionToSave];
+    setShowSaveModal(false);
+    setSavingSection(sectionToSave);
 
     try {
       // Save each field in the section
@@ -147,7 +151,13 @@ export default function PageContentSection() {
       console.error(err);
     } finally {
       setSavingSection(null);
+      setSectionToSave(null);
     }
+  };
+
+  const cancelSave = () => {
+    setShowSaveModal(false);
+    setSectionToSave(null);
   };
 
   if (loading) {
@@ -260,6 +270,15 @@ export default function PageContentSection() {
           </div>
         )}
       </div>
+
+      {/* Save Confirmation Modal */}
+      <SaveConfirmModal
+        isOpen={showSaveModal}
+        onConfirm={confirmSave}
+        onCancel={cancelSave}
+        title="Confirm Save"
+        message={sectionToSave ? `Are you sure you want to save changes to ${CONTENT_SECTIONS[sectionToSave]?.title}?\n\nThis will update the content on the public website for the ${selectedRegion} region.` : ''}
+      />
     </section>
   );
 }
