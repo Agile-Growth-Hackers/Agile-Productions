@@ -62,7 +62,7 @@ export default function RegionSwitcher() {
       {/* Region Selector Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 min-h-[40px]"
       >
         {/* Globe Icon */}
         <svg className="w-5 h-5 text-gray-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -70,13 +70,11 @@ export default function RegionSwitcher() {
         </svg>
 
         {/* Region Name */}
-        <span className="text-sm font-medium text-gray-700 flex-shrink-0">{displayName}</span>
+        <span className="text-sm font-medium text-gray-700 flex-shrink-0 leading-none">{displayName}</span>
 
         {/* Flag Icon */}
         {FlagIcon && (
-          <div className="flex items-center flex-shrink-0">
-            <FlagIcon className="w-6 h-4" style={{ display: 'block' }} />
-          </div>
+          <FlagIcon className="w-6 h-4 flex-shrink-0" style={{ display: 'block', verticalAlign: 'middle' }} />
         )}
 
         {/* Dropdown Arrow */}

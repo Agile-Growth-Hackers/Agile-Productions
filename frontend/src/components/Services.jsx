@@ -39,7 +39,7 @@ const Services = () => {
           margin: 0.75rem 0;
           line-height: 1.75;
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           position: relative;
           padding-left: 1.5rem;
         }
@@ -47,11 +47,9 @@ const Services = () => {
           content: "•";
           position: absolute;
           left: 0;
+          top: 0.1em;
           font-size: 1.5rem;
           line-height: 1;
-          display: flex;
-          align-items: center;
-          height: 100%;
         }
         .services-content p {
           margin: 1.5rem 0;
