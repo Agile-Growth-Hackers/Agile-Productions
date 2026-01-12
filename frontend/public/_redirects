@@ -1,0 +1,5 @@
+# Cloudflare Pages SPA routing
+# Serve index.html for all paths (except admin which needs auth)
+# This allows React Router to handle all routes including /en-ae, /en-in, etc.
+
+/* /index.html 200
