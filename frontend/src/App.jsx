@@ -6,11 +6,17 @@ import { ToastProvider } from './context/ToastContext';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import About from './components/About';
-import Services from './components/Services';
 import Gallery from './components/Gallery';
 import Clients from './components/Clients';
 import Footer from './components/Footer';
 import ErrorTest from './components/ErrorTest';
+import KnownFor from './components/sections/KnownFor';
+import Motorsports from './components/sections/Motorsports';
+import EventCoverage from './components/sections/EventCoverage';
+import BrandCoverage from './components/sections/BrandCoverage';
+import AdPromoFilms from './components/sections/AdPromoFilms';
+import VehicleDelivery from './components/sections/VehicleDelivery';
+import Crew from './components/sections/Crew';
 
 // Lazy load admin pages
 const LoginPage = lazy(() => import('./admin/pages/LoginPage'));
@@ -24,7 +30,13 @@ function PublicSite() {
       <main>
         <Hero />
         <About />
-        <Services />
+        <KnownFor />
+        <Motorsports />
+        <EventCoverage />
+        <BrandCoverage />
+        <AdPromoFilms />
+        <VehicleDelivery />
+        <Crew />
         <Gallery />
         <Clients />
       </main>

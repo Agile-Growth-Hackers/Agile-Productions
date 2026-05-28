@@ -120,9 +120,12 @@ export async function compressImage(imageBuffer, apiKey, options = {}) {
  */
 export function getMobileDimensions(category) {
   const dimensions = {
-    slider: { percentage: 0.80, method: 'cover' },   // 80% of original
-    gallery: { percentage: 0.70, method: 'cover' },  // 70% of original
-    logos: { percentage: 0.60, method: 'fit' },      // 60% of original
+    slider: { percentage: 0.80, method: 'cover' },       // 80% of original
+    gallery: { percentage: 0.70, method: 'cover' },      // 70% of original
+    logos: { percentage: 0.60, method: 'fit' },          // 60% of original
+    motorsports: { percentage: 0.70, method: 'cover' },        // 70% of original
+    crew: { percentage: 0.70, method: 'cover' },               // 70% of original
+    'vehicle-delivery': { percentage: 0.70, method: 'cover' }, // 70% of original
   };
 
   return dimensions[category] || { percentage: 0.80, method: 'cover' };
@@ -134,6 +137,6 @@ export function getMobileDimensions(category) {
  * @returns {boolean}
  */
 export function shouldOptimizeForMobile(category) {
-  const optimizableCategories = ['slider', 'gallery', 'logos'];
+  const optimizableCategories = ['slider', 'gallery', 'logos', 'motorsports', 'crew', 'vehicle-delivery'];
   return optimizableCategories.includes(category);
 }
