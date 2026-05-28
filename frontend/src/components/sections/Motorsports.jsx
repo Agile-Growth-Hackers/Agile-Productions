@@ -154,7 +154,7 @@ const Motorsports = () => {
   };
 
   return (
-    <section id="motorsports" className="bg-white py-12 md:py-16">
+    <section id="motorsports" className="bg-[#ECEDF0] py-12 md:py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2
           ref={titleRef}

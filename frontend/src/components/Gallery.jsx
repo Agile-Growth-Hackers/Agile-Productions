@@ -103,7 +103,7 @@ const Gallery = () => {
   };
 
   return (
-    <section id="gallery" className="pt-12 pb-0 md:pt-16 md:pb-16 bg-white">
+    <section id="gallery" className="pt-12 pb-0 md:pt-16 md:pb-16 bg-[#ECEDF0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2
           ref={titleRef}

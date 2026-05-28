@@ -56,7 +56,7 @@ const Clients = () => {
   const hasDesktopMore = clients.length > desktopDisplayCount;
 
   return (
-    <section id="clients" className="-mt-20 pt-12 md:-mt-0 md:pt-12 lg:pt-16 pb-16 md:pb-24 bg-gradient-to-br from-gray-50 to-gray-100">
+    <section id="clients" className="-mt-20 pt-12 md:-mt-0 md:pt-12 lg:pt-16 pb-16 md:pb-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 md:mb-12 lg:mb-16">
           <h2

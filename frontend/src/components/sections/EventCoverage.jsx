@@ -11,7 +11,7 @@ const EventCoverage = () => {
 
   return (
     <section>
-      <div className="bg-[#ECEDF0] pt-8 pb-8 md:pt-12 md:pb-16 lg:pb-24">
+      <div className="bg-white pt-8 pb-8 md:pt-12 md:pb-16 lg:pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Mobile/Tablet: Show title above content */}
           <h2
