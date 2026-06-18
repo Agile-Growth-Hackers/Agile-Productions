@@ -1,3 +1,5 @@
+'use client';
+
 import './services-styles.css';
 import { useInView } from '../../hooks/useInView';
 import { usePageContent } from '../../hooks/usePageContent';

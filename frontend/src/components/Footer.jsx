@@ -1,3 +1,5 @@
+'use client';
+
 import { useInView } from '../hooks/useInView';
 import { usePageContent } from '../hooks/usePageContent';
 import { prepareHtml, stripHtmlTags } from '../utils/htmlUtils';

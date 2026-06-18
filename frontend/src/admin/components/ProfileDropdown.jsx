@@ -1,11 +1,13 @@
+'use client';
+
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import EditProfileModal from './EditProfileModal';
 
 export default function ProfileDropdown() {
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [showEditProfile, setShowEditProfile] = useState(false);
   const dropdownRef = useRef(null);
@@ -38,7 +40,7 @@ export default function ProfileDropdown() {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/admin/login');
+    router.push('/admin/login');
   };
 
   const handleEditProfile = () => {

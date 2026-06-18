@@ -1,73 +1,22 @@
+'use client';
+
 /**
  * Sentry Configuration
  * Real-time error tracking and monitoring
  */
 
-import * as Sentry from '@sentry/react';
+import * as Sentry from '@sentry/nextjs';
 
 export function initSentry() {
-  const dsn = import.meta.env.VITE_SENTRY_DSN;
-
-  // Only initialize if DSN is configured
-  if (!dsn) {
-    console.log('[Sentry] No DSN configured, error tracking disabled');
-    return;
-  }
-
-  Sentry.init({
-    dsn,
-    environment: import.meta.env.MODE,
-
-    // Performance Monitoring
-    integrations: [
-      Sentry.browserTracingIntegration({
-        // Track route changes
-        enableInp: true,
-      }),
-      Sentry.replayIntegration({
-        // Session replay for debugging
-        maskAllText: true,
-        blockAllMedia: true,
-      }),
-    ],
-
-    // Performance traces sample rate (10% of transactions)
-    tracesSampleRate: 0.1,
-
-    // Session Replay sample rates
-    replaysSessionSampleRate: 0.1, // 10% of sessions
-    replaysOnErrorSampleRate: 1.0, // 100% of sessions with errors
-
-    // Filter out errors in development
-    beforeSend(event) {
-      // Don't send errors in development
-      if (import.meta.env.DEV) {
-        console.log('[Sentry] Would send error:', event);
-        return null;
-      }
-      return event;
-    },
-
-    // Ignore common browser errors
-    ignoreErrors: [
-      // Network errors
-      'NetworkError',
-      'Network request failed',
-      // Browser extensions
-      'ResizeObserver loop limit exceeded',
-      // Ad blockers
-      'blocked by client',
-    ],
-  });
-
-  console.log('[Sentry] Error tracking initialized');
+  // Sentry is initialized via instrumentation-client.js (Next.js instrumentation).
+  // This function is kept for backwards compatibility.
 }
 
 /**
  * Manually capture error
  */
 export function captureError(error, context = {}) {
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     console.error('[Sentry] Error:', error, context);
     return;
   }

@@ -1,3 +1,5 @@
+'use client';
+
 export default function SaveConfirmModal({ isOpen, onConfirm, onCancel, title, message }) {
   if (!isOpen) return null;
 

@@ -1,3 +1,5 @@
+'use client';
+
 import { useRef, useState } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import api from '../../services/api';

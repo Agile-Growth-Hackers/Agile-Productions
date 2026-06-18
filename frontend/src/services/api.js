@@ -1,9 +1,12 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8787';
+'use client';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8787';
 
 class ApiService {
   constructor() {
-    this.token = localStorage.getItem('admin_token');
-    this.csrfToken = localStorage.getItem('csrf_token');
+    const isBrowser = typeof window !== 'undefined';
+    this.token = isBrowser ? localStorage.getItem('admin_token') : null;
+    this.csrfToken = isBrowser ? localStorage.getItem('csrf_token') : null;
     this.csrfHeader = 'x-csrf-token';
   }
 
@@ -56,7 +59,7 @@ class ApiService {
       if (!response.ok) {
         if (response.status === 401 && !options.skipAuth) {
           this.setToken(null);
-          window.location.href = '/admin/login';
+          if (typeof window !== 'undefined') window.location.href = '/admin/login';
         }
 
         // Try to get detailed error message from response

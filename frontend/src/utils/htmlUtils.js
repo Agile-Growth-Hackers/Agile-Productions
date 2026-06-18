@@ -1,3 +1,5 @@
+'use client';
+
 import DOMPurify from 'dompurify';
 
 /**
@@ -15,8 +17,8 @@ export function cleanHtmlContent(htmlContent, fallback = '') {
 
   const content = htmlContent || fallback;
 
-  // Sanitize first
-  let cleaned = DOMPurify.sanitize(content);
+  // Sanitize first (DOMPurify is browser-only; return raw content during SSR prerender)
+  let cleaned = typeof window !== 'undefined' ? DOMPurify.sanitize(content) : content;
 
   // Remove empty paragraphs and whitespace-only paragraphs
   cleaned = cleaned
@@ -58,10 +60,11 @@ export function stripHtmlTags(content, fallback = '') {
 
   const text = content || fallback;
 
-  // Create a temporary div to convert HTML to text
+  // browser-only: return plain text via DOM; fall back to regex strip during SSR
+  if (typeof window === 'undefined') {
+    return text.replace(/<[^>]+>/g, '').trim();
+  }
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = text;
-
-  // Get text content and trim whitespace
   return tempDiv.textContent || tempDiv.innerText || '';
 }

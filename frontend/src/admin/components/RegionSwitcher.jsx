@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useRegion } from '../../context/RegionContext';
 import * as FlagIcons from 'country-flag-icons/react/3x2';

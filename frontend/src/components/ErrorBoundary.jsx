@@ -1,3 +1,5 @@
+'use client';
+
 import { Component } from 'react';
 
 class ErrorBoundary extends Component {
@@ -12,7 +14,7 @@ class ErrorBoundary extends Component {
 
   componentDidCatch(error, errorInfo) {
     // Log to console in development only
-    if (import.meta.env.DEV) {
+    if (process.env.NODE_ENV === 'development') {
       console.error('Error caught by boundary:', error, errorInfo);
     }
     // In production, silently handle or send to monitoring service

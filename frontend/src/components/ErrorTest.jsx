@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 
 // Component that throws an error on demand

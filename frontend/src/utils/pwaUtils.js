@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * PWA Utilities
  * Handles service worker registration and install prompts

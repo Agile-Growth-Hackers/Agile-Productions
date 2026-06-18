@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { useInView } from '../hooks/useInView';
 import api from '../services/api';
@@ -21,7 +23,7 @@ const fallbackImages = [
 const Gallery = () => {
   const [activeImage, setActiveImage] = useState(null);
   const [galleryImages, setGalleryImages] = useState([]);
-  const [isMobile] = useState(window.innerWidth < 768);
+  const [isMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
 
   // Animation refs
   const [titleRef, titleInView] = useInView({ threshold: 0.5 });

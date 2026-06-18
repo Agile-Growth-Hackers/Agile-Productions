@@ -1,5 +1,7 @@
+'use client';
+
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import PasswordInput from '../../components/PasswordInput';
 import { validateUsername, sanitizeInput } from '../../utils/validation';
@@ -9,7 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
   const { login } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -34,7 +36,7 @@ export default function LoginPage() {
 
     try {
       await login(sanitizedUsername, password);
-      navigate('/admin');
+      router.push('/admin');
     } catch (err) {
       setError(err.message || 'Invalid credentials. Please try again.');
     } finally {

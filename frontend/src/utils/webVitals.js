@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Web Vitals Monitoring
  * Tracks Core Web Vitals for performance monitoring
@@ -11,7 +13,7 @@ import { onCLS, onFCP, onLCP, onTTFB, onINP } from 'web-vitals';
  */
 function sendToAnalytics({ name, value, rating, delta, id }) {
   // Log to console in development
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     console.log('[Web Vitals]', {
       name,
       value: Math.round(value),

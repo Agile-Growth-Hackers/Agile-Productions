@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Frontend input validation utilities
  * Validates user input before sending to API (UX improvement + security)

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Validates password requirements:
  * - Minimum 8 characters
