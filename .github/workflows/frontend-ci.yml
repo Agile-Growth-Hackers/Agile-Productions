@@ -172,20 +172,20 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium firefox webkit
 
+      # E2E is a hermetic frontend smoke test — it must not depend on or touch
+      # the production API. The home route is dynamic (`headers()`), so the build
+      # never calls the API; at runtime, fetches to this unused local URL fail
+      # fast and the components render with empty content, which is all the
+      # smoke tests assert on.
       - name: Build frontend
         run: npm run build
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.VITE_API_URL }}
-          NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
+          NEXT_PUBLIC_API_URL: http://localhost:8787
 
       - name: Run E2E tests
         run: npm run test:e2e
         env:
           CI: true
-          TEST_ADMIN_USERNAME: ${{ secrets.TEST_ADMIN_USERNAME }}
-          TEST_ADMIN_PASSWORD: ${{ secrets.TEST_ADMIN_PASSWORD }}
-          TEST_SUPER_ADMIN_USERNAME: ${{ secrets.TEST_SUPER_ADMIN_USERNAME }}
-          TEST_SUPER_ADMIN_PASSWORD: ${{ secrets.TEST_SUPER_ADMIN_PASSWORD }}
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
