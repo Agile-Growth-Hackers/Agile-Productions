@@ -159,8 +159,9 @@ agile-productions/
 
 ## Getting Started
 
-**Prerequisites:** Node.js 20+, npm 9+, a Cloudflare account, and the Wrangler
-CLI (`npm i -g wrangler`). TinyPNG API key optional (image compression).
+**Prerequisites:** Node.js 22+ (Wrangler 4 requires it), npm 9+, a Cloudflare
+account, and the Wrangler CLI (`npm i -g wrangler`). TinyPNG API key optional
+(image compression).
 
 ```bash
 git clone https://github.com/Agile-Growth-Hackers/Agile-Productions.git
