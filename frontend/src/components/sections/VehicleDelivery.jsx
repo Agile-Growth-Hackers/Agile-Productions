@@ -56,6 +56,8 @@ const VehicleDelivery = () => {
               src={collageUrl}
               alt={collageAlt}
               loading="lazy"
+              width="1600"
+              height="682"
               className="w-full rounded-3xl"
             />
           ) : (

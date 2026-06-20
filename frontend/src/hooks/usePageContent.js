@@ -9,9 +9,12 @@ import api from '../services/api';
  *
  * @returns {Object} { content, loading, error, refetch }
  */
-export function usePageContent() {
-  const [content, setContent] = useState({});
-  const [loading, setLoading] = useState(true);
+export function usePageContent(initialContent = null) {
+  // Seed from server-rendered data (when provided) so the content is present in
+  // the initial HTML — no flash, and no client-fetch wait for the LCP element.
+  const hasInitial = initialContent && Object.keys(initialContent).length > 0;
+  const [content, setContent] = useState(hasInitial ? initialContent : {});
+  const [loading, setLoading] = useState(!hasInitial);
   const [error, setError] = useState(null);
 
   const fetchContent = async () => {

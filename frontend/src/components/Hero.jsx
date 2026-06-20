@@ -6,13 +6,13 @@ import { usePageContent } from '../hooks/usePageContent';
 import { prepareHtml } from '../utils/htmlUtils';
 import api from '../services/api';
 
-const Hero = () => {
+const Hero = ({ initialContent = null, initialSlides = [] }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [key, setKey] = useState(0);
-  const [images, setImages] = useState([]);
+  // Seed slider images from server-rendered data so the first slide is in the
+  // initial HTML (faster LCP) and the client first render matches the server.
+  const [images, setImages] = useState(() => (Array.isArray(initialSlides) ? initialSlides : []));
   const hasLoaded = useOnLoad(300); // 300ms delay (after navbar)
-  const { content } = usePageContent();
+  const { content } = usePageContent(initialContent);
 
   // Fetch slider images from API (with time-based caching to prevent reloads)
   useEffect(() => {
@@ -53,21 +53,17 @@ const Hero = () => {
 
   const slideDuration = 5000; // 5 seconds per slide
 
+  // Advance the slide once per cycle. The progress-bar fill is driven purely
+  // by CSS (the `heroProgress` keyframe), so the component no longer
+  // re-renders 20×/sec — that constant churn was starving scroll repaint.
   useEffect(() => {
+    if (images.length <= 1) return;
     const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          const nextIndex = (currentImageIndex + 1) % images.length;
-          setCurrentImageIndex(nextIndex);
-          setKey((k) => k + 1); // Force remount
-          return 0;
-        }
-        return prev + (100 / (slideDuration / 50)); // Update every 50ms
-      });
-    }, 50);
+      setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    }, slideDuration);
 
     return () => clearInterval(interval);
-  }, [images.length, currentImageIndex]);
+  }, [images.length]);
 
   return (
     <section id="home" className="relative h-screen w-full overflow-hidden">
@@ -102,16 +98,16 @@ const Hero = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-3xl text-center md:text-left mx-auto md:mx-0">
             <h1
-              className={`text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-3 animate-on-load will-animate ${hasLoaded ? 'has-loaded animate-fade-up animation-complete' : ''}`}
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight mb-3 hero-title-in"
               dangerouslySetInnerHTML={prepareHtml(content?.hero_title)}
             ></h1>
-            {/* Animated Progress Bar */}
-            <div key={key} className={`w-20 h-2.5 bg-white/30 rounded-full overflow-hidden mx-auto md:mx-0 animate-on-load ${hasLoaded ? 'has-loaded animate-fade-up' : ''}`} style={{ animationDelay: '0.2s' }}>
+            {/* Animated Progress Bar — fill driven by CSS, restarts each slide */}
+            <div className={`w-20 h-2.5 bg-white/30 rounded-full overflow-hidden mx-auto md:mx-0 animate-on-load ${hasLoaded ? 'has-loaded animate-fade-up' : ''}`} style={{ animationDelay: '0.2s' }}>
               <div
+                key={currentImageIndex}
                 className="h-full bg-white"
                 style={{
-                  width: `${progress}%`,
-                  transition: 'width 50ms linear'
+                  animation: `heroProgress ${slideDuration}ms linear`
                 }}
               ></div>
             </div>

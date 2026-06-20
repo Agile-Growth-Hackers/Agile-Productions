@@ -146,7 +146,7 @@ const Gallery = () => {
                 src={galleryImages[0]}
                 alt="Gallery 1"
                 loading="lazy"
-                decoding="async"
+                decoding="auto"
                 width="600"
                 height="800"
                 onClick={() => handleImageClick(0)}
@@ -177,7 +177,7 @@ const Gallery = () => {
                 src={galleryImages[1]}
                 alt="Gallery 2"
                 loading="lazy"
-                decoding="async"
+                decoding="auto"
                 width="600"
                 height="800"
                 onClick={() => handleImageClick(1)}
@@ -208,7 +208,7 @@ const Gallery = () => {
                 src={galleryImages[2]}
                 alt="Gallery 3"
                 loading="lazy"
-                decoding="async"
+                decoding="auto"
                 width="600"
                 height="800"
                 onClick={() => handleImageClick(2)}
@@ -239,7 +239,7 @@ const Gallery = () => {
                 src={galleryImages[3]}
                 alt="Gallery 4"
                 loading="lazy"
-                decoding="async"
+                decoding="auto"
                 width="600"
                 height="800"
                 onClick={() => handleImageClick(3)}
@@ -270,7 +270,7 @@ const Gallery = () => {
                 src={galleryImages[4]}
                 alt="Gallery 5"
                 loading="lazy"
-                decoding="async"
+                decoding="auto"
                 width="600"
                 height="800"
                 onClick={() => handleImageClick(4)}
@@ -301,7 +301,7 @@ const Gallery = () => {
                 src={galleryImages[5]}
                 alt="Gallery 6"
                 loading="lazy"
-                decoding="async"
+                decoding="auto"
                 width="600"
                 height="800"
                 onClick={() => handleImageClick(5)}
@@ -332,7 +332,7 @@ const Gallery = () => {
                 src={galleryImages[6]}
                 alt="Gallery 7"
                 loading="lazy"
-                decoding="async"
+                decoding="auto"
                 width="600"
                 height="800"
                 onClick={() => handleImageClick(6)}
@@ -363,7 +363,7 @@ const Gallery = () => {
                 src={galleryImages[7]}
                 alt="Gallery 8"
                 loading="lazy"
-                decoding="async"
+                decoding="auto"
                 width="600"
                 height="800"
                 onClick={() => handleImageClick(7)}
@@ -394,7 +394,7 @@ const Gallery = () => {
                 src={galleryImages[8]}
                 alt="Gallery 9"
                 loading="lazy"
-                decoding="async"
+                decoding="auto"
                 width="600"
                 height="800"
                 onClick={() => handleImageClick(8)}
@@ -425,7 +425,7 @@ const Gallery = () => {
                 src={galleryImages[9]}
                 alt="Gallery 10"
                 loading="lazy"
-                decoding="async"
+                decoding="auto"
                 width="600"
                 height="800"
                 onClick={() => handleImageClick(9)}

@@ -17,7 +17,7 @@ export default {
           },
           '100%': {
             opacity: '1',
-            transform: 'translateY(0)',
+            transform: 'none',
           },
         },
         'fade-down': {
@@ -27,7 +27,7 @@ export default {
           },
           '100%': {
             opacity: '1',
-            transform: 'translateY(0)',
+            transform: 'none',
           },
         },
         'fade-left': {
@@ -37,7 +37,7 @@ export default {
           },
           '100%': {
             opacity: '1',
-            transform: 'translateX(0)',
+            transform: 'none',
           },
         },
         'fade-right': {
@@ -47,7 +47,7 @@ export default {
           },
           '100%': {
             opacity: '1',
-            transform: 'translateX(0)',
+            transform: 'none',
           },
         },
         'puzzle-slide-in': {
@@ -57,7 +57,9 @@ export default {
           },
           '100%': {
             opacity: '1',
-            transform: 'translate(0, 0) scale(1) rotate(0deg)',
+            // Resolve to `none` (identity) so the element drops its GPU layer
+            // after the animation instead of holding a transform forever.
+            transform: 'none',
           },
         },
         'scale-in': {
@@ -67,7 +69,7 @@ export default {
           },
           '100%': {
             opacity: '1',
-            transform: 'scale(1)',
+            transform: 'none',
           },
         },
       },

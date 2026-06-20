@@ -3,15 +3,21 @@
 import { useEffect } from 'react';
 import { AuthProvider } from '../src/context/AuthContext';
 import { ToastProvider } from '../src/context/ToastContext';
-import { initSentry } from '../src/utils/sentryConfig';
 import { initWebVitals } from '../src/utils/webVitals';
 import { initPWAInstallPrompt } from '../src/utils/pwaUtils';
 
 export default function Providers({ children }) {
   useEffect(() => {
-    initSentry();
-    initWebVitals();
-    initPWAInstallPrompt();
+    // Defer non-critical init off the hydration critical path (lowers mobile TBT).
+    const runIdle = () => {
+      initWebVitals();
+      initPWAInstallPrompt();
+    };
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      window.requestIdleCallback(runIdle, { timeout: 2000 });
+    } else {
+      setTimeout(runIdle, 1);
+    }
 
     if (process.env.NODE_ENV === 'production') {
       console.log = () => {};

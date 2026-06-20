@@ -1,0 +1,15 @@
+# Cache rules for Cloudflare Workers static assets.
+#
+# _next/static files are content-hashed by Next.js (the build hash is in the
+# filename), so a code change always produces a NEW filename/URL. That makes it
+# 100% safe to cache them forever — users never get a stale asset because the
+# URL itself changes when the content changes.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Static font (stable filename, effectively never changes).
+/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Note: sw.js and manifest.json are intentionally left on the default
+# (revalidate) policy so the PWA service worker can update.

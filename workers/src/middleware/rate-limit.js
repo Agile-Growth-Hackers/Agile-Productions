@@ -5,9 +5,9 @@ const requestCounts = new Map();
 // Rate limit configurations
 const RATE_LIMITS = {
   PUBLIC: {
-    max: 60,        // 60 requests
-    window: 60000,  // per minute (60 seconds)
-  },
+    max: 600,       // 600 requests (raised from 60: SSR + client each fetch
+    window: 60000,  // public reads per page load, so 60/min starved the hero
+  },              // slider SSR. 600/min still blocks real abuse.
   ADMIN: {
     max: 300,       // 300 requests
     window: 60000,  // per minute

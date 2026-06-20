@@ -79,7 +79,7 @@ const Motorsports = () => {
             src={url}
             alt={`Motorsports ${idx + 1}`}
             loading="lazy"
-            decoding="async"
+            decoding="auto"
             width="600"
             height="800"
             className={`w-full h-full object-cover ${roundedClass} transition-all duration-500 ease-in-out ${extraImgClass || ''} ${
@@ -120,7 +120,7 @@ const Motorsports = () => {
             src={url}
             alt={`Motorsports ${idx + 1}`}
             loading="lazy"
-            decoding="async"
+            decoding="auto"
             width="800"
             height="600"
             onClick={() => handleImageClick(idx)}

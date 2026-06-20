@@ -21,7 +21,7 @@ bucket_name = "agile-productions-assets"
 
 # Environment variables
 [vars]
-ALLOWED_ORIGINS = "https://agileproductions.in,https://agileproductions.ae,http://localhost:5173"
+ALLOWED_ORIGINS = "https://agileproductions.in,https://agileproductions.ae,http://localhost:5173,http://localhost:3000"
 
 # Note: JWT_SECRET should be set as a Cloudflare secret, not in this file
 # Run: npx wrangler secret put JWT_SECRET

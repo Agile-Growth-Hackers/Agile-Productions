@@ -8,7 +8,7 @@
   font-display: swap;
 }
 
-* {
+html {
   scroll-behavior: smooth;
 }
 
@@ -41,23 +41,41 @@ body {
   opacity: 1;
 }
 
-/* Performance optimizations for animations */
-.will-animate {
-  will-change: transform, opacity;
-}
-
-/* Remove will-change after animation completes to free resources */
+/* Scroll-in animations use the Tailwind keyframe utilities (animate-fade-*).
+   Intentionally NO persistent `will-change` here: it was applied to dozens of
+   elements across the page, promoting each to its own GPU compositor layer.
+   That exhausted the compositor's memory budget, so off-screen sections got
+   evicted and had to repaint — the "blank then reload" flash on scroll-back.
+   Classes kept as no-ops so existing markup stays valid. */
+.will-animate,
 .animation-complete {
-  will-change: auto;
+  /* no compositing hints — let the browser manage layers on demand */
 }
 
-/* Utility for puzzle piece animations with custom CSS variables */
+/* Hero slider progress bar fill — runs on the compositor, no JS re-renders */
+@keyframes heroProgress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+/* Hero heading entrance — pure CSS (no JS gating) so the LCP text is present
+   AND visible in the server-rendered HTML and paints immediately. Transform
+   only (opacity stays 1) so it counts as a contentful paint right away. */
+@keyframes heroTitleIn {
+  from { transform: translateY(24px); }
+  to { transform: none; }
+}
+.hero-title-in {
+  animation: heroTitleIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Puzzle grid images render straight into their final grid positions.
+   The "fly-in" entrance animation was removed: it required each tile to be a
+   transformed, overflow-visible compositor layer, which hurt scroll paint
+   performance. `.animate-in` is now a no-op (the class is still toggled by JS,
+   harmlessly). */
 .puzzle-piece {
   transform-origin: center;
-}
-
-.puzzle-piece.animate-in {
-  animation: puzzle-slide-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 /* Accessibility: Respect user preference for reduced motion */
@@ -141,7 +159,7 @@ body {
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: none;
     opacity: 1;
   }
 }
@@ -152,7 +170,7 @@ body {
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: none;
     opacity: 1;
   }
 }

@@ -47,6 +47,19 @@ lerna-debug.log*
 .aider/
 .copilot/
 
+# Internal working docs / reports / memory — keep local, never publish
+MIGRATION_SUMMARY.md
+MIGRATION_PLAN.md
+PROJECT_OVERVIEW.md
+*_SUMMARY.md
+*_REPORT.md
+*_AUDIT.md
+*.report.md
+NOTES.md
+TODO.local.md
+/memory/
+**/memory/
+
 # Security sensitive files - NEVER commit
 *.key
 *.pem

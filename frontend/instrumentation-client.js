@@ -13,15 +13,12 @@ if (dsn) {
       Sentry.browserTracingIntegration({
         enableInp: true,
       }),
-      Sentry.replayIntegration({
-        maskAllText: true,
-        blockAllMedia: true,
-      }),
+      // Session Replay (rrweb) removed: it shipped a ~121 KB chunk and ran
+      // DOM-recording on the main thread, hurting mobile TBT. Error tracking
+      // and performance tracing below are unaffected.
     ],
 
     tracesSampleRate: 0.1,
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
 
     beforeSend(event) {
       if (process.env.NODE_ENV === 'development') {
