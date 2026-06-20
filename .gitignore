@@ -55,10 +55,14 @@ PROJECT_OVERVIEW.md
 *_REPORT.md
 *_AUDIT.md
 *.report.md
+*VERIFICATION*.md
+*SECURITY_AUDIT*.md
 NOTES.md
 TODO.local.md
 /memory/
 **/memory/
+# Loose internal docs (security audits/verifications kept outside the repo)
+/docs/
 
 # Security sensitive files - NEVER commit
 *.key
