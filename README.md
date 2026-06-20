@@ -5,598 +5,344 @@
 [![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2-blue)](https://reactjs.org/)
 
-Official website for **Agile Productions** - A modern, full-stack web application for managing and showcasing visual content. Built with Next.js, Cloudflare Workers, and deployed on Cloudflare's edge network for optimal performance.
+Official website for **Agile Productions** — a full-stack, multi-region marketing
+site with an admin CMS, built on Next.js + Cloudflare Workers and served from
+Cloudflare's edge.
 
-**Built by**: [Agile Growth Hackers](https://agilegrowthhackers.com)<br>
-**Lead Developer**: [Cliffin Cletus](https://github.com/CliffinCletus)
+**Live:** [agileproductions.in](https://agileproductions.in) (IN) ·
+[agileproductions.ae](https://agileproductions.ae) (AE)
+**Built by:** [Agile Growth Hackers](https://agilegrowthhackers.com)
+
+> **New to this codebase?** Read [Architecture](#architecture) and
+> [Gotchas & key decisions](#gotchas--key-decisions) first — they explain the
+> non-obvious parts that will otherwise cost you a day.
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [Features](#features)
+- [Architecture](#architecture)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
-- [Development](#development)
+- [Getting Started](#getting-started)
+- [Configuration & Secrets](#configuration--secrets)
 - [Deployment](#deployment)
-- [Environment Variables](#environment-variables)
+- [API Reference](#api-reference)
 - [Database](#database)
-- [API Documentation](#api-documentation)
 - [Testing](#testing)
+- [Gotchas & key decisions](#gotchas--key-decisions)
+- [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
+- [License](#license)
 
 ## Overview
 
-Agile Productions is a professional platform designed to showcase visual content through customizable sliders, galleries, and client logos. The application features a comprehensive admin dashboard for content management, user administration, and activity tracking with multi-region support.
+A marketing site that showcases visual content (hero slider, gallery, client
+logos, services, team) with a full admin CMS behind it. Content is
+**multi-region**: India (`IN`) and UAE (`AE`) are edited independently and served
+per-domain, and new regions can be added from the admin without code changes.
 
-**Live Sites:**
-- Production: https://agileproductions.in
-- Alternative: https://agileproductions.ae
+The site is a **monorepo** with two independently deployed Cloudflare Workers:
 
-### Recent Updates
+| Package | What it is | Deployed Worker |
+|---------|-----------|-----------------|
+| `frontend/` | Next.js 15 (App Router) public site + admin CMS | `agile-productions-web` |
+| `workers/` | Hono API on Cloudflare Workers (D1 + R2) | `agile-productions-api` |
 
-**Platform Migration & Performance (v3.0)**
-- Migrated the public site from a Vite + React Router SPA to **Next.js 15 (App Router)** on **Cloudflare Workers** (via `opennextjs-cloudflare`)
-- Server-rendered hero (heading + first slider image) for faster first paint (LCP), region-aware via the request host
-- Image-memory and rendering fixes (resolved blank-on-scroll), CLS fixes, and lighter client JS
-- Aggressive edge caching with long-lived immutable assets and automatic cache purge on deploy
-- Added security headers (HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy)
+## Architecture
 
-**Content Management System (v2.0)**
-- Multi-region content support (India, UAE, and expandable)
-- Rich text editor for page content (Hero, About, Services, Footer)
-- Services management with icons and descriptions
-- Team members management with profiles
-- Section images management for different page areas
-- Custom save confirmation modals for better UX
-- HTML sanitization for secure content rendering
-- Bullet point and alignment fixes for better typography
+```
+                        Browser (agileproductions.in / .ae)
+                                      │
+                                      ▼
+                ┌─────────────────────────────────────────┐
+                │  Frontend Worker  (agile-productions-web) │
+                │  Next.js 15 via @opennextjs/cloudflare    │
+                │  • SSR hero (title + first slide) for LCP  │
+                │  • everything else is client-rendered      │
+                │  • admin app loaded ssr:false              │
+                └───────────────┬───────────────────────────┘
+                  service binding│ (WORKER_API)      client fetch (browser)
+                                 ▼                          │
+                ┌─────────────────────────────────────────┐│
+                │   API Worker   (agile-productions-api)    │◄┘
+                │   Hono • JWT auth • CSRF • rate limiting   │
+                └───────────────┬─────────────┬─────────────┘
+                                ▼             ▼
+                        D1 (SQLite)        R2 (assets)
+```
 
-**UI/UX Improvements**
-- Region switcher with flag icons in admin dashboard
-- Improved dropdown alignment and visual consistency
-- Better list formatting with proper bullet alignment
-- Enhanced content editor with TipTap rich text support
-- Custom modal confirmations replacing browser alerts
+**Key ideas a new dev must know:**
 
-## Features
-
-### Public Features
-- **Hero Slider**: Dynamic image slider with customizable positioning and transitions
-- **Gallery**: Responsive image gallery with desktop and mobile optimizations
-- **Client Logos**: Showcase client partnerships with logo carousel
-- **Progressive Web App**: Installable with offline support
-- **Performance Optimized**: Server-rendered hero, edge caching, and a Lighthouse desktop Performance score in the 90s
-
-### Admin Features
-- **Content Management**
-  - Drag-and-drop slider reordering
-  - Object position editor with presets and custom values
-  - Gallery image management with mobile visibility controls
-  - Client logo management with batch operations
-  - Image storage library with reusable assets
-  - Page content editor with rich text support (Hero, About, Services, Footer)
-  - Services management with icons and descriptions
-  - Team members management with photos and bios
-  - Section images management for different page sections
-  - Region-specific content customization (India, UAE, etc.)
-
-- **User Management** (Super Admin)
-  - Create, edit, and delete admin users
-  - Role-based permissions (Admin vs Super Admin)
-  - Protected test accounts for CI/CD
-
-- **Activity Logs** (Super Admin)
-  - Comprehensive audit trail of all actions
-  - Filterable by user, action type, and date range
-  - Automatic cleanup of old logs
-
-- **Profile Management**
-  - Update personal information
-  - Change password
-  - Profile picture upload
-
-- **Security**
-  - JWT-based authentication
-  - CSRF protection
-  - Password complexity validation
-  - Secure session management
-  - HTML sanitization with DOMPurify
-  - Security headers (HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy)
-  - HTTPS enforcement with automatic redirects
-  - Request size limiting
-  - Rate limiting on public and admin endpoints
+- **Region resolution lives in the API.** Every request is tagged with a region
+  by `workers/src/middleware/region.js` → `config/regions.js`, in this order:
+  URL path → `Referer` path → `Origin`/`Referer`/`Host` domain → default region.
+  Regions are **DB-driven** (`regions` table: `code, name, domain, route,
+  is_active, is_default`).
+- **Content is region-scoped with shared fallback.** Content tables carry a
+  `region_code`; a row with the matching region wins, and `region_code IS NULL`
+  acts as a shared fallback.
+- **SSR is deliberately minimal.** Only the hero (heading + first slider image)
+  is server-rendered, for a fast LCP. The rest keeps `'use client'` because
+  region detection depends on the live request, and the admin loads via an
+  `ssr:false` dynamic import (TipTap / DOMPurify / react-dnd aren't SSR-safe).
+- **Frontend → API uses a Service Binding** (`WORKER_API` in
+  `frontend/wrangler.jsonc`), not a public fetch — see
+  [Gotchas](#gotchas--key-decisions).
+- **Device-aware images.** The API swaps in `*_mobile` CDN URLs for mobile user
+  agents (`workers/src/utils/device-detection.js`).
 
 ## Tech Stack
 
-### Frontend
-- **Framework**: Next.js 15 (App Router) + React 19.2
-- **Deploy Adapter**: `@opennextjs/cloudflare` (builds to a Cloudflare Worker)
-- **Styling**: Tailwind CSS 4.1
-- **Routing**: Next.js App Router (`next/navigation`)
-- **State Management**: React Context API
-- **Drag & Drop**: react-dnd 16.0
-- **Rich Text Editor**: TipTap 3.x with StarterKit and Link extensions
-- **HTML Sanitization**: DOMPurify 3.x
-- **PWA**: @ducanh2912/next-pwa
-- **UI Components**: country-flag-icons for region flags
-- **Monitoring**: Sentry (@sentry/nextjs 10.x)
-- **Hosting**: Cloudflare Workers
+**Frontend** — Next.js 15 (App Router) · React 19.2 · Tailwind CSS 4.1 ·
+`next/navigation` routing · React Context · react-dnd · TipTap 3.x ·
+DOMPurify · `@ducanh2912/next-pwa` · Sentry (`@sentry/nextjs`) ·
+deployed via `@opennextjs/cloudflare` to a Cloudflare Worker.
 
-### Backend
-- **Runtime**: Cloudflare Workers
-- **Framework**: Hono 4.11
-- **Database**: Cloudflare D1 (SQLite)
-- **Storage**: Cloudflare R2 (S3-compatible)
-- **Authentication**: JWT (jose 6.1)
-- **Image Compression**: TinyPNG API
-- **Monitoring**: Sentry 10.32
+**Backend** — Hono 4.11 on Cloudflare Workers · D1 (SQLite) · R2 (assets) ·
+JWT (`jose`) · TinyPNG (image compression) · Sentry.
 
-### Development & Testing
-- **E2E Testing**: Playwright 1.57
-- **Unit Testing**: Vitest 4.x (backend)
-- **Linting**: ESLint 9.39
-- **CI/CD**: GitHub Actions
+**Tooling** — Playwright (frontend E2E) · Vitest (backend unit tests) ·
+ESLint · GitHub Actions CI/CD.
 
 ## Project Structure
 
 ```
 agile-productions/
-├── frontend/                 # Next.js frontend application
-│   ├── app/                 # Next.js App Router (page.jsx, layout, providers)
+├── frontend/                     # Next.js app (→ agile-productions-web Worker)
+│   ├── app/                      # App Router: page.jsx (SSR hero), layout, providers
 │   ├── src/
-│   │   ├── admin/           # Admin dashboard (loaded client-side, ssr:false)
-│   │   │   ├── components/  # Reusable admin components
-│   │   │   └── pages/       # Admin page components
-│   │   ├── components/      # Public-facing components
-│   │   ├── context/         # React context providers
-│   │   ├── hooks/           # Custom React hooks
-│   │   └── services/        # API service layer
-│   ├── e2e/                 # Playwright E2E tests
-│   ├── public/              # Static assets (_headers, icons, manifest)
-│   ├── next.config.mjs      # Next.js config (PWA + Sentry wrappers)
-│   ├── wrangler.jsonc       # Cloudflare Worker config (service binding to API)
-│   └── package.json
+│   │   ├── admin/                # Admin CMS (loaded client-side, ssr:false)
+│   │   ├── components/           # Public-facing components
+│   │   ├── context/              # React context providers
+│   │   ├── hooks/                # Custom hooks (e.g. usePageContent)
+│   │   ├── services/             # api.js — single API client
+│   │   ├── utils/                # web vitals, PWA helpers
+│   │   └── data/                 # generated image URL maps
+│   ├── e2e/                      # Playwright tests
+│   ├── public/                   # static assets, _headers, manifest, icons
+│   ├── next.config.mjs           # Next config (PWA + Sentry wrappers)
+│   └── wrangler.jsonc            # Worker config (WORKER_API service binding)
 │
-├── workers/                  # Cloudflare Workers backend
+├── workers/                      # Hono API (→ agile-productions-api Worker)
 │   ├── src/
-│   │   ├── routes/          # API route handlers
-│   │   │   ├── auth.js      # Authentication endpoints
-│   │   │   ├── slider.js    # Slider management
-│   │   │   ├── gallery.js   # Gallery management
-│   │   │   ├── logos.js     # Logo management
-│   │   │   ├── storage.js   # Image storage
-│   │   │   ├── users.js     # User management
-│   │   │   ├── activity-logs.js  # Activity logs
-│   │   │   ├── page-content.js   # Page content management
-│   │   │   ├── services.js       # Services management
-│   │   │   ├── team.js           # Team members management
-│   │   │   ├── section-images.js # Section images management
-│   │   │   ├── regions.js        # Region management
-│   │   │   └── profile.js        # Profile management
-│   │   ├── middleware/      # Express-style middleware
-│   │   ├── utils/           # Utility functions
-│   │   └── index.js         # Worker entry point
-│   ├── migrations/          # Database migration files
-│   ├── scripts/             # Deployment & utility scripts
-│   ├── tests/               # Unit tests
-│   ├── wrangler.toml        # Cloudflare Workers config
-│   └── package.json
+│   │   ├── index.js              # entry: middleware chain + route mounting
+│   │   ├── routes/               # one file per resource (slider, gallery, ...)
+│   │   ├── middleware/           # cors, auth, csrf, rbac, rate-limit, region, ...
+│   │   ├── utils/                # analytics, activity-logger, device-detection, ...
+│   │   └── config/regions.js     # region detection + DB-backed region cache
+│   ├── migrations/               # numbered D1 migrations (0000_…, 0005_… upward)
+│   ├── scripts/                  # one-off DB/utility scripts
+│   ├── tests/                    # Vitest unit tests
+│   └── wrangler.toml             # Worker config, D1/R2 bindings, ALLOWED_ORIGINS, cron
 │
-├── .github/
-│   └── workflows/           # CI/CD pipelines
-│       ├── frontend-ci.yml  # Frontend build & test
-│       ├── backend-ci.yml   # Backend test & deploy
-│       └── database-backup.yml  # Daily DB backups
-│
-└── README.md                # This file
+└── .github/workflows/            # frontend-ci, backend-ci, backup-database
 ```
 
-## Prerequisites
+## Getting Started
 
-- **Node.js**: v20 or higher (CI builds on Node 20)
-- **npm**: v9 or higher
-- **Cloudflare Account**: For deployment
-- **Wrangler CLI**: `npm install -g wrangler`
-- **TinyPNG API Key**: (Optional) For image compression
-
-## Installation
-
-### 1. Clone the Repository
+**Prerequisites:** Node.js 20+, npm 9+, a Cloudflare account, and the Wrangler
+CLI (`npm i -g wrangler`). TinyPNG API key optional (image compression).
 
 ```bash
 git clone https://github.com/Agile-Growth-Hackers/Agile-Productions.git
 cd Agile-Productions
+
+# Frontend
+cd frontend && npm install
+
+# Backend API
+cd ../workers && npm install
 ```
 
-### 2. Install Frontend Dependencies
+Run the two halves in separate terminals:
 
 ```bash
-cd frontend
-npm install
+# Terminal 1 — API at http://localhost:8787
+cd workers && npm run dev
+
+# Terminal 2 — site at http://localhost:3000
+cd frontend && npm run dev
 ```
 
-### 3. Install Backend Dependencies
-
-```bash
-cd ../workers
-npm install
-```
-
-### 4. Configure Environment Variables
-
-#### Frontend (.env.local)
 Create `frontend/.env.local`:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8787
 ```
 
-> Note: In CI the build reads `NEXT_PUBLIC_API_URL` from the GitHub secret named
-> `VITE_API_URL` (kept for continuity) and `NEXT_PUBLIC_SENTRY_DSN` from `SENTRY_DSN`.
+## Configuration & Secrets
 
-#### Backend (Wrangler Secrets)
-The backend uses Cloudflare secrets for sensitive data:
+### Frontend (build-time)
 
-```bash
-cd workers
+| Variable | Description | CI secret name |
+|----------|-------------|----------------|
+| `NEXT_PUBLIC_API_URL` | Backend API URL | `VITE_API_URL` |
+| `NEXT_PUBLIC_SENTRY_DSN` | Sentry DSN (optional) | `SENTRY_DSN` |
 
-# Set JWT secret
-npx wrangler secret put JWT_SECRET
+> The CI secret names (`VITE_API_URL`, `SENTRY_DSN`) are kept from the original
+> Vite setup; the build maps them to the `NEXT_PUBLIC_*` vars.
 
-# Set TinyPNG API key (optional)
-npx wrangler secret put TINYPNG_API_KEY
+### Backend (Wrangler secrets — `npx wrangler secret put <NAME>`)
 
-# Set Sentry DSN (optional)
-npx wrangler secret put SENTRY_DSN
-```
+| Secret | Required | Purpose |
+|--------|----------|---------|
+| `JWT_SECRET` | Yes | Signs/verifies admin JWTs |
+| `TINYPNG_API_KEY` | No | Image compression on upload |
+| `SENTRY_DSN` | No | Error tracking |
+| `CF_API_TOKEN` | No | Powers the admin **Usage** dashboard (needs Account Analytics: Read) |
 
-## Development
+### Backend (`workers/wrangler.toml` `[vars]`)
 
-### Frontend Development
+| Variable | Value |
+|----------|-------|
+| `ALLOWED_ORIGINS` | Production domains only: `https://agileproductions.in,https://agileproductions.ae` |
 
-```bash
-cd frontend
-npm run dev
-```
+> For local development, add localhost origins via **`workers/.dev.vars`**
+> (gitignored) so they never reach production — `wrangler dev` gives `.dev.vars`
+> precedence:
+> ```
+> ALLOWED_ORIGINS=https://agileproductions.in,https://agileproductions.ae,http://localhost:5173,http://localhost:3000
+> JWT_SECRET=local-dev-secret
+> ```
 
-The frontend will be available at `http://localhost:3000`
+### GitHub Actions secrets (for deploys)
 
-### Backend Development
-
-```bash
-cd workers
-npm run dev
-```
-
-The API will be available at `http://localhost:8787`
-
-### Running Both Simultaneously
-
-Open two terminal windows and run both commands above.
+`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `VITE_API_URL`, `SENTRY_DSN`,
+plus `TEST_ADMIN_*` / `TEST_SUPER_ADMIN_*` for E2E. The Cloudflare token needs
+**Workers Scripts: Edit**, **Account Settings: Read**, **Zone: Read**, and
+**Cache Purge** (the last two power the post-deploy cache purge).
 
 ## Deployment
 
-### Automatic Deployment (CI/CD)
+Push to `main` and GitHub Actions does the rest:
 
-The repository uses GitHub Actions for automated deployments:
+- **`frontend-ci.yml`** — builds with `opennextjs-cloudflare`, deploys the
+  `agile-productions-web` Worker, then purges the edge cache of every
+  `agileproductions.*` zone.
+- **`backend-ci.yml`** — runs Vitest, then deploys the `agile-productions-api`
+  Worker.
+- **`backup-database.yml`** — daily D1 export, stored as a GitHub artifact.
 
-- **Frontend**: Automatically deploys to Cloudflare Workers (via `opennextjs-cloudflare`) on push to `main`
-- **Backend**: Automatically deploys to Cloudflare Workers on push to `main`
-- **Database**: Automatically backed up daily at 2 AM UTC
+> Deploys are **pushed from CI** using the `CLOUDFLARE_API_TOKEN` /
+> `CLOUDFLARE_ACCOUNT_ID` secrets — there is no Cloudflare-side Git integration
+> to configure. You won't see this repo "linked" to the Worker in the dashboard;
+> that's expected.
 
-> The GitHub Actions workflows authenticate to Cloudflare with the
-> `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` repo secrets — the deploy is
-> pushed from CI, not pulled by a Cloudflare Git integration.
-
-### Manual Deployment
-
-#### Frontend
-
-```bash
-cd frontend
-npm run deploy   # runs: opennextjs-cloudflare build && opennextjs-cloudflare deploy
-```
-
-#### Backend
+Manual deploy if ever needed:
 
 ```bash
-cd workers
-npm run deploy
+cd frontend && npm run deploy   # opennextjs-cloudflare build && deploy
+cd workers  && npm run deploy
 ```
 
-## Environment Variables
+## API Reference
 
-### Frontend (Build-time)
+All endpoints are versioned (`/api/v1/...`) with non-versioned legacy aliases
+kept for compatibility. The middleware chain (in `workers/src/index.js`) is:
+Sentry → HTTPS enforcement → security headers → CORS → **region detection** →
+request-size limit → rate limiting → routes.
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `NEXT_PUBLIC_API_URL` | Backend API URL (CI secret name: `VITE_API_URL`) | Yes |
-| `NEXT_PUBLIC_SENTRY_DSN` | Sentry DSN for error tracking (CI secret name: `SENTRY_DSN`) | No |
+**Public** (no auth, region-filtered): `slider`, `gallery`, `gallery/mobile`,
+`logos`, `page-content`, `services`, `team`, `section-images`.
 
-### Backend (Runtime Secrets)
+**Admin** (`/api/admin/*` — JWT + CSRF + rate limit + activity logging):
 
-| Secret | Description | Required |
-|--------|-------------|----------|
-| `JWT_SECRET` | Secret key for JWT signing | Yes |
-| `TINYPNG_API_KEY` | TinyPNG API key for image compression | No |
-| `SENTRY_DSN` | Sentry DSN for error tracking | No |
+| Route group | File | Notes |
+|-------------|------|-------|
+| `auth` | `routes/auth.js` | login/logout, issues JWT + CSRF token |
+| `slider`, `gallery`, `logos` | `routes/*.js` | media CRUD + reorder |
+| `storage` | `routes/storage.js` | reusable image library |
+| `page-content`, `services`, `team`, `section-images` | `routes/*.js` | CMS content (region-scoped) |
+| `regions` | `routes/regions.js` | manage regions |
+| `profile` | `routes/profile.js` | current user profile |
+| `usage` | `routes/usage.js` | Cloudflare usage dashboard |
+| `users`, `activity-logs` | `routes/*.js` | **Super Admin only** |
 
-### Backend (Environment Variables)
-
-| Variable | Description | Value |
-|----------|-------------|-------|
-| `ALLOWED_ORIGINS` | CORS allowed origins (production: domains only) | `https://agileproductions.in,https://agileproductions.ae` |
-
-> For local development, add localhost origins via `workers/.dev.vars` (gitignored)
-> so they never reach the production config:
-> `ALLOWED_ORIGINS=https://agileproductions.in,https://agileproductions.ae,http://localhost:5173,http://localhost:3000`
+Health: `GET /` (liveness) and `GET /health` (D1 + R2 + TinyPNG checks). For
+exact endpoints/params, the route files are the source of truth — they're small
+and one-per-resource.
 
 ## Database
 
-### Migrations
-
-Database migrations are located in `workers/migrations/` and are numbered sequentially.
-
-#### Running Migrations Locally
+Cloudflare **D1** (SQLite). Schema is managed by numbered migrations in
+`workers/migrations/`.
 
 ```bash
 cd workers
-npx wrangler d1 execute agile-productions-db --local --file=migrations/0001_initial_schema.sql
+# local
+npx wrangler d1 execute agile-productions-db --local  --file=migrations/<file>.sql
+# production
+npx wrangler d1 execute agile-productions-db --remote --file=migrations/<file>.sql
 ```
 
-#### Running Migrations in Production
+Core tables: `admins`, `regions`, `slider_images`, `gallery_images`,
+`client_logos`, `image_storage`, `page_content`, `services`, `team_members`,
+`section_images`, `activity_logs`. Content tables carry a nullable `region_code`
+(matching region wins; `NULL` = shared fallback) and `*_mobile` CDN columns.
 
-```bash
-cd workers
-npx wrangler d1 execute agile-productions-db --remote --file=migrations/0001_initial_schema.sql
-```
+> Migrations are normally gitignored by a blanket `*.sql` rule — real numbered
+> migrations are force-added (`git add -f`) so the history stays complete. Do the
+> same when adding one.
 
-### Schema Overview
-
-- **admins**: Admin user accounts with roles and permissions
-- **slider_images**: Hero slider images with display order and positioning
-- **gallery_images**: Gallery images with mobile visibility flags
-- **client_logos**: Client logos with display order
-- **image_storage**: Centralized storage for reusable images
-- **activity_logs**: Audit trail of all admin actions
-- **page_content**: Editable page content (Hero, About, Services, Footer) with region support
-- **services**: Services offerings with icons, titles, and descriptions per region
-- **team_members**: Team member profiles with photos and bios per region
-- **section_images**: Background and section images for different page sections per region
-- **regions**: Available regions with domain mappings and active status
-
-### Backup & Restore
-
-Daily automated backups are stored as GitHub artifacts (90-day retention).
-
-**Manual Backup:**
-```bash
-cd workers
-npx wrangler d1 export agile-productions-db --remote --output=backup.sql
-```
-
-**Manual Restore:**
-```bash
-cd workers
-npx wrangler d1 execute agile-productions-db --remote --file=backup.sql
-```
-
-## API Documentation
-
-### Authentication
-
-All admin endpoints require JWT authentication via `Authorization: Bearer <token>` header.
-
-### Public Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/slider` | Get active slider images |
-| GET | `/api/gallery` | Get active gallery images (desktop) |
-| GET | `/api/gallery/mobile` | Get active gallery images (mobile) |
-| GET | `/api/logos` | Get active client logos |
-| GET | `/api/page-content/:region` | Get page content for region |
-| GET | `/api/services/:region` | Get services for region |
-| GET | `/api/team/:region` | Get team members for region |
-| GET | `/api/section-images/:region/:section` | Get section image for region |
-| GET | `/api/regions` | Get available regions |
-
-### Admin Endpoints
-
-#### Authentication
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/login` | Login and receive JWT |
-| POST | `/api/auth/logout` | Logout and invalidate token |
-
-#### Slider Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/slider` | List all slider images |
-| POST | `/api/admin/slider` | Add new slider image |
-| PUT | `/api/admin/slider/:id` | Replace slider image |
-| PATCH | `/api/admin/slider/:id` | Update slider position only |
-| DELETE | `/api/admin/slider/:id` | Delete slider image |
-| POST | `/api/admin/slider/reorder` | Reorder slider images |
-
-#### Gallery Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/gallery` | List all gallery images |
-| POST | `/api/admin/gallery` | Add new gallery image |
-| PUT | `/api/admin/gallery/:id` | Replace gallery image |
-| PUT | `/api/admin/gallery/:id/mobile-visibility` | Toggle mobile visibility |
-| DELETE | `/api/admin/gallery/:id` | Delete gallery image |
-
-#### Logo Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/logos` | List all logos |
-| POST | `/api/admin/logos` | Add new logo |
-| DELETE | `/api/admin/logos/:id` | Delete logo |
-| POST | `/api/admin/logos/activate` | Activate multiple logos |
-| POST | `/api/admin/logos/deactivate` | Deactivate multiple logos |
-| POST | `/api/admin/logos/reorder` | Reorder logos |
-| POST | `/api/admin/logos/delete-multiple` | Delete multiple logos |
-
-#### Storage Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/storage/:category` | List images by category |
-| POST | `/api/admin/storage` | Upload image to storage |
-| PUT | `/api/admin/storage/:id` | Rename storage image |
-| DELETE | `/api/admin/storage/:id` | Delete storage image |
-
-#### User Management (Super Admin Only)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/users` | List all users |
-| POST | `/api/admin/users` | Create new user |
-| PUT | `/api/admin/users/:id` | Update user |
-| DELETE | `/api/admin/users/:id` | Delete user |
-
-#### Activity Logs (Super Admin Only)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/activity-logs` | List activity logs (paginated) |
-| GET | `/api/admin/activity-logs/:id` | Get single activity log |
-
-#### Profile Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/profile` | Get current user profile |
-| PUT | `/api/admin/profile` | Update profile information |
-| PUT | `/api/admin/profile/password` | Change password |
-| POST | `/api/admin/profile/picture` | Upload profile picture |
-| DELETE | `/api/admin/profile/picture` | Delete profile picture |
-
-#### Page Content Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/page-content/:region` | Get page content for region |
-| POST | `/api/admin/page-content` | Create new page content |
-| PUT | `/api/admin/page-content/:key` | Update page content |
-
-#### Services Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/services/:region` | Get services for region |
-| POST | `/api/admin/services` | Create new service |
-| PUT | `/api/admin/services/:id` | Update service |
-| DELETE | `/api/admin/services/:id` | Delete service |
-| POST | `/api/admin/services/reorder` | Reorder services |
-
-#### Team Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/team/:region` | Get team members for region |
-| POST | `/api/admin/team` | Create new team member |
-| PUT | `/api/admin/team/:id` | Update team member |
-| DELETE | `/api/admin/team/:id` | Delete team member |
-| POST | `/api/admin/team/reorder` | Reorder team members |
-
-#### Section Images Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/section-images/:region/:section` | Get section image |
-| POST | `/api/admin/section-images` | Upload section image |
-| PUT | `/api/admin/section-images/:id` | Update section image |
-| DELETE | `/api/admin/section-images/:id` | Delete section image |
-
-#### Region Management
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/admin/regions` | Get all regions |
-| POST | `/api/admin/regions` | Create new region |
-| PUT | `/api/admin/regions/:code` | Update region |
-| DELETE | `/api/admin/regions/:code` | Delete region |
+A cron trigger (`wrangler.toml`) prunes `activity_logs` older than 30 days daily
+at 02:00 UTC.
 
 ## Testing
 
-### Frontend E2E Tests
-
 ```bash
-cd frontend
-npm run test:e2e              # Run tests headless
-npm run test:e2e:headed       # Run tests with browser
-npm run test:e2e:ui           # Run tests in UI mode
-npm run test:e2e:debug        # Debug tests
+# Frontend E2E (Playwright) — builds & serves the site on :3000
+cd frontend && npm run test:e2e        # add :ui / :headed / :debug
+
+# Backend unit tests (Vitest)
+cd workers && npm test
 ```
 
-### Backend Unit Tests
+> E2E runs the site at `localhost:3000` and calls the API at
+> `NEXT_PUBLIC_API_URL`. If that points at the production API, the API's
+> `ALLOWED_ORIGINS` must permit `localhost:3000` — otherwise the login flow is
+> CORS-blocked. Prefer pointing E2E at a local API.
 
-```bash
-cd workers
-npm test                      # Run all tests
-npm run test:watch            # Run in watch mode
-npm run test:coverage         # Generate coverage report
-```
+## Gotchas & key decisions
 
-### Linting
+- **Worker→Worker loopback.** A plain `fetch()` from the frontend Worker to the
+  API's `*.workers.dev` URL (same account subdomain) **loops back and 404s**. Use
+  the `WORKER_API` **service binding** (`getCloudflareContext().env.WORKER_API`)
+  in `app/page.jsx`. This silently broke SSR until found in observability logs.
+- **Region only resolves per-domain once real domains are attached.** On the
+  `*.workers.dev` URL there's no region domain to match, so it falls back to the
+  default region (`IN`). That's expected on a test Worker; it self-corrects after
+  the domains are pointed at the Worker.
+- **Images must be display-sized WebP.** A batch of raw 30–36 MP camera files
+  renamed `.webp` decoded to ~1 GB and made the page blank on scroll. Keep
+  uploads to display dimensions (≤1600 px; ~1000 px for small tiles).
+- **Next 15 injects a ~24 KB `polyfill-module`** into the client entry regardless
+  of `browserslist`; it can't be removed via webpack alias. Accept it.
+- **Usage dashboard reads Cloudflare Analytics for both Workers** and needs
+  `CF_API_TOKEN` (Account Analytics: Read) on the API Worker — without it the
+  request/error cards show 0.
 
-```bash
-cd frontend
-npm run lint                  # Run ESLint
-```
+## Troubleshooting
+
+| Symptom | Likely cause / fix |
+|---------|--------------------|
+| SSR hero empty, 404s in API logs | Frontend calling API by URL instead of the `WORKER_API` binding |
+| CORS error in local dev | Add `localhost:3000`/`:5173` to `ALLOWED_ORIGINS` in `workers/.dev.vars` |
+| Wrong region's content shown | Check the `regions` table `domain` values and `is_default` |
+| Usage dashboard shows 0 requests | Set `CF_API_TOKEN` secret on the API Worker |
+| Sections blank/reload on fast scroll | Oversized source images — re-upload at display size |
 
 ## Contributing
 
-### Workflow
-
-1. Create a new branch from `main`
-2. Make your changes
-3. Run tests: `npm test` and `npm run test:e2e`
-4. Run linter: `npm run lint`
-5. Commit with descriptive message (no tool references)
-6. Push and create pull request
-7. Wait for CI/CD checks to pass
-8. Request review
-
-### Commit Message Format
-
-```
-<type>: <description>
-
-[optional body]
-```
-
-**Types:** feat, fix, docs, style, refactor, test, chore
-
-**Example:**
-```
-feat: Add object-position editor to slider dashboard
-
-Added comprehensive position control for slider images in the admin dashboard.
-
-Changes:
-- Admin UI: Added position editor with 9 presets and custom input option
-- Backend: Added PATCH endpoint for lightweight position updates
-- Frontend API: Added updateSliderPosition method
-```
-
-### Code Style
-
-- **JavaScript**: ES6+ features, async/await for promises
-- **React**: Functional components with hooks
-- **CSS**: Tailwind utility classes, avoid custom CSS
-- **Naming**: camelCase for variables/functions, PascalCase for components
-
-### Branch Protection
-
-The `main` branch is protected:
-- Pull requests required for all changes
-- Status checks must pass (CI/CD tests)
-- No force pushes allowed
+Internal project. Branch from `main`, keep changes scoped, run lint + tests, and
+open a PR (CI must pass; `main` is protected). Commit messages should be concise
+and descriptive — `<type>: <summary>` (feat/fix/docs/refactor/test/chore) — and
+must not reference tooling.
 
 ## License
 
-Copyright © 2026 Agile Productions. All rights reserved.
+Copyright © 2026 Agile Productions. All rights reserved. See [LICENSE](LICENSE).
 
 ---
 
-**Maintained by**: [Agile Growth Hackers](https://agilegrowthhackers.com)<br>
-**Repository**: https://github.com/Agile-Growth-Hackers/Agile-Productions
-
-For inquiries, visit [agilegrowthhackers.com](https://agilegrowthhackers.com)
+**Maintained by** [Agile Growth Hackers](https://agilegrowthhackers.com) ·
+**Repository:** https://github.com/Agile-Growth-Hackers/Agile-Productions
