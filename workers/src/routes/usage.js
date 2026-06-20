@@ -4,6 +4,24 @@ import { initializeTrackerTable } from '../utils/tracker.js';
 
 const usage = new Hono();
 
+/**
+ * Sum Workers analytics results across multiple Workers.
+ * Only entries with `success: true` are counted; failed lookups are ignored.
+ * @param {Array<{requests?:number, errors?:number, success?:boolean}>} perWorkerResults
+ * @returns {{requests:number, errors:number}}
+ */
+export function sumWorkerAnalytics(perWorkerResults) {
+  let requests = 0;
+  let errors = 0;
+  for (const result of perWorkerResults || []) {
+    if (result && result.success) {
+      requests += result.requests || 0;
+      errors += result.errors || 0;
+    }
+  }
+  return { requests, errors };
+}
+
 usage.get('/', async (c) => {
   try {
     const db = c.env.DB;
@@ -24,8 +42,7 @@ usage.get('/', async (c) => {
     // addition to this API Worker, and both count against the same free-tier
     // request budget — so we sum analytics across every Worker in the project.
     const PROJECT_WORKERS = ['agile-productions-api', 'agile-productions-web'];
-    let workersRequests = 0;
-    let workersErrors = 0;
+    const perWorkerResults = [];
     if (c.env.CF_API_TOKEN) {
       const todayRange = getTodayRange();
       const accountId = c.env.ACCOUNT_ID || 'a80eabbb536a884ecd8ba3dc123bee10';
@@ -40,12 +57,11 @@ usage.get('/', async (c) => {
           );
 
           if (analytics.success) {
-            workersRequests += analytics.requests;
-            workersErrors += analytics.errors;
             console.log(`Workers Analytics [${scriptName}]:`, analytics);
           } else {
             console.warn(`Analytics API not available [${scriptName}]:`, analytics.error);
           }
+          perWorkerResults.push(analytics);
         } catch (analyticsError) {
           console.error(`Analytics fetch error [${scriptName}]:`, analyticsError);
         }
@@ -53,6 +69,8 @@ usage.get('/', async (c) => {
     } else {
       console.log('CF_API_TOKEN not configured - using fallback for Workers requests');
     }
+
+    const { requests: workersRequests, errors: workersErrors } = sumWorkerAnalytics(perWorkerResults);
 
     const response = {
       r2: {
