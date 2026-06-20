@@ -254,7 +254,7 @@ export default function UsageSection() {
             value={usage.workers?.requests || 0}
             limit={100000}
             unit="req/day"
-            description="Total API requests today (from Analytics API)"
+            description="Total Worker requests today — site + API (from Analytics API)"
             icon={
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -268,7 +268,7 @@ export default function UsageSection() {
             value={usage.workers?.errors || 0}
             limit={null}
             unit="errors"
-            description="Failed requests today (from Analytics API)"
+            description="Failed requests today — site + API (from Analytics API)"
             icon={
               <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

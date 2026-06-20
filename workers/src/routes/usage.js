@@ -19,29 +19,36 @@ usage.get('/', async (c) => {
     const d1Stats = await getD1Stats(db);
     console.log('D1 Stats:', d1Stats);
 
-    // Fetch Workers Analytics from Cloudflare API (if token available)
+    // Fetch Workers Analytics from Cloudflare API (if token available).
+    // The public site now runs on its own Worker (agile-productions-web) in
+    // addition to this API Worker, and both count against the same free-tier
+    // request budget — so we sum analytics across every Worker in the project.
+    const PROJECT_WORKERS = ['agile-productions-api', 'agile-productions-web'];
     let workersRequests = 0;
     let workersErrors = 0;
     if (c.env.CF_API_TOKEN) {
-      try {
-        const todayRange = getTodayRange();
-        const analytics = await getWorkersAnalytics(
-          c.env.ACCOUNT_ID || 'a80eabbb536a884ecd8ba3dc123bee10',
-          c.env.CF_API_TOKEN,
-          'agile-productions-api',
-          todayRange.start,
-          todayRange.end
-        );
+      const todayRange = getTodayRange();
+      const accountId = c.env.ACCOUNT_ID || 'a80eabbb536a884ecd8ba3dc123bee10';
+      for (const scriptName of PROJECT_WORKERS) {
+        try {
+          const analytics = await getWorkersAnalytics(
+            accountId,
+            c.env.CF_API_TOKEN,
+            scriptName,
+            todayRange.start,
+            todayRange.end
+          );
 
-        if (analytics.success) {
-          workersRequests = analytics.requests;
-          workersErrors = analytics.errors;
-          console.log('Workers Analytics:', analytics);
-        } else {
-          console.warn('Analytics API not available:', analytics.error);
+          if (analytics.success) {
+            workersRequests += analytics.requests;
+            workersErrors += analytics.errors;
+            console.log(`Workers Analytics [${scriptName}]:`, analytics);
+          } else {
+            console.warn(`Analytics API not available [${scriptName}]:`, analytics.error);
+          }
+        } catch (analyticsError) {
+          console.error(`Analytics fetch error [${scriptName}]:`, analyticsError);
         }
-      } catch (analyticsError) {
-        console.error('Analytics fetch error:', analyticsError);
       }
     } else {
       console.log('CF_API_TOKEN not configured - using fallback for Workers requests');

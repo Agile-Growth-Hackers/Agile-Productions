@@ -20,8 +20,12 @@ binding = "BUCKET"
 bucket_name = "agile-productions-assets"
 
 # Environment variables
+# Production CORS allowlist — production domains ONLY. For local development,
+# add localhost origins via workers/.dev.vars (gitignored), e.g.:
+#   ALLOWED_ORIGINS="https://agileproductions.in,https://agileproductions.ae,http://localhost:5173,http://localhost:3000"
+# `wrangler dev` gives .dev.vars precedence, so localhost is never shipped to prod.
 [vars]
-ALLOWED_ORIGINS = "https://agileproductions.in,https://agileproductions.ae,http://localhost:5173,http://localhost:3000"
+ALLOWED_ORIGINS = "https://agileproductions.in,https://agileproductions.ae"
 
 # Note: JWT_SECRET should be set as a Cloudflare secret, not in this file
 # Run: npx wrangler secret put JWT_SECRET

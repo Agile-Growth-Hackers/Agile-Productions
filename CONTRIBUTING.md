@@ -15,18 +15,26 @@ Thank you for your interest in contributing to this project!
 
 ## Development Setup
 
-```bash
-# Install dependencies
-npm install
+This is a monorepo with two independent packages: `frontend/` (Next.js) and
+`workers/` (Cloudflare Workers API). Install and run each separately.
 
-# Run development server
+```bash
+# Frontend (Next.js) — http://localhost:3000
+cd frontend
+npm install
 npm run dev
 
-# Run tests
-npm test
+# Backend API (Cloudflare Workers) — http://localhost:8787
+cd workers
+npm install
+npm run dev
 
-# Build for production
-npm run build
+# Tests
+cd frontend && npm run test:e2e   # Playwright E2E
+cd workers && npm test            # backend unit tests
+
+# Build the frontend for production
+cd frontend && npm run build
 ```
 
 ## Code Style

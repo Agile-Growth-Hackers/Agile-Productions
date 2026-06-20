@@ -2,10 +2,10 @@
 
 [![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 [![Cloudflare](https://img.shields.io/badge/Deployed%20on-Cloudflare-orange)](https://www.cloudflare.com/)
+[![Next.js](https://img.shields.io/badge/Next.js-15-black)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2-blue)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-7.2-646CFF)](https://vitejs.dev/)
 
-Official website for **Agile Productions** - A modern, full-stack web application for managing and showcasing visual content. Built with React, Cloudflare Workers, and deployed on Cloudflare's edge network for optimal performance.
+Official website for **Agile Productions** - A modern, full-stack web application for managing and showcasing visual content. Built with Next.js, Cloudflare Workers, and deployed on Cloudflare's edge network for optimal performance.
 
 **Built by**: [Agile Growth Hackers](https://agilegrowthhackers.com)<br>
 **Lead Developer**: [Cliffin Cletus](https://github.com/CliffinCletus)
@@ -36,6 +36,13 @@ Agile Productions is a professional platform designed to showcase visual content
 
 ### Recent Updates
 
+**Platform Migration & Performance (v3.0)**
+- Migrated the public site from a Vite + React Router SPA to **Next.js 15 (App Router)** on **Cloudflare Workers** (via `opennextjs-cloudflare`)
+- Server-rendered hero (heading + first slider image) for faster first paint (LCP), region-aware via the request host
+- Image-memory and rendering fixes (resolved blank-on-scroll), CLS fixes, and lighter client JS
+- Aggressive edge caching with long-lived immutable assets and automatic cache purge on deploy
+- Added security headers (HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy)
+
 **Content Management System (v2.0)**
 - Multi-region content support (India, UAE, and expandable)
 - Rich text editor for page content (Hero, About, Services, Footer)
@@ -60,7 +67,7 @@ Agile Productions is a professional platform designed to showcase visual content
 - **Gallery**: Responsive image gallery with desktop and mobile optimizations
 - **Client Logos**: Showcase client partnerships with logo carousel
 - **Progressive Web App**: Installable with offline support
-- **Performance Optimized**: Lighthouse scores 90+ on all metrics
+- **Performance Optimized**: Server-rendered hero, edge caching, and a Lighthouse desktop Performance score in the 90s
 
 ### Admin Features
 - **Content Management**
@@ -96,7 +103,7 @@ Agile Productions is a professional platform designed to showcase visual content
   - Password complexity validation
   - Secure session management
   - HTML sanitization with DOMPurify
-  - Content Security Policy (CSP)
+  - Security headers (HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy)
   - HTTPS enforcement with automatic redirects
   - Request size limiting
   - Rate limiting on public and admin endpoints
@@ -104,17 +111,18 @@ Agile Productions is a professional platform designed to showcase visual content
 ## Tech Stack
 
 ### Frontend
-- **Framework**: React 19.2
-- **Build Tool**: Vite 7.2
+- **Framework**: Next.js 15 (App Router) + React 19.2
+- **Deploy Adapter**: `@opennextjs/cloudflare` (builds to a Cloudflare Worker)
 - **Styling**: Tailwind CSS 4.1
-- **Router**: React Router 7.11
+- **Routing**: Next.js App Router (`next/navigation`)
 - **State Management**: React Context API
 - **Drag & Drop**: react-dnd 16.0
-- **Rich Text Editor**: TipTap 2.x with StarterKit and Link extensions
+- **Rich Text Editor**: TipTap 3.x with StarterKit and Link extensions
 - **HTML Sanitization**: DOMPurify 3.x
+- **PWA**: @ducanh2912/next-pwa
 - **UI Components**: country-flag-icons for region flags
-- **Monitoring**: Sentry 10.32
-- **Hosting**: Cloudflare Pages
+- **Monitoring**: Sentry (@sentry/nextjs 10.x)
+- **Hosting**: Cloudflare Workers
 
 ### Backend
 - **Runtime**: Cloudflare Workers
@@ -127,7 +135,7 @@ Agile Productions is a professional platform designed to showcase visual content
 
 ### Development & Testing
 - **E2E Testing**: Playwright 1.57
-- **Unit Testing**: Vitest 2.1
+- **Unit Testing**: Vitest 4.x (backend)
 - **Linting**: ESLint 9.39
 - **CI/CD**: GitHub Actions
 
@@ -135,18 +143,20 @@ Agile Productions is a professional platform designed to showcase visual content
 
 ```
 agile-productions/
-├── frontend/                 # React frontend application
+├── frontend/                 # Next.js frontend application
+│   ├── app/                 # Next.js App Router (page.jsx, layout, providers)
 │   ├── src/
-│   │   ├── admin/           # Admin dashboard components
+│   │   ├── admin/           # Admin dashboard (loaded client-side, ssr:false)
 │   │   │   ├── components/  # Reusable admin components
 │   │   │   └── pages/       # Admin page components
 │   │   ├── components/      # Public-facing components
 │   │   ├── context/         # React context providers
 │   │   ├── hooks/           # Custom React hooks
-│   │   ├── services/        # API service layer
-│   │   └── App.jsx          # Main application component
+│   │   └── services/        # API service layer
 │   ├── e2e/                 # Playwright E2E tests
-│   ├── public/              # Static assets
+│   ├── public/              # Static assets (_headers, icons, manifest)
+│   ├── next.config.mjs      # Next.js config (PWA + Sentry wrappers)
+│   ├── wrangler.jsonc       # Cloudflare Worker config (service binding to API)
 │   └── package.json
 │
 ├── workers/                  # Cloudflare Workers backend
@@ -185,7 +195,7 @@ agile-productions/
 
 ## Prerequisites
 
-- **Node.js**: v18 or higher
+- **Node.js**: v20 or higher (CI builds on Node 20)
 - **npm**: v9 or higher
 - **Cloudflare Account**: For deployment
 - **Wrangler CLI**: `npm install -g wrangler`
@@ -216,12 +226,15 @@ npm install
 
 ### 4. Configure Environment Variables
 
-#### Frontend (.env)
-Create `frontend/.env`:
+#### Frontend (.env.local)
+Create `frontend/.env.local`:
 
 ```env
-VITE_API_URL=http://localhost:8787
+NEXT_PUBLIC_API_URL=http://localhost:8787
 ```
+
+> Note: In CI the build reads `NEXT_PUBLIC_API_URL` from the GitHub secret named
+> `VITE_API_URL` (kept for continuity) and `NEXT_PUBLIC_SENTRY_DSN` from `SENTRY_DSN`.
 
 #### Backend (Wrangler Secrets)
 The backend uses Cloudflare secrets for sensitive data:
@@ -248,7 +261,7 @@ cd frontend
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:5173`
+The frontend will be available at `http://localhost:3000`
 
 ### Backend Development
 
@@ -269,9 +282,13 @@ Open two terminal windows and run both commands above.
 
 The repository uses GitHub Actions for automated deployments:
 
-- **Frontend**: Automatically deploys to Cloudflare Pages on push to `main`
+- **Frontend**: Automatically deploys to Cloudflare Workers (via `opennextjs-cloudflare`) on push to `main`
 - **Backend**: Automatically deploys to Cloudflare Workers on push to `main`
 - **Database**: Automatically backed up daily at 2 AM UTC
+
+> The GitHub Actions workflows authenticate to Cloudflare with the
+> `CLOUDFLARE_API_TOKEN` / `CLOUDFLARE_ACCOUNT_ID` repo secrets — the deploy is
+> pushed from CI, not pulled by a Cloudflare Git integration.
 
 ### Manual Deployment
 
@@ -279,8 +296,7 @@ The repository uses GitHub Actions for automated deployments:
 
 ```bash
 cd frontend
-npm run build
-npx wrangler pages deploy dist --project-name=agile-productions
+npm run deploy   # runs: opennextjs-cloudflare build && opennextjs-cloudflare deploy
 ```
 
 #### Backend
@@ -296,8 +312,8 @@ npm run deploy
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| `VITE_API_URL` | Backend API URL | Yes |
-| `VITE_SENTRY_DSN` | Sentry DSN for error tracking | No |
+| `NEXT_PUBLIC_API_URL` | Backend API URL (CI secret name: `VITE_API_URL`) | Yes |
+| `NEXT_PUBLIC_SENTRY_DSN` | Sentry DSN for error tracking (CI secret name: `SENTRY_DSN`) | No |
 
 ### Backend (Runtime Secrets)
 
@@ -311,7 +327,11 @@ npm run deploy
 
 | Variable | Description | Value |
 |----------|-------------|-------|
-| `ALLOWED_ORIGINS` | CORS allowed origins | `https://agileproductions.in,https://agileproductions.ae,http://localhost:5173` |
+| `ALLOWED_ORIGINS` | CORS allowed origins (production: domains only) | `https://agileproductions.in,https://agileproductions.ae` |
+
+> For local development, add localhost origins via `workers/.dev.vars` (gitignored)
+> so they never reach the production config:
+> `ALLOWED_ORIGINS=https://agileproductions.in,https://agileproductions.ae,http://localhost:5173,http://localhost:3000`
 
 ## Database
 
@@ -572,7 +592,7 @@ The `main` branch is protected:
 
 ## License
 
-Copyright © 2025 Agile Productions. All rights reserved.
+Copyright © 2026 Agile Productions. All rights reserved.
 
 ---
 
