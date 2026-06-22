@@ -33,7 +33,7 @@ const Navbar = () => {
               <div className="flex items-center">
                 <a href="#home" className="cursor-pointer" aria-label="Agile Productions Home">
                   <img
-                    src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
+                    src="https://r2.agileproductions.in/opt4/logos/site/agile-logo.webp"
                     alt="Agile Productions Logo"
                     width="200"
                     height="40"
@@ -92,7 +92,7 @@ const Navbar = () => {
               <div className="flex items-center flex-shrink-0 pr-8">
                 <a href="#home" className="cursor-pointer" aria-label="Agile Productions Home">
                   <img
-                    src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
+                    src="https://r2.agileproductions.in/opt4/logos/site/agile-logo.webp"
                     alt="Agile Productions Logo"
                     width="350"
                     height="80"
@@ -153,7 +153,7 @@ const Navbar = () => {
           <div className="flex items-center">
             <a href="#home" className="cursor-pointer" aria-label="Agile Productions Home">
               <img
-                src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
+                src="https://r2.agileproductions.in/opt4/logos/site/agile-logo.webp"
                 alt="Agile Productions Logo"
                 width="200"
                 height="40"
@@ -241,7 +241,7 @@ const Navbar = () => {
           <div className="flex items-center pl-4">
             <a href="#home" className="cursor-pointer" aria-label="Agile Productions Home">
               <img
-                src="https://r2.agileproductions.in/logos/site/agile-logo.webp"
+                src="https://r2.agileproductions.in/opt4/logos/site/agile-logo.webp"
                 alt="Agile Productions Logo"
                 width="200"
                 height="48"

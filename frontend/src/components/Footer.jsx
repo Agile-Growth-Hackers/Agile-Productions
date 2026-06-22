@@ -40,7 +40,7 @@ const Footer = () => {
             className={`animate-on-scroll will-animate md:${leftInView ? 'is-visible animate-fade-right animation-complete' : ''} ${leftInView ? 'is-visible animate-fade-up animation-complete' : ''} md:opacity-0`}
           >
             <img
-              src="https://r2.agileproductions.in/logos/site/white-logo.webp"
+              src="https://r2.agileproductions.in/opt4/logos/site/white-logo.webp"
               alt="Agile Productions Logo"
               loading="lazy"
               width="200"
