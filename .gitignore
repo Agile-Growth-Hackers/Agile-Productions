@@ -105,3 +105,6 @@ Thumbs.db
 Desktop.ini
 .Spotlight-V100
 .Trashes
+
+# Wrangler local state
+.wrangler/
